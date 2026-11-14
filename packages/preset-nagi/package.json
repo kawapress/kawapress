@@ -43,14 +43,17 @@
   },
   "dependencies": {
     "@iconify-json/simple-icons": "catalog:node",
+    "@kawapress/plugin-badge": "workspace:^",
     "@kawapress/plugin-code-block": "workspace:^",
     "@kawapress/plugin-code-group": "workspace:^",
     "@kawapress/plugin-container": "workspace:^",
+    "@kawapress/plugin-emoji": "workspace:^",
     "@kawapress/plugin-github-alerts": "workspace:^",
     "@kawapress/plugin-llms": "workspace:^",
     "@kawapress/plugin-search": "workspace:^",
     "@kawapress/plugin-shiki": "workspace:^",
     "@kawapress/plugin-sitemap": "workspace:^",
+    "@kawapress/plugin-toc": "workspace:^",
     "@kawapress/plugin-unocss": "workspace:^",
     "@unhead/vue": "catalog:frontend",
     "overlayscrollbars": "catalog:frontend"

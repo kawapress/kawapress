@@ -2,14 +2,17 @@ import type { CodeBlockPluginOptions } from '@kawapress/plugin-code-block'
 import type { LlmsPluginOptions } from '@kawapress/plugin-llms'
 import type { SitemapPluginOptions } from '@kawapress/plugin-sitemap'
 import type { KawapressConfig } from 'kawapress'
+import { badgePlugin } from '@kawapress/plugin-badge'
 import { codeBlockPlugin } from '@kawapress/plugin-code-block'
 import { codeGroupPlugin } from '@kawapress/plugin-code-group'
 import { containerPlugin } from '@kawapress/plugin-container'
+import { emojiPlugin } from '@kawapress/plugin-emoji'
 import { githubAlertsPlugin } from '@kawapress/plugin-github-alerts'
 import { llmsPlugin } from '@kawapress/plugin-llms'
 import { searchPlugin } from '@kawapress/plugin-search'
 import { shikiPlugin } from '@kawapress/plugin-shiki'
 import { sitemapPlugin } from '@kawapress/plugin-sitemap'
+import { tocPlugin } from '@kawapress/plugin-toc'
 import { unocssPlugin } from '@kawapress/plugin-unocss'
 import { definePreset } from 'kawapress'
 import { nagiThemePlugin } from './theme-plugin'
@@ -46,12 +49,16 @@ export function nagi(userConfig: NagiConfig = {}): NagiConfig {
       nagiThemePlugin(),
       containerPlugin(),
       githubAlertsPlugin(),
+      badgePlugin(),
+      tocPlugin(),
+      emojiPlugin(),
       unocssPlugin(),
       codeBlockPlugin(codeBlock),
       codeGroupPlugin(),
       searchPlugin({
         containers: true,
         githubAlerts: true,
+        toc: true,
       }),
       shikiPlugin({
         twoslash: true,
