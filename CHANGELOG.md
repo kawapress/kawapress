@@ -6,6 +6,8 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-15
+
 ### Breaking changes
 
 **`themeConfig.githubUrl` in nagi is replaced by `themeConfig.socialLinks`.** A configuration that still sets `githubUrl` fails the build with a hint on how to rewrite it. In CSS, `.nagi-github-link` is replaced by `.nagi-social-link`.
@@ -52,6 +54,14 @@ The 21 public packages are released together and share one version number. [ç®€ä
 - **Collapsible sidebar groups (`collapsed`) and `socialLinks` in nagi.** Fold sidebar groups in `themeConfig.sidebar` or directory `_meta.json` files with `collapsed: true | false`, and render Simple Icons or custom SVG links in the top bar with `themeConfig.socialLinks`. See [Internationalization](https://kawapress.dev/en/guide/internationalization#collapsible-sidebar-groups).
 - **`usePlatformAttribute()` and `withoutBase()` in `kawapress/client`.** Detect Apple vs Control/Windows platforms before first paint with `data-kawa-platform`, and strip the site `base` from a URL path with `withoutBase()`.
 - **[Migrating from VitePress](https://kawapress.dev/en/guide/migrate-from-vitepress) guide.** Step-by-step migration instructions, site and theme config mapping tables, and composable equivalents.
+
+### Migration
+
+1. Update `kawapress` and every `@kawapress/*` package in your site to `0.4.0`.
+2. If you use nagi and set `themeConfig.githubUrl`, replace it with `themeConfig.socialLinks`, and rename any `.nagi-github-link` selector in your CSS to `.nagi-social-link`.
+3. If you wrote a plugin that calls `loadSearchIndexes()` or builds `PageBuildArtifact` / `MarkdownPage` objects, update it as shown above.
+4. If your nagi site already adds `@kawapress/plugin-badge`, `@kawapress/plugin-toc` or `@kawapress/plugin-emoji` itself, you can remove them from `plugins`; nagi installs them.
+5. Run `kawapress build` and check the page titles and outlines of headings that contain inline HTML.
 
 ## [0.3.0] - 2026-10-28
 
@@ -153,7 +163,8 @@ What changes for each kind of user:
 - The CSS target is a browser that supports `light-dark()`, so theme override tokens no longer lose their colors in production builds.
 - A release no longer fails when a version is already on npm.
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/kawapress/kawapress/releases/tag/v0.4.0
 [0.3.0]: https://github.com/kawapress/kawapress/releases/tag/v0.3.0
 [0.2.2]: https://github.com/kawapress/kawapress/commit/5a9b6f2
 [0.2.1]: https://github.com/kawapress/kawapress/commit/5456bfa

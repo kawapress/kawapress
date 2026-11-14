@@ -6,6 +6,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-15
+
 ### 破坏性变更
 
 **nagi 的 `themeConfig.githubUrl` 替换为 `themeConfig.socialLinks`。** 配置中仍然保留 `githubUrl` 时会在构建时报错并提示改写方式。样式 class `.nagi-github-link` 同步改为 `.nagi-social-link`。
@@ -52,6 +54,14 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - **nagi 侧边栏分组折叠（`collapsed`）与 `socialLinks`。** 在 `themeConfig.sidebar` 或目录 `_meta.json` 中用 `collapsed: true | false` 控制分组折叠，在 `themeConfig.socialLinks` 中使用 Simple Icons 名称或自定义 SVG 配置顶栏社交图标链接。详见[国际化](https://kawapress.dev/guide/internationalization#collapsible-sidebar-groups)。
 - **`kawapress/client` 公开 `usePlatformAttribute()` 与 `withoutBase()`。** 在首屏绘制前写入 `data-kawa-platform` 属性，并提供从路径中移除站点 `base` 的 `withoutBase()`。
 - **[从 VitePress 迁移](https://kawapress.dev/guide/migrate-from-vitepress)指南。** 提供迁移步骤、站点与主题配置对照表，以及组合式函数替换说明。
+
+### 迁移
+
+1. 把站点里的 `kawapress` 和所有 `@kawapress/*` 包升级到 `0.4.0`。
+2. 如果使用 nagi 并设置过 `themeConfig.githubUrl`，改为 `themeConfig.socialLinks`；样式里的 `.nagi-github-link` 选择器改为 `.nagi-social-link`。
+3. 如果写过调用 `loadSearchIndexes()` 或构造 `PageBuildArtifact` / `MarkdownPage` 对象的插件，按上面的示例修改。
+4. 如果 nagi 站点自己在 `plugins` 里加过 `@kawapress/plugin-badge`、`@kawapress/plugin-toc` 或 `@kawapress/plugin-emoji`，可以把它们删掉，nagi 已经默认安装。
+5. 运行 `kawapress build`，检查标题里带行内 HTML 的页面标题和大纲。
 
 ## [0.3.0] - 2026-10-28
 
@@ -153,7 +163,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/kawapress/kawapress/releases/tag/v0.4.0
 [0.3.0]: https://github.com/kawapress/kawapress/releases/tag/v0.3.0
 [0.2.2]: https://github.com/kawapress/kawapress/commit/5a9b6f2
 [0.2.1]: https://github.com/kawapress/kawapress/commit/5456bfa
