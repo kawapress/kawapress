@@ -44,6 +44,13 @@ test('a GitHub alert is painted by the plugin stylesheet', async ({ page }) => {
   expect(title).toBe(await resolveToken(page, '--kawa-c-info'))
 })
 
+test('a badge takes its accent from the public tokens', async ({ page }) => {
+  const badge = page.locator('.ref-doc .kawa-badge--warning')
+  await expect(badge).toHaveCSS('border-top-width', '1px')
+  const color = await readStyle(page, '.ref-doc .kawa-badge--warning', 'color')
+  expect(color).toBe(await resolveToken(page, '--kawa-c-warning'))
+})
+
 test('the brand override of the theme reaches a plugin element', async ({ page }) => {
   // #b3005c is the value the theme writes, not the #2f5fbf KawaPress ships, so
   // the assertion below fails if the override never reaches the element.

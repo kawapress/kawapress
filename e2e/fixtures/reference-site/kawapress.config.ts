@@ -1,5 +1,6 @@
 import process from 'node:process'
 import referenceTheme from '@kawapress/e2e-reference-theme'
+import badgePlugin from '@kawapress/plugin-badge'
 import codeBlockPlugin from '@kawapress/plugin-code-block'
 import codeGroupPlugin from '@kawapress/plugin-code-group'
 import commentsPlugin from '@kawapress/plugin-comments'
@@ -25,6 +26,7 @@ export default defineConfig({
     referenceTheme(),
     containerPlugin(),
     githubAlertsPlugin(),
+    badgePlugin(),
     codeBlockPlugin(),
     codeGroupPlugin(),
     shikiPlugin({

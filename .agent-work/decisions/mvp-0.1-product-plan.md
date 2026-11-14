@@ -538,6 +538,10 @@ GitHub 风格警报由独立生成侧插件包 `@kawapress/plugin-github-alerts`
 
 Alert 标题与 Custom Container 一样由生成期页面 `path` 和 locale `lang` 决定，内置中英文并允许全局或 locale key 覆盖。标题文本始终真实存在于 HTML 中，类型图标只作视觉补充，不能用 `role="alert"` 打断屏幕阅读器。Search Plugin 建索引时删除 `[!TYPE]` 控制标记但保留标题与正文。Custom Container 与 GitHub Alerts 可以在同一 Preset 中组合，却保持独立安装、独立 parser 和独立稳定 class。
 
+### 7.6.1 Badge
+
+行内徽标由独立逻辑插件包 `@kawapress/plugin-badge` 提供。写法与 VitePress 相同：Markdown 中直接写 `<Badge type="tip" text="New" />` 或带默认插槽，`type` 取 `info`、`tip`（默认）、`warning`、`danger`。Runtime Plugin 全局注册 `Badge` 组件，输出 `.kawa-badge` 与 `.kawa-badge--{type}` 稳定 class；颜色只读公共语义 Token，样式位于 `kawa.plugin` 层。标题中的 `<Badge text="…" />` 按第八节的标题纯文本规则不进入页面标题、目录与搜索标题，自动锚点也不受它影响。
+
 ### 7.7 Code Block UI
 
 代码块外壳由独立逻辑插件包 `@kawapress/plugin-code-block` 提供，不依赖 Shiki。Generator Plugin 在标准 fence renderer 外增加 `.kawa-code-block*` 稳定结构，显示语言标签、可访问的复制按钮和可选行号；Runtime Plugin 只使用一次 document 事件委托处理复制，不为每个代码块创建 Vue App 或组件。nagi 在 Code Group 之前安装本插件，使每个 Tab panel 包含完整代码块外壳。图标、颜色、间距和复制成功状态由插件在 `kawa.plugin` 层提供，主题只做微调。nagi 从顶层 `codeBlock` 字段接收这一个内置插件的选项并在生成 Config 前移除该字段，用户不通过追加第二个同名 Plugin 来覆盖默认实例。

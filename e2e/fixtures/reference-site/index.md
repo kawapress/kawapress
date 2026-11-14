@@ -19,6 +19,10 @@ The info container takes its accent from the brand token.
 > [!NOTE]
 > A GitHub alert keeps its own title, icon and colours without a preset.
 
+## Badges <Badge type="warning" text="beta" />
+
+A badge sits inline with the text <Badge text="new" />.
+
 ```bash
 pnpm install
 ```
