@@ -2,6 +2,7 @@ import type { KawaPressPlugin, SiteConfig } from 'kawapress'
 import { definePlugin } from 'kawapress'
 import { useRuntimeDependencies } from 'kawapress/generator'
 import { nagiSidebarMetaPlugin } from './sidebar-meta-plugin'
+import { nagiSocialIconsPlugin } from './social-icons-plugin'
 
 const PLUGIN_NAME = '@kawapress/preset-nagi'
 const RUNTIME_DEPENDENCIES = ['overlayscrollbars']
@@ -21,6 +22,10 @@ export function nagiThemePlugin(): KawaPressPlugin {
           srcDir: siteConfig?.srcDir ?? '.',
           srcExclude: siteConfig?.srcExclude,
           rewrites: siteConfig?.rewrites,
+          themeConfig: siteConfig?.themeConfig,
+          locales: siteConfig?.locales,
+        }))
+        config.plugins.push(nagiSocialIconsPlugin({
           themeConfig: siteConfig?.themeConfig,
           locales: siteConfig?.locales,
         }))

@@ -42,6 +42,7 @@
     "vue": "catalog:frontend"
   },
   "dependencies": {
+    "@iconify-json/simple-icons": "catalog:node",
     "@kawapress/plugin-code-block": "workspace:^",
     "@kawapress/plugin-code-group": "workspace:^",
     "@kawapress/plugin-container": "workspace:^",

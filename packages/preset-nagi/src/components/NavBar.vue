@@ -3,10 +3,10 @@ import { useRoute, useSite } from 'kawapress/client'
 import { onMounted, onUnmounted, shallowRef, watch } from 'vue'
 import { useNagiThemeConfig } from '../composables/useNagiThemeConfig'
 import AppearanceSwitch from './AppearanceSwitch.vue'
-import GitHubLink from './GitHubLink.vue'
 import LanguageMenu from './LanguageMenu.vue'
 import NavLinks from './NavLinks.vue'
 import NavScreen from './NavScreen.vue'
+import SocialLinks from './SocialLinks.vue'
 import ThemeableImage from './ThemeableImage.vue'
 
 const site = useSite()
@@ -59,7 +59,7 @@ onUnmounted(() => {
             <KawaOutlet name="layout.header.end">
               <LanguageMenu />
               <AppearanceSwitch />
-              <GitHubLink />
+              <SocialLinks />
             </KawaOutlet>
           </div>
           <button

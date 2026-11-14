@@ -2,10 +2,10 @@
 import { onMounted, useTemplateRef } from 'vue'
 import { useNagiThemeConfig } from '../composables/useNagiThemeConfig'
 import AppearanceSwitch from './AppearanceSwitch.vue'
-import GitHubLink from './GitHubLink.vue'
 import LanguageMenu from './LanguageMenu.vue'
 import NavLinks from './NavLinks.vue'
 import OsScroll from './OsScroll.vue'
+import SocialLinks from './SocialLinks.vue'
 
 const emit = defineEmits<{
   close: []
@@ -34,7 +34,7 @@ onMounted(() => {
         <LanguageMenu variant="list" @navigate="emit('close')" />
         <div class="nagi-nav-screen__actions">
           <AppearanceSwitch />
-          <GitHubLink />
+          <SocialLinks />
         </div>
       </div>
     </OsScroll>

@@ -26,7 +26,7 @@ describe('nagi theme translations', () => {
   it('falls back to English and keeps user overrides', () => {
     expect(resolveNagiThemeConfig({
       outlineLabel: 'Page contents',
-      githubUrl: 'https://github.com/example/docs',
+      socialLinks: [{ icon: 'github', link: 'https://github.com/example/docs' }],
     }, 'fr'))
       .toEqual({
         sidebarMenuLabel: 'Menu',
@@ -45,7 +45,7 @@ describe('nagi theme translations', () => {
         notFoundHomeLabel: 'back to home',
         footerLicenseText: 'Released under the MIT License',
         footerPoweredByText: 'Powered by KawaPress',
-        githubUrl: 'https://github.com/example/docs',
+        socialLinks: [{ icon: 'github', link: 'https://github.com/example/docs' }],
       })
   })
 })

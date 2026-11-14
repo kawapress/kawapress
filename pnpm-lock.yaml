@@ -139,6 +139,9 @@ catalogs:
     '@clack/prompts':
       specifier: ^1.8.1
       version: 1.8.1
+    '@iconify-json/simple-icons':
+      specifier: ^1.2.100
+      version: 1.2.100
     '@vitejs/plugin-vue':
       specifier: ^6.0.8
       version: 6.0.8
@@ -767,6 +770,9 @@ importers:
 
   packages/preset-nagi:
     dependencies:
+      '@iconify-json/simple-icons':
+        specifier: catalog:node
+        version: 1.2.100
       '@kawapress/plugin-code-block':
         specifier: workspace:^
         version: link:../plugin-code-block

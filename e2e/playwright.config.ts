@@ -104,6 +104,7 @@ export default defineConfig({
         /dev-smoke\.spec\.ts/,
         /comments\.spec\.ts/,
         /sidebar-pages\.spec\.ts/,
+        /social-links\.spec\.ts/,
         /reference-theme\//,
       ],
     },
@@ -115,7 +116,7 @@ export default defineConfig({
     {
       name: 'plugins-site',
       use: { baseURL: pluginsOrigin },
-      testMatch: [/comments\.spec\.ts/, /sidebar-pages\.spec\.ts/],
+      testMatch: [/comments\.spec\.ts/, /sidebar-pages\.spec\.ts/, /social-links\.spec\.ts/],
     },
     {
       name: 'reference-theme',

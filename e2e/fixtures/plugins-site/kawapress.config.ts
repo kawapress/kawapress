@@ -10,6 +10,16 @@ import { nagi } from 'kawapress/nagi'
 export default nagi({
   title: 'KawaPress plugins',
   base: process.env.KAWAPRESS_BASE,
+  themeConfig: {
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/kawapress/kawapress' },
+      {
+        icon: { svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>' },
+        link: 'https://status.example.com',
+        ariaLabel: 'Status',
+      },
+    ],
+  },
   plugins: [
     commentsPlugin({
       // Placeholders: the specs intercept https://giscus.app and never reach it.
