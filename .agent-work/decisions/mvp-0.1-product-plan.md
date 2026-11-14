@@ -622,6 +622,7 @@ interface KawaPressConfig {
   title?: string
   base?: string
   srcDir?: string
+  srcExclude?: string[]
   publicDir?: string
   head?: HeadConfig[]
   themeConfig?: Partial<ThemeConfig>
@@ -632,6 +633,8 @@ interface KawaPressConfig {
 ```
 
 `head` 与 `deadLinks` 的规则见 `0.2-core-plan.md` 第一、二节。
+
+`srcExclude` 是相对 `srcDir` 的 glob 列表（picomatch 语法，匹配点开头的路径），命中的 Markdown 文件不是页面：不生成路由与构建入口，不进入搜索索引与 nagi 自动侧边栏。它只决定"哪些文件是页面"，文件仍可被 include 或 Data Loader 读取。只接受相对路径字符串组成的数组，其他取值在配置加载时报错。
 
 `defineConfig()` 只提供类型推断与配置归一化，不引入额外生命周期。Core 的配置类型通过可合并的 `ThemeConfig` 接口为顶层与各语言的 `themeConfig` 提供同一份类型，Core 不解释主题私有字段。`base` 表示站点部署路径，归一化为以 `/` 开头和结尾的绝对路径；Vite 资源、站内路由、Markdown 根路径链接、站点与 locale 首页链接、开发 SSR 和预渲染 HTML 必须统一使用它，保证 GitHub Pages 等子路径部署可用。
 

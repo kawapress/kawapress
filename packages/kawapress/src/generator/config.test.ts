@@ -27,6 +27,23 @@ describe('resolveSiteConfig', () => {
   )
 })
 
+describe('srcExclude', () => {
+  it('defaults to no excluded files and keeps the configured patterns', async () => {
+    expect((await resolveSiteConfig({})).srcExclude).toEqual([])
+    expect((await resolveSiteConfig({ srcExclude: ['snippets/**'] })).srcExclude)
+      .toEqual(['snippets/**'])
+  })
+
+  it('rejects a value that is not a list of relative patterns', async () => {
+    await expect(resolveSiteConfig({ srcExclude: 'snippets/**' as never }))
+      .rejects
+      .toThrow('srcExclude must be an array of glob patterns')
+    await expect(resolveSiteConfig({ srcExclude: ['/abs/**'] }))
+      .rejects
+      .toThrow('srcExclude[0] must be a glob pattern relative to srcDir')
+  })
+})
+
 describe('head config', () => {
   it('defaults to no head tags', async () => {
     const config = await resolveSiteConfig({})

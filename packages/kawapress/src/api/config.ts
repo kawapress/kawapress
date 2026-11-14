@@ -8,6 +8,11 @@ export interface KawapressConfig {
   title?: string
   base?: string
   srcDir?: string
+  /**
+   * Glob patterns, relative to `srcDir`, of Markdown files that are not pages,
+   * for example `snippets/**` for a folder of shared parts.
+   */
+  srcExclude?: string[]
   publicDir?: string
   head?: HeadConfig[]
   themeConfig?: Partial<ThemeConfig>

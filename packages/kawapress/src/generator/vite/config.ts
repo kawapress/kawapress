@@ -119,6 +119,7 @@ export function createSitePageLoader(
     root,
     base: siteConfig.base,
     srcDir: siteConfig.srcDir,
+    srcExclude: siteConfig.srcExclude,
     pluginRunner: siteConfig.pluginRunner,
   })
 }

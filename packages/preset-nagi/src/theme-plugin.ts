@@ -19,6 +19,7 @@ export function nagiThemePlugin(): KawaPressPlugin {
         config.plugins ??= []
         config.plugins.push(nagiSidebarMetaPlugin({
           srcDir: siteConfig?.srcDir ?? '.',
+          srcExclude: siteConfig?.srcExclude,
           themeConfig: siteConfig?.themeConfig,
           locales: siteConfig?.locales,
         }))

@@ -14,6 +14,8 @@ interface CachedPage {
 
 export interface MarkdownPageLoader {
   sourceRoot: string
+  /** Glob patterns, relative to `sourceRoot`, of Markdown files that are not pages. */
+  srcExclude: readonly string[]
   /** Links and heading IDs of every page loaded so far. */
   registry: LinkRegistry
   load: (source: string, file: string) => Promise<ParsedMarkdown>
@@ -23,6 +25,7 @@ export interface MarkdownPageLoaderOptions {
   root: string
   base: string
   srcDir: string
+  srcExclude?: readonly string[]
   pluginRunner: GeneratorPluginRunner
 }
 
@@ -39,6 +42,7 @@ export function createMarkdownPageLoader(
 
   return {
     sourceRoot,
+    srcExclude: options.srcExclude ?? [],
     registry,
     load(source, file) {
       const cached = cache.get(file)

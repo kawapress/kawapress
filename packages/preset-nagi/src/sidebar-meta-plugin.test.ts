@@ -59,6 +59,15 @@ describe('the automatic sidebar page list', () => {
     expect(source).toContain('export const sidebarPages = {"')
   })
 
+  it('leaves out the files srcExclude matches', async () => {
+    await writePage('guide/a.md', '# A\n')
+    await writePage('snippets/shared.md', '# Shared\n')
+
+    const { sidebarPages } = await renderModule({ srcExclude: ['snippets/**'] })
+
+    expect(sidebarPages).toEqual({ '/guide/a': { title: 'A' } })
+  })
+
   it('stays empty when every route is covered by a sidebar given as an array', async () => {
     await writePage('guide/a.md', '# A\n')
     await writePage('guide/b.md', '# B\n')

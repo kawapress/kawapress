@@ -196,7 +196,7 @@ Create beautiful documentation in minutes.
 `)
 
     const serialized = await loadSearchIndexes(
-      sourceRoot,
+      { sourceRoot },
       ['root', 'en'],
       {
         localeLanguages: { root: 'zh-CN', en: 'en' },
@@ -219,6 +219,22 @@ Create beautiful documentation in minutes.
     expect(english.search('Tip').map(result => result.id))
       .toEqual(['/en/guide/start'])
     expect(english.search('快速')).toEqual([])
+  })
+
+  it('indexes pages only, leaving out the files srcExclude matches', async () => {
+    const sourceRoot = await createTemporaryDirectory()
+    await mkdir(join(sourceRoot, 'snippets'), { recursive: true })
+    await writeFile(join(sourceRoot, 'index.md'), '# Home\n\nVisible page.\n')
+    await writeFile(join(sourceRoot, 'snippets', 'shared.md'), '# Shared\n\nHidden part.\n')
+
+    const serialized = await loadSearchIndexes(
+      { sourceRoot, exclude: ['snippets/**'] },
+      ['root'],
+    )
+
+    expect(loadSearchIndex(serialized.root).search('Hidden')).toEqual([])
+    expect(loadSearchIndex(serialized.root).search('Visible').map(result => result.id))
+      .toEqual(['/'])
   })
 
   it('tokenizes CJK characters and Latin words consistently', () => {

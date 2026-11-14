@@ -13,6 +13,7 @@ describe('markdownPlugin', () => {
     const calls: Array<{ file: string, source: string }> = []
     const pageLoader: MarkdownPageLoader = {
       sourceRoot: directory,
+      srcExclude: [],
       registry: createLinkRegistry(),
       async load(source, loadedFile) {
         calls.push({ file: loadedFile, source })

@@ -1,6 +1,7 @@
 import type { Dirent } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
+import picomatch from 'picomatch'
 import { markdownFileToSourcePath } from '../compiler/page-loader'
 import { markdownPagePathToRoutePath } from '../core/markdown-route'
 
@@ -27,6 +28,11 @@ export interface MarkdownPageScope {
    * the site has no public directory.
    */
   publicDir?: string | undefined
+  /**
+   * Glob patterns, relative to `sourceRoot`, of Markdown files that are not
+   * pages, that is the resolved `srcExclude`. Leave it out to keep every file.
+   */
+  exclude?: readonly string[] | undefined
 }
 
 /**
@@ -38,8 +44,9 @@ export async function listMarkdownPages(
   scope: MarkdownPageScope,
 ): Promise<MarkdownPage[]> {
   const sourceRoot = resolve(scope.sourceRoot)
+  const isExcluded = createExcludeMatcher(sourceRoot, scope.exclude)
   const files = await findMarkdownFiles(sourceRoot, resolvePublicDirectory(scope))
-  return files.map((file) => {
+  return files.filter(file => !isExcluded(file)).map((file) => {
     const sourcePath = markdownFileToSourcePath(file, sourceRoot)
     return { file, sourcePath, routePath: markdownPagePathToRoutePath(sourcePath) }
   })
@@ -47,7 +54,24 @@ export async function listMarkdownPages(
 
 /** Whether `file` is a page of this scope, without reading any directory. */
 export function isMarkdownPage(file: string, scope: MarkdownPageScope): boolean {
-  return isMarkdownPageFile(file, resolve(scope.sourceRoot), resolvePublicDirectory(scope))
+  const sourceRoot = resolve(scope.sourceRoot)
+  return isMarkdownPageFile(file, sourceRoot, resolvePublicDirectory(scope))
+    && !createExcludeMatcher(sourceRoot, scope.exclude)(file)
+}
+
+/**
+ * Whether a file matches one of the exclude patterns. Patterns use the glob
+ * syntax of `picomatch` and are matched against the path below `sourceRoot`.
+ */
+function createExcludeMatcher(
+  sourceRoot: string,
+  patterns: readonly string[] | undefined,
+): (file: string) => boolean {
+  if (!patterns?.length) {
+    return () => false
+  }
+  const matches = picomatch([...patterns], { dot: true })
+  return file => matches(relative(sourceRoot, file).split(sep).join('/'))
 }
 
 /**

@@ -79,6 +79,7 @@
     "jiti": "catalog:node",
     "markdown-exit": "catalog:markdown",
     "markdown-it-anchor": "catalog:markdown",
+    "picomatch": "catalog:node",
     "sirv": "catalog:node",
     "tinyglobby": "catalog:node",
     "vite": "catalog:node",

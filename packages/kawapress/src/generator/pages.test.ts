@@ -66,6 +66,30 @@ describe('listMarkdownPages', () => {
   })
 })
 
+describe('srcExclude', () => {
+  it('leaves out the Markdown files the exclude patterns match', async () => {
+    await writePage('index.md')
+    await writePage('guide/a.md')
+    await writePage('guide/_partial.md')
+    await writePage('snippets/shared.md')
+    await writePage('snippets/deep/more.md')
+
+    const pages = await listMarkdownPages({
+      sourceRoot,
+      exclude: ['**/_*.md', 'snippets/**'],
+    })
+
+    expect(pages.map(page => page.routePath)).toEqual(['/guide/a', '/'])
+  })
+
+  it('makes an excluded file stop being a page', () => {
+    const scope = { sourceRoot, exclude: ['snippets/**'] }
+
+    expect(isMarkdownPage(join(sourceRoot, 'snippets/shared.md'), scope)).toBe(false)
+    expect(isMarkdownPage(join(sourceRoot, 'guide/a.md'), scope)).toBe(true)
+  })
+})
+
 describe('isMarkdownPage', () => {
   it('accepts Markdown below the source root only', () => {
     expect(isMarkdownPage(join(sourceRoot, 'guide/a.md'), { sourceRoot })).toBe(true)
