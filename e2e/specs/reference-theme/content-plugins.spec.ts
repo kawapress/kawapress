@@ -46,6 +46,12 @@ test('[[toc]] lists the headings of the page with links to their anchors', async
   await expect(page.locator('.ref-doc')).not.toContainText('[[toc]]')
 })
 
+test('an emoji shortcode becomes the emoji outside of code', async ({ page }) => {
+  const paragraph = page.locator('.ref-doc p', { hasText: 'Shortcodes turn into emoji' })
+  await expect(paragraph).toContainText('emoji 🎉, while')
+  await expect(paragraph.locator('code')).toHaveText(':tada:')
+})
+
 test('a code block gets the plugin shell with a language label and a copy button', async ({ page }) => {
   const block = page.locator('.ref-doc .kawa-code-block').first()
   await expect(block.locator('.kawa-code-block__language')).toHaveText('Bash')

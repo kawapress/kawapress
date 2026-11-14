@@ -5,6 +5,7 @@ import codeBlockPlugin from '@kawapress/plugin-code-block'
 import codeGroupPlugin from '@kawapress/plugin-code-group'
 import commentsPlugin from '@kawapress/plugin-comments'
 import containerPlugin from '@kawapress/plugin-container'
+import emojiPlugin from '@kawapress/plugin-emoji'
 import githubAlertsPlugin from '@kawapress/plugin-github-alerts'
 import imageZoomPlugin from '@kawapress/plugin-image-zoom'
 import lastUpdatedPlugin from '@kawapress/plugin-last-updated'
@@ -29,6 +30,7 @@ export default defineConfig({
     githubAlertsPlugin(),
     badgePlugin(),
     tocPlugin(),
+    emojiPlugin(),
     codeBlockPlugin(),
     codeGroupPlugin(),
     shikiPlugin({
