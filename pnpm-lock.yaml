@@ -277,6 +277,9 @@ importers:
 
   e2e/fixtures/plugins-site:
     devDependencies:
+      '@kawapress/plugin-algolia-search':
+        specifier: workspace:*
+        version: link:../../../packages/plugin-algolia-search
       '@kawapress/plugin-comments':
         specifier: workspace:*
         version: link:../../../packages/plugin-comments

@@ -1,4 +1,5 @@
 import process from 'node:process'
+import algoliaSearchPlugin from '@kawapress/plugin-algolia-search'
 import commentsPlugin from '@kawapress/plugin-comments'
 import { nagi } from 'kawapress/nagi'
 
@@ -10,6 +11,8 @@ import { nagi } from 'kawapress/nagi'
 export default nagi({
   title: 'KawaPress plugins',
   base: process.env.KAWAPRESS_BASE,
+  // Algolia takes the place of the built-in local search.
+  search: false,
   themeConfig: {
     socialLinks: [
       { icon: 'github', link: 'https://github.com/kawapress/kawapress' },
@@ -21,6 +24,12 @@ export default nagi({
     ],
   },
   plugins: [
+    algoliaSearchPlugin({
+      // Placeholders: the specs intercept Algolia and never reach it.
+      appId: 'FIXTUREAPP',
+      apiKey: 'fixture-search-key',
+      indexName: 'plugins',
+    }),
     commentsPlugin({
       // Placeholders: the specs intercept https://giscus.app and never reach it.
       giscus: {

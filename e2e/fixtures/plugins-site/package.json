@@ -8,6 +8,7 @@
     "preview": "kawapress preview"
   },
   "devDependencies": {
+    "@kawapress/plugin-algolia-search": "workspace:*",
     "@kawapress/plugin-comments": "workspace:*",
     "kawapress": "workspace:*"
   }

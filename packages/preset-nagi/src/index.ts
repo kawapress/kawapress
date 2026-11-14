@@ -20,6 +20,11 @@ import { nagiThemePlugin } from './theme-plugin'
 export type NagiConfig = KawapressConfig & {
   codeBlock?: CodeBlockPluginOptions
   llms?: LlmsPluginOptions
+  /**
+   * `false` leaves out the built-in local search, for a site that brings its
+   * own, such as `@kawapress/plugin-algolia-search`.
+   */
+  search?: false
   sitemap?: SitemapPluginOptions
 }
 export type {
@@ -43,7 +48,7 @@ export type { NagiSocialIcons, NagiSocialLink, NagiSocialLinkIcon } from './soci
 export type { NagiNavItem } from './theme-config'
 
 export function nagi(userConfig: NagiConfig = {}): NagiConfig {
-  const { codeBlock, llms, sitemap, ...siteConfig } = userConfig
+  const { codeBlock, llms, search, sitemap, ...siteConfig } = userConfig
   const createConfig = definePreset({
     plugins: [
       nagiThemePlugin(),
@@ -55,11 +60,10 @@ export function nagi(userConfig: NagiConfig = {}): NagiConfig {
       unocssPlugin(),
       codeBlockPlugin(codeBlock),
       codeGroupPlugin(),
-      searchPlugin({
-        containers: true,
-        githubAlerts: true,
-        toc: true,
-      }),
+      // The search reads the same callouts as the content plugins above.
+      ...(search === false
+        ? []
+        : [searchPlugin({ containers: true, githubAlerts: true, toc: true })]),
       shikiPlugin({
         twoslash: true,
         themes: {
