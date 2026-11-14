@@ -1,12 +1,14 @@
+import type { PageRewrites } from '../core/site'
 import type { GeneratorPluginRunner } from '../plugin/generator-runner'
 import type { LinkRegistry } from './link-registry'
 import type { ParsedMarkdown } from './markdown'
-import { relative, resolve, sep } from 'node:path'
+import { resolve } from 'node:path'
 import { markdownPagePathToRoutePath } from '../core/markdown-route'
 import { assertPageDataSerializable } from '../core/site'
 import { createLinkRegistry } from './link-registry'
 import { createMarkdownCompiler, parseMarkdown } from './markdown'
 import { expandMarkdownSource } from './markdown-source'
+import { markdownFileToSourcePath, resolvePagePathRewriter } from './page-path'
 
 interface CachedPage {
   source: string
@@ -22,6 +24,8 @@ export interface MarkdownPageLoader {
   sourceRoot: string
   /** Glob patterns, relative to `sourceRoot`, of Markdown files that are not pages. */
   srcExclude: readonly string[]
+  /** `rewrites` of the site config, which moves pages to other routes. */
+  rewrites: PageRewrites | undefined
   /** Links and heading IDs of every page loaded so far. */
   registry: LinkRegistry
   /** Compiles the page whose file holds `source`, as written on disk. */
@@ -33,6 +37,7 @@ export interface MarkdownPageLoaderOptions {
   base: string
   srcDir: string
   srcExclude?: readonly string[]
+  rewrites?: PageRewrites | undefined
   pluginRunner: GeneratorPluginRunner
 }
 
@@ -46,10 +51,12 @@ export function createMarkdownPageLoader(
     pluginRunner: options.pluginRunner,
   })
   const cache = new Map<string, CachedPage>()
+  const rewrite = resolvePagePathRewriter(options.rewrites)
 
   return {
     sourceRoot,
     srcExclude: options.srcExclude ?? [],
+    rewrites: options.rewrites,
     registry,
     load(rawSource, file) {
       // Expanding first makes an edit to an included file a new page source,
@@ -69,12 +76,15 @@ export function createMarkdownPageLoader(
 
       const parsed = mdPromise.then(async (md) => {
         const sourcePath = markdownFileToSourcePath(file, sourceRoot)
-        const routePath = markdownPagePathToRoutePath(sourcePath)
+        const pagePath = rewrite(sourcePath)
+        const routePath = markdownPagePathToRoutePath(pagePath)
+        // Relative links start from where the page is served, so a page moved
+        // by rewrites links as if its file were at the new path.
         const result = await parseMarkdown(
           md,
           source,
           routePath,
-          sourcePath,
+          pagePath,
           lineOrigins,
         )
         registry.set({
@@ -90,6 +100,7 @@ export function createMarkdownPageLoader(
           source,
           file,
           sourcePath,
+          pagePath,
           routePath,
           pageData: result.pageData,
         })
@@ -99,9 +110,4 @@ export function createMarkdownPageLoader(
       return parsed
     },
   }
-}
-
-/** Path of a Markdown file relative to srcDir, for example `/guide/intro.md`. */
-export function markdownFileToSourcePath(file: string, sourceRoot: string): string {
-  return `/${relative(sourceRoot, file).split(sep).join('/')}`
 }

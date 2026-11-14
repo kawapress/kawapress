@@ -14,7 +14,13 @@ export interface PageBuildArtifact {
   /** Markdown source of the page, with `<!--@include-->` and `<<<` written out. */
   source: string
   file: string
+  /** Path of the file relative to srcDir, for example `/packages/a/src/intro.md`. */
   sourcePath: string
+  /**
+   * Source path after `rewrites`, for example `/a/intro.md`. Relative links of
+   * the page start here; it equals `sourcePath` when no rule moves the page.
+   */
+  pagePath: string
   routePath: string
   pageData: Readonly<PageData>
 }

@@ -2,11 +2,11 @@ import type { KawapressConfig } from '../api/config'
 import type { KawaPressPlugin } from '../api/plugin'
 import type { DeadLinkIgnore, ResolvedDeadLinkConfig } from '../core/dead-links'
 import type { HeadConfig } from '../core/head'
-import type { LocaleConfig, SiteConfig } from '../core/site'
+import type { LocaleConfig, PageRewrites, SiteConfig } from '../core/site'
 import type { GeneratorPluginRunner } from '../plugin/generator-runner'
 import { isAbsolute } from 'node:path'
 import { normalizeBase } from '../core/base'
-import { resolveHeadConfig } from '../core/head'
+import { isPlainObject, resolveHeadConfig } from '../core/head'
 import { createGeneratorPluginRunner } from '../plugin/generator-runner'
 
 export interface ResolvedSiteConfig {
@@ -15,6 +15,8 @@ export interface ResolvedSiteConfig {
   srcDir: string
   /** Glob patterns, relative to `srcDir`, of Markdown files that are not pages. */
   srcExclude: string[]
+  /** `rewrites` of the site config; leaves every page at its file path when unset. */
+  rewrites: PageRewrites | undefined
   publicDir: string
   head: HeadConfig[]
   themeConfig?: object
@@ -42,6 +44,7 @@ export async function resolveSiteConfig(
     base: userConfig.base,
     srcDir: userConfig.srcDir,
     srcExclude: userConfig.srcExclude,
+    rewrites: userConfig.rewrites,
     publicDir: userConfig.publicDir,
     head: userConfig.head,
     themeConfig: userConfig.themeConfig,
@@ -55,6 +58,7 @@ export async function resolveSiteConfig(
   }
 
   const srcExclude = resolveSrcExclude(site.srcExclude)
+  const rewrites = resolveRewrites(site.rewrites)
   const publicDir = normalizePublicDir(site.publicDir ?? 'public')
   const head = resolveHeadConfig(site.head, {
     owner: 'the site config',
@@ -68,6 +72,7 @@ export async function resolveSiteConfig(
     base: normalizeBase(site.base),
     srcDir,
     srcExclude,
+    rewrites,
     publicDir,
     head,
     themeConfig: site.themeConfig,
@@ -128,6 +133,25 @@ function describeValue(value: unknown): string {
     return 'null'
   }
   return Array.isArray(value) ? 'an array' : typeof value
+}
+
+function resolveRewrites(rewrites: unknown): PageRewrites | undefined {
+  if (rewrites === undefined || typeof rewrites === 'function') {
+    return rewrites as PageRewrites | undefined
+  }
+  if (!isPlainObject(rewrites)) {
+    throw new TypeError(
+      `KawaPress: rewrites must be an object of path rules or a function, got ${describeValue(rewrites)} in kawapress.config.ts.`,
+    )
+  }
+  for (const [from, to] of Object.entries(rewrites)) {
+    if (typeof to !== 'string' || !to) {
+      throw new TypeError(
+        `KawaPress: rewrites[${JSON.stringify(from)}] must be a page path, got ${describeValue(to)} in kawapress.config.ts.`,
+      )
+    }
+  }
+  return rewrites as Record<string, string>
 }
 
 function resolveSrcExclude(srcExclude: unknown): string[] {

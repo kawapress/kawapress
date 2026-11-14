@@ -44,6 +44,26 @@ describe('srcExclude', () => {
   })
 })
 
+describe('rewrites', () => {
+  it('keeps path rules and functions as they are', async () => {
+    const rules = { 'packages/:pkg/src/:page*': ':pkg/:page*' }
+    const rewrite = (id: string) => id
+
+    expect((await resolveSiteConfig({})).rewrites).toBeUndefined()
+    expect((await resolveSiteConfig({ rewrites: rules })).rewrites).toBe(rules)
+    expect((await resolveSiteConfig({ rewrites: rewrite })).rewrites).toBe(rewrite)
+  })
+
+  it('rejects a value that is neither path rules nor a function', async () => {
+    await expect(resolveSiteConfig({ rewrites: ['a.md'] as never }))
+      .rejects
+      .toThrow('rewrites must be an object of path rules or a function, got an array')
+    await expect(resolveSiteConfig({ rewrites: { 'a.md': 1 } as never }))
+      .rejects
+      .toThrow('rewrites["a.md"] must be a page path, got number')
+  })
+})
+
 describe('head config', () => {
   it('defaults to no head tags', async () => {
     const config = await resolveSiteConfig({})

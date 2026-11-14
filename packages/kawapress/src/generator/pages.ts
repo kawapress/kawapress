@@ -1,8 +1,9 @@
 import type { Dirent } from 'node:fs'
+import type { PageRewrites } from '../core/site'
 import { readdir } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 import picomatch from 'picomatch'
-import { markdownFileToSourcePath } from '../compiler/page-loader'
+import { markdownFileToSourcePath, resolvePagePathRewriter } from '../compiler/page-path'
 import { markdownPagePathToRoutePath } from '../core/markdown-route'
 
 /** Directories that never hold pages: build output and installed packages. */
@@ -14,6 +15,11 @@ export interface MarkdownPage {
   file: string
   /** Path relative to the source root, for example `/guide/intro.md`. */
   sourcePath: string
+  /**
+   * Source path after `rewrites`, for example `/intro.md`; the same as
+   * `sourcePath` when no rule moves the page.
+   */
+  pagePath: string
   /** Public route path of the page, for example `/guide/intro`. */
   routePath: string
 }
@@ -33,6 +39,8 @@ export interface MarkdownPageScope {
    * pages, that is the resolved `srcExclude`. Leave it out to keep every file.
    */
   exclude?: readonly string[] | undefined
+  /** `rewrites` of the site config, which moves pages to other routes. */
+  rewrites?: PageRewrites | undefined
 }
 
 /**
@@ -45,11 +53,29 @@ export async function listMarkdownPages(
 ): Promise<MarkdownPage[]> {
   const sourceRoot = resolve(scope.sourceRoot)
   const isExcluded = createExcludeMatcher(sourceRoot, scope.exclude)
+  const rewrite = resolvePagePathRewriter(scope.rewrites)
   const files = await findMarkdownFiles(sourceRoot, resolvePublicDirectory(scope))
-  return files.filter(file => !isExcluded(file)).map((file) => {
+  const pages = files.filter(file => !isExcluded(file)).map((file) => {
     const sourcePath = markdownFileToSourcePath(file, sourceRoot)
-    return { file, sourcePath, routePath: markdownPagePathToRoutePath(sourcePath) }
+    const pagePath = rewrite(sourcePath)
+    return { file, sourcePath, pagePath, routePath: markdownPagePathToRoutePath(pagePath) }
   })
+  assertUniqueRoutes(pages)
+  return pages
+}
+
+/** Two files on one route would make one of them unreachable, so it is an error. */
+function assertUniqueRoutes(pages: readonly MarkdownPage[]): void {
+  const owners = new Map<string, string>()
+  for (const page of pages) {
+    const owner = owners.get(page.routePath)
+    if (owner) {
+      throw new Error(
+        `KawaPress: ${JSON.stringify(owner)} and ${JSON.stringify(page.sourcePath)} both become the route ${JSON.stringify(page.routePath)}. Check rewrites in kawapress.config.ts.`,
+      )
+    }
+    owners.set(page.routePath, page.sourcePath)
+  }
 }
 
 /** Whether `file` is a page of this scope, without reading any directory. */
@@ -72,17 +98,6 @@ function createExcludeMatcher(
   }
   const matches = picomatch([...patterns], { dot: true })
   return file => matches(relative(sourceRoot, file).split(sep).join('/'))
-}
-
-/**
- * Public route path of a Markdown file. Dev servers report changed files as
- * absolute paths, which this turns back into the route the site serves.
- */
-export function markdownFileToRoutePath(
-  file: string,
-  sourceRoot: string,
-): string {
-  return markdownPagePathToRoutePath(markdownFileToSourcePath(file, resolve(sourceRoot)))
 }
 
 async function findMarkdownFiles(

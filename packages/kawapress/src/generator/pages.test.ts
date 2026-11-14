@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { isMarkdownPage, listMarkdownPages, markdownFileToRoutePath } from './pages'
+import { isMarkdownPage, listMarkdownPages } from './pages'
 
 let siteDirectory: string
 let sourceRoot: string
@@ -33,10 +33,10 @@ describe('listMarkdownPages', () => {
     const pages = await listMarkdownPages({ sourceRoot })
 
     expect(pages).toEqual([
-      { file: join(sourceRoot, 'guide/a.md'), sourcePath: '/guide/a.md', routePath: '/guide/a' },
-      { file: join(sourceRoot, 'guide/b.md'), sourcePath: '/guide/b.md', routePath: '/guide/b' },
-      { file: join(sourceRoot, 'guide/nested/index.md'), sourcePath: '/guide/nested/index.md', routePath: '/guide/nested' },
-      { file: join(sourceRoot, 'index.md'), sourcePath: '/index.md', routePath: '/' },
+      { file: join(sourceRoot, 'guide/a.md'), sourcePath: '/guide/a.md', pagePath: '/guide/a.md', routePath: '/guide/a' },
+      { file: join(sourceRoot, 'guide/b.md'), sourcePath: '/guide/b.md', pagePath: '/guide/b.md', routePath: '/guide/b' },
+      { file: join(sourceRoot, 'guide/nested/index.md'), sourcePath: '/guide/nested/index.md', pagePath: '/guide/nested/index.md', routePath: '/guide/nested' },
+      { file: join(sourceRoot, 'index.md'), sourcePath: '/index.md', pagePath: '/index.md', routePath: '/' },
     ])
   })
 
@@ -90,6 +90,34 @@ describe('srcExclude', () => {
   })
 })
 
+describe('rewrites', () => {
+  it('serves each page at the route of its rewritten path', async () => {
+    await writePage('index.md')
+    await writePage('packages/core/src/intro.md')
+    await writePage('packages/core/src/index.md')
+
+    const pages = await listMarkdownPages({
+      sourceRoot,
+      rewrites: { 'packages/:pkg/src/:page*': ':pkg/:page*' },
+    })
+
+    expect(pages.map(page => [page.sourcePath, page.pagePath, page.routePath])).toEqual([
+      ['/index.md', '/index.md', '/'],
+      ['/packages/core/src/index.md', '/core/index.md', '/core'],
+      ['/packages/core/src/intro.md', '/core/intro.md', '/core/intro'],
+    ])
+  })
+
+  it('reports two files that end up on the same route', async () => {
+    await writePage('a.md')
+    await writePage('b.md')
+
+    await expect(listMarkdownPages({ sourceRoot, rewrites: () => 'same.md' }))
+      .rejects
+      .toThrow('"/a.md" and "/b.md" both become the route "/same"')
+  })
+})
+
 describe('isMarkdownPage', () => {
   it('accepts Markdown below the source root only', () => {
     expect(isMarkdownPage(join(sourceRoot, 'guide/a.md'), { sourceRoot })).toBe(true)
@@ -102,15 +130,5 @@ describe('isMarkdownPage', () => {
 
     expect(isMarkdownPage(join(sourceRoot, 'public/notes.md'), scope)).toBe(false)
     expect(isMarkdownPage(join(sourceRoot, 'guide/a.md'), scope)).toBe(true)
-  })
-})
-
-describe('markdownFileToRoutePath', () => {
-  it('turns a file the dev server reports into the route the site serves', () => {
-    expect(markdownFileToRoutePath(join(sourceRoot, 'index.md'), sourceRoot)).toBe('/')
-    expect(markdownFileToRoutePath(join(sourceRoot, 'guide/intro.md'), sourceRoot))
-      .toBe('/guide/intro')
-    expect(markdownFileToRoutePath(join(sourceRoot, 'guide/zh-hans.md'), sourceRoot))
-      .toBe('/guide/zh-hans')
   })
 })

@@ -27,7 +27,7 @@ export async function transformMarkdownSfc({
   const source = createSsgMarkdownSource(markdown, artifact.source)
   const env: SsgMarkdownEnv = {
     path: artifact.routePath,
-    sourcePath: artifact.sourcePath,
+    sourcePath: artifact.pagePath,
     ssgMarkdown: true,
   }
   const html = await markdown.renderAsync(source, env)

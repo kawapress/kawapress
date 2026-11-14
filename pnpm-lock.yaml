@@ -139,6 +139,9 @@ catalogs:
     jiti:
       specifier: ^2.7.0
       version: 2.7.0
+    path-to-regexp:
+      specifier: ^6.3.0
+      version: 6.3.0
     picomatch:
       specifier: ^4.0.7
       version: 4.0.7
@@ -370,6 +373,9 @@ importers:
       markdown-it-anchor:
         specifier: catalog:markdown
         version: 9.2.1(@types/markdown-it@14.2.0)(markdown-it@14.3.0)
+      path-to-regexp:
+        specifier: catalog:node
+        version: 6.3.0
       picomatch:
         specifier: catalog:node
         version: 4.0.7
@@ -3915,6 +3921,9 @@ packages:
   path-scurry@2.0.2:
     resolution: {integrity: sha512-3O/iVVsJAPsOnpwWIeD+d6z/7PmqApyQePUtCndjatj/9I5LylHvt5qluFaBT3I5h3r1ejfR056c+FCv+NnNXg==}
     engines: {node: 18 || 20 || >=22}
+
+  path-to-regexp@6.3.0:
+    resolution: {integrity: sha512-Yhpw4T9C6hPpgPeA28us07OJeqZ5EzQTkbfwuhsUg0c237RomFoETJgmp2sa3F/41gfLE6G5cqcYwznmeEeOlQ==}
 
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
@@ -8276,6 +8285,8 @@ snapshots:
       lru-cache: 11.5.2
       minipass: 7.1.3
 
+  path-to-regexp@6.3.0: {}
+
   pathe@2.0.3: {}
 
   pele@1.12.0: {}
@@ -8940,7 +8951,7 @@ snapshots:
   vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0):
     dependencies:
       lightningcss: 1.33.0
-      picomatch: 4.0.5
+      picomatch: 4.0.7
       postcss: 8.5.26
       rolldown: 1.2.5
       tinyglobby: 0.2.17

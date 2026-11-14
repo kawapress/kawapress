@@ -120,6 +120,7 @@ export function createSitePageLoader(
     base: siteConfig.base,
     srcDir: siteConfig.srcDir,
     srcExclude: siteConfig.srcExclude,
+    rewrites: siteConfig.rewrites,
     pluginRunner: siteConfig.pluginRunner,
   })
 }

@@ -72,6 +72,7 @@ catalogs:
     citty: ^0.2.2
     consola: ^3.4.2
     jiti: ^2.7.0
+    path-to-regexp: ^6.3.0
     picomatch: ^4.0.7
     sirv: ^3.0.2
     sitemap: ^9.0.1

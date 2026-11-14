@@ -1,5 +1,5 @@
 import type { DataLoaderConfig } from '../../api/data'
-import type { SiteData } from '../../core/site'
+import type { PageRewrites, SiteData } from '../../core/site'
 import type { GeneratorPluginRunner } from '../../plugin/generator-runner'
 import type { ResolvedSiteConfig } from '../config'
 import { resolve } from 'node:path'
@@ -8,6 +8,8 @@ const DATA_LOADER_CONTEXT = Symbol.for('kawapress.data-loader-context')
 
 export interface InternalDataLoaderContext extends DataLoaderConfig {
   readonly pluginRunner: GeneratorPluginRunner
+  /** `rewrites` of the site config, which gives content entries their public URL. */
+  readonly rewrites: PageRewrites | undefined
 }
 
 export function createDataLoaderContext(
@@ -32,6 +34,7 @@ export function createDataLoaderContext(
     publicDir: resolve(srcDir, config.publicDir),
     site,
     pluginRunner: config.pluginRunner,
+    rewrites: config.rewrites,
   }
 }
 

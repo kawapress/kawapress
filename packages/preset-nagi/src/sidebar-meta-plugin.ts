@@ -1,4 +1,4 @@
-import type { LocaleConfig } from 'kawapress'
+import type { LocaleConfig, PageRewrites } from 'kawapress'
 import type { Dirent } from 'node:fs'
 import type { HmrContext, ModuleNode, Plugin, ViteDevServer } from 'vite'
 import type { SidebarMeta, SidebarMetaEntry, SidebarMetaItem, SidebarPages } from './sidebar'
@@ -19,6 +19,8 @@ export interface NagiSidebarMetaPluginOptions {
   srcDir: string
   /** `srcExclude` of the site config: Markdown files that are not pages. */
   srcExclude?: readonly string[] | undefined
+  /** `rewrites` of the site config, which moves pages to other routes. */
+  rewrites?: PageRewrites | undefined
   /** `themeConfig` of the site config; only `sidebar` is read. */
   themeConfig?: object | undefined
   /** `locales` of the site config, which can each declare their own sidebar. */
@@ -29,6 +31,7 @@ export function nagiSidebarMetaPlugin(options: NagiSidebarMetaPluginOptions): Pl
   let scope: SidebarPageScope = {
     sourceRoot: resolve(options.srcDir),
     exclude: options.srcExclude,
+    rewrites: options.rewrites,
   }
   /**
    * Page list of the module as the browser last received it, so editing a page
@@ -56,6 +59,7 @@ export function nagiSidebarMetaPlugin(options: NagiSidebarMetaPluginOptions): Pl
         sourceRoot: resolve(config.root, options.srcDir),
         publicDir: config.publicDir ? resolve(config.publicDir) : undefined,
         exclude: options.srcExclude,
+        rewrites: options.rewrites,
         themeConfig: options.themeConfig,
         locales: options.locales,
       }
@@ -98,7 +102,7 @@ export function nagiSidebarMetaPlugin(options: NagiSidebarMetaPluginOptions): Pl
         return
       }
 
-      const routePath = markdownFileToRoutePath(context.file, scope.sourceRoot)
+      const routePath = markdownFileToRoutePath(context.file, scope.sourceRoot, scope.rewrites)
       if (isSameEntry(pages[routePath], await pageReader.readChanged(context.file))) {
         return
       }
