@@ -25,6 +25,8 @@ The info container takes its accent from the brand token.
 
 A badge sits inline with the text <Badge text="new" />.
 
+Shortcodes turn into emoji :tada:, while `:tada:` in code stays as written.
+
 ```bash
 pnpm install
 ```

@@ -14,6 +14,7 @@
     "@kawapress/plugin-code-group": "workspace:*",
     "@kawapress/plugin-comments": "workspace:*",
     "@kawapress/plugin-container": "workspace:*",
+    "@kawapress/plugin-emoji": "workspace:*",
     "@kawapress/plugin-github-alerts": "workspace:*",
     "@kawapress/plugin-image-zoom": "workspace:*",
     "@kawapress/plugin-last-updated": "workspace:*",

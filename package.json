@@ -25,6 +25,7 @@
     "@antfu/eslint-config": "catalog:dev",
     "@kawapress/plugin-mathjax": "workspace:*",
     "@kawapress/plugin-shiki": "workspace:*",
+    "@types/markdown-it-emoji": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/picomatch": "catalog:dev",
     "@vitejs/plugin-vue": "catalog:node",
