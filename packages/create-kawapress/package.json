@@ -1,7 +1,7 @@
 {
   "name": "create-kawapress",
   "type": "module",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Create a new KawaPress site",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",
@@ -44,7 +44,7 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "kawapressVersion": "0.4.0",
+  "kawapressVersion": "0.4.1",
   "dependencies": {
     "@clack/prompts": "catalog:node",
     "citty": "catalog:node",

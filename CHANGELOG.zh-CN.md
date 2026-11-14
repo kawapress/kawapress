@@ -6,6 +6,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-15
+
 ### 修复
 
 - **站点 `package.json` 不是 ES 模块包时，`kawapress build` 也能正常构建。** 没有设置 `"type": "module"` 的项目（例如用 `npm init -y` 创建的项目）不再报错 `Cannot find module '…/dist/.server/entry-server.js'`。（[#44](https://github.com/kawapress/kawapress/issues/44)）
@@ -167,7 +169,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/kawapress/kawapress/releases/tag/v0.4.1
 [0.4.0]: https://github.com/kawapress/kawapress/releases/tag/v0.4.0
 [0.3.0]: https://github.com/kawapress/kawapress/releases/tag/v0.3.0
 [0.2.2]: https://github.com/kawapress/kawapress/commit/5a9b6f2

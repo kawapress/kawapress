@@ -6,6 +6,8 @@ The 21 public packages are released together and share one version number. [简�
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-15
+
 ### Fixed
 
 - **`kawapress build` works when the site's `package.json` is not an ES module package.** A project without `"type": "module"` (for example one created with `npm init -y`) no longer fails with `Cannot find module '…/dist/.server/entry-server.js'`. ([#44](https://github.com/kawapress/kawapress/issues/44))
@@ -167,7 +169,8 @@ What changes for each kind of user:
 - The CSS target is a browser that supports `light-dark()`, so theme override tokens no longer lose their colors in production builds.
 - A release no longer fails when a version is already on npm.
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/kawapress/kawapress/releases/tag/v0.4.1
 [0.4.0]: https://github.com/kawapress/kawapress/releases/tag/v0.4.0
 [0.3.0]: https://github.com/kawapress/kawapress/releases/tag/v0.3.0
 [0.2.2]: https://github.com/kawapress/kawapress/commit/5a9b6f2
