@@ -1,0 +1,35 @@
+@layer kawa.plugin {
+  .kawa-badge {
+    --kawa-badge-accent: var(--kawa-c-success);
+
+    display: inline-block;
+    margin-inline-start: 0.25em;
+    padding: 0 0.625em;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.375rem;
+    vertical-align: middle;
+    color: var(--kawa-badge-accent);
+    border: 1px solid color-mix(in oklab, var(--kawa-badge-accent) 30%, transparent);
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--kawa-badge-accent) 12%, var(--kawa-c-bg));
+    white-space: nowrap;
+  }
+
+  .kawa-badge--info {
+    --kawa-badge-accent: var(--kawa-c-info);
+  }
+
+  .kawa-badge--warning {
+    --kawa-badge-accent: var(--kawa-c-warning);
+  }
+
+  .kawa-badge--danger {
+    --kawa-badge-accent: var(--kawa-c-danger);
+  }
+
+  :is(h1, h2, h3, h4, h5, h6) > .kawa-badge {
+    font-size: 0.75rem;
+    vertical-align: 0.15em;
+  }
+}

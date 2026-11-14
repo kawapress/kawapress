@@ -271,6 +271,9 @@ importers:
       '@kawapress/e2e-reference-theme':
         specifier: workspace:*
         version: link:../reference-theme
+      '@kawapress/plugin-badge':
+        specifier: workspace:*
+        version: link:../../../packages/plugin-badge
       '@kawapress/plugin-code-block':
         specifier: workspace:*
         version: link:../../../packages/plugin-code-block
@@ -388,6 +391,16 @@ importers:
       vite:
         specifier: catalog:node
         version: 8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)
+      vue:
+        specifier: catalog:frontend
+        version: 3.5.41(typescript@6.0.3)
+
+  packages/plugin-badge:
+    dependencies:
+      kawapress:
+        specifier: workspace:^
+        version: link:../kawapress
+    devDependencies:
       vue:
         specifier: catalog:frontend
         version: 3.5.41(typescript@6.0.3)

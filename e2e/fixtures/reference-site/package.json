@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@kawapress/e2e-reference-theme": "workspace:*",
+    "@kawapress/plugin-badge": "workspace:*",
     "@kawapress/plugin-code-block": "workspace:*",
     "@kawapress/plugin-code-group": "workspace:*",
     "@kawapress/plugin-comments": "workspace:*",

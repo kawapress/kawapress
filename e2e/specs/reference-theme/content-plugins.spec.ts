@@ -29,6 +29,12 @@ test('a GitHub alert keeps its structure and title', async ({ page }) => {
   await expect(alert).toContainText('keeps its own title')
 })
 
+test('a badge renders in a heading and in text, and stays out of the heading id', async ({ page }) => {
+  const heading = page.locator('.ref-doc h2#badges')
+  await expect(heading.locator('.kawa-badge--warning')).toHaveText('beta')
+  await expect(page.locator('.ref-doc p .kawa-badge--tip')).toHaveText('new')
+})
+
 test('a code block gets the plugin shell with a language label and a copy button', async ({ page }) => {
   const block = page.locator('.ref-doc .kawa-code-block').first()
   await expect(block.locator('.kawa-code-block__language')).toHaveText('Bash')
