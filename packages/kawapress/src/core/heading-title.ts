@@ -14,16 +14,20 @@ const FORMATTING_MARKUP_TYPES = new Set([
   's_close',
   'link_open',
   'link_close',
+  // Inline HTML is markup around text, like `<kbd>Ctrl</kbd>`, or a component
+  // such as `<Badge text="beta" />` that only decorates the heading.
+  'html_inline',
 ])
 
 /**
  * The plain-text title of a heading: the text its author wrote on the heading
- * line, without the Markdown formatting markup.
+ * line, without the Markdown formatting markup and without HTML tags.
  *
- * Formatting markup disappears while its text stays, inline code keeps its
- * content without the backticks, and anything that is not plain formatting
- * keeps the markup it was written with, so inline math stays `$E=mc^2$`,
- * inline HTML stays `<kbd>`, and an emoji shortcode stays `:smile:`. A token
+ * Formatting markup and HTML tags disappear while the text between them stays,
+ * so `<kbd>Ctrl</kbd>` reads `Ctrl` and `<Badge text="beta" />` reads nothing.
+ * Inline code keeps its content without the backticks, and any other syntax
+ * keeps the markup it was written with, so inline math stays `$E=mc^2$` and an
+ * emoji shortcode stays `:smile:`. A token
  * type this function has never seen keeps its `content` too, so a Markdown
  * plugin can never make heading text disappear, and the title of a page never
  * depends on which plugins a site installed.

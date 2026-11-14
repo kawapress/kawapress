@@ -19,6 +19,7 @@ const SOURCES = [
   '# Read the [guide *text*](/guide/start)\n',
   '# Custom id {#custom-id}\n',
   '# Press <kbd>Ctrl</kbd> now\n',
+  '# Setup <Badge type="tip" text="beta" />\n',
   '# Ship :rocket: today\n',
   '# ![Android](/android.svg) setup\n',
   'Markdown *Extensions*\n===\n',
@@ -56,5 +57,15 @@ describe('heading title parity', () => {
     expect(pageData.title).toBe('Speed $v$')
     expect(pageData.headers[0]?.children[0]?.title).toBe('Energy $E=mc^2$ here')
     expect(documents[1]?.title).toBe('Energy $E=mc^2$ here')
+  })
+
+  it('drops a component written after a heading from the outline and the search index', async () => {
+    const source = '# Plugins\n\n## Cache <Badge type="warning" text="beta" />\n\nBody text.\n'
+
+    const { pageData } = await parseMarkdown(compiler, source, '/guide/cache')
+    const documents = createSearchDocuments(source, '/guide/cache')
+
+    expect(pageData.headers[0]?.children[0]).toMatchObject({ title: 'Cache', slug: 'cache' })
+    expect(documents[1]).toMatchObject({ id: '/guide/cache#cache', title: 'Cache' })
   })
 })

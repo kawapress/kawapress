@@ -89,9 +89,13 @@ describe('resolveHeadingTitle', () => {
     expect(headingTitle(md, 'Install KawaPress\n===')).toBe('Install KawaPress')
   })
 
-  it('keeps inline HTML as written', () => {
+  it('drops inline HTML tags but keeps the text between them', () => {
     expect(headingTitle(md, '# Press <kbd>Ctrl</kbd> to continue'))
-      .toBe('Press <kbd>Ctrl</kbd> to continue')
+      .toBe('Press Ctrl to continue')
+    expect(headingTitle(md, '# Setup <Badge type="tip" text="beta" />'))
+      .toBe('Setup')
+    expect(headingTitle(md, '# <span class="new">New</span> API <Badge>v2</Badge>'))
+      .toBe('New API v2')
   })
 
   it('keeps the alt text of an image without its markup', () => {
