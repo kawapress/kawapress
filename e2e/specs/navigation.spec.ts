@@ -86,14 +86,14 @@ test('previous and next links follow the sidebar order', async ({ page }) => {
   )
   await expect(next).toHaveAttribute(
     'href',
-    sitePath('/guide/ai-ready-documentation'),
+    sitePath('/guide/migrate-from-vitepress'),
   )
 
   await next.click()
   await expect(page).toHaveURL(
-    `${previewOrigin}${sitePath('/guide/ai-ready-documentation')}`,
+    `${previewOrigin}${sitePath('/guide/migrate-from-vitepress')}`,
   )
-  await expect(page.locator('article h1')).toContainText('面向 AI 的文档')
+  await expect(page.locator('article h1')).toContainText('从 VitePress 迁移')
 
   await page.locator('.nagi-doc-navigation__link--previous').click()
   await expect(page).toHaveURL(`${previewOrigin}${sitePath(gettingStarted)}`)

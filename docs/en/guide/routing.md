@@ -81,6 +81,70 @@ docs/guide/getting-started.md → /guide/getting-started
 
 The value must be relative to the site root. Absolute `srcDir` paths are not supported.
 
+## Excluding Source Files {#excluding-source-files}
+
+Sometimes `srcDir` holds `.md` files that should not become standalone pages, such as shared fragments for `<!--@include-->`, work-in-progress notes, or package `README.md` files. List their glob patterns in `srcExclude` to keep them out of the page list:
+
+```ts
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  srcExclude: [
+    'snippets/**',
+    '**/README.md',
+    '**/TODO.md',
+  ],
+})
+```
+
+Patterns in `srcExclude` are relative to `srcDir` (and match dot-prefixed paths as well). Matched files get no route or HTML output and stay out of the search index and nagi's automatic sidebar, while still remaining readable by `<!--@include-->`, `<<<`, and Data Loaders.
+
+## Route Rewrites {#route-rewrites}
+
+In a monorepo or multi-package repository, documentation files may live inside package directories (such as `packages/pkg-a/src/intro.md`) while you want cleaner public URLs (such as `/pkg-a/intro`). `rewrites` maps source files to new page paths without moving files on disk.
+
+### Object Rules {#rewrite-rules}
+
+Each key is a source path pattern relative to `srcDir` (keeping the `.md` extension), and each value is the target page path. Patterns support `:param` parameters and `*` wildcards (`path-to-regexp` syntax, or a regular expression when the key starts with `^`). Rules are tried in order and the first match wins:
+
+```ts
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  rewrites: {
+    'packages/pkg-a/src/index.md': 'pkg-a/index.md',
+    'packages/:pkg/src/:page*': ':pkg/:page*',
+  },
+})
+```
+
+With the rules above, `packages/core/src/guide/start.md` is rewritten to `core/guide/start.md`, which serves at `/core/guide/start`.
+
+### Function Form {#rewrite-function}
+
+Pass a function when you need custom logic. It receives the source path relative to `srcDir` and returns the new path, or `undefined` to leave the page where it is:
+
+```ts
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  rewrites(id) {
+    if (id.startsWith('packages/')) {
+      return id.replace(/^packages\/([^/]+)\/src\//, '$1/')
+    }
+  },
+})
+```
+
+### Rewritten Page Identity {#rewritten-page-identity}
+
+Once a page is rewritten, its new path is its identity across the site:
+
+- **Routes and build output**: the router, prerendered HTML, local search, nagi's automatic sidebar, `llms.txt`, `sitemap.xml`, and `createContentLoader()` URLs all use the rewritten path.
+- **Relative links**: relative Markdown links inside the page (such as `[Next](./next.md)`) resolve from the **rewritten** page path, matching the public URL hierarchy.
+- **Dead-link reports and source tracking**: dead-link reports (and `sourcePath` in `pageData()`) still name the real file on disk so you know which file to open.
+- **Duplicate routes fail the build**: if two files end up on the same route after `rewrites`, the build fails and names both source files.
+
 ## Linking Between Pages {#linking-between-pages}
 
 Links to another KawaPress page may be extensionless or end in `.md` or `.html`. Both relative and site-root paths work:
@@ -234,4 +298,4 @@ When no Markdown file matches a path, the development server returns a `404` sta
 
 `dist/404.html` is rendered once, for the `/404` route, while static hosts answer every unknown path with it. So that the first render matches the served HTML, the client hydrates `/404` first and only then switches the router to the path in the address bar, which never changes. Output that depends on the current route, such as language links and the not-found texts, therefore updates to the real path once hydration is done.
 
-KawaPress 0.1 routes come from Markdown files. Route rewrites, dynamic routes, and plugin-provided virtual pages are not included. Add a Markdown file whenever the site needs another page.
+KawaPress routes come from Markdown files (with optional `rewrites` to change their public paths). Parameterized dynamic routes and plugin-provided virtual pages are not included. Add a Markdown file whenever the site needs another page.

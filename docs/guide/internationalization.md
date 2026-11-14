@@ -204,6 +204,99 @@ export default nagi({
 
 当前页面没有命中任何前缀时，nagi 会改用根据目录自动生成的侧边栏。首页的 `layout` 是 `home`，本来就不显示侧边栏。
 
+### 折叠侧边栏分组 {#collapsible-sidebar-groups}
+
+侧边栏分组越来越多时，可以用 `collapsed` 让分组支持展开和收起：
+
+- 不写 `collapsed`：分组始终展开，不显示折叠按钮；
+- `collapsed: false`：默认展开，读者可以点击收起；
+- `collapsed: true`：默认收起，读者可以点击展开。
+
+```ts
+export default nagi({
+  themeConfig: {
+    sidebar: [
+      {
+        text: '指南',
+        collapsed: false,
+        items: [
+          { text: '快速开始', link: '/guide/getting-started' },
+        ],
+      },
+      {
+        text: '进阶',
+        collapsed: true,
+        items: [
+          { text: 'SSR 兼容性', link: '/guide/ssr-compatibility' },
+        ],
+      },
+    ],
+  },
+})
+```
+
+如果使用目录自动生成的侧边栏，可以在目录旁的 `_meta.json` 里为 `"type": "dir"` 的目录条目加上同样的 `collapsed` 字段（写在 `"file"` 条目上或值不是布尔值时构建会报错）：
+
+```json
+[
+  "getting-started",
+  {
+    "type": "dir",
+    "name": "advanced",
+    "label": "进阶",
+    "collapsed": true
+  }
+]
+```
+
+包含当前正在阅读页面的分组无论配置如何都会自动展开（首屏服务端渲染时就是展开状态，从别的页面跳进来时也会自动展开）。被收起的子列表依然输出在 HTML 中，搜索引擎和爬虫仍然能读取里面的链接。
+
+### 社交图标链接 {#social-links}
+
+在顶栏右侧放置代码仓库或社区入口时，使用 `themeConfig.socialLinks`：
+
+```ts
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  themeConfig: {
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/kawapress/kawapress' },
+      { icon: 'discord', link: 'https://discord.gg/your-invite', ariaLabel: '加入 Discord 社区' },
+      {
+        icon: { svg: '<svg viewBox="0 0 24 24" aria-hidden="true">...</svg>' },
+        link: 'https://example.com',
+        ariaLabel: '官方网站',
+      },
+    ],
+  },
+})
+```
+
+- `icon` 可以直接写 [Simple Icons](https://simpleicons.org) 的图标名（如 `'github'`、`'discord'`、`'x'`），也可以传 `{ svg: '<svg>…</svg>' }` 自定义 SVG。图标名在构建时解析成 SVG，只有实际用到的图标会进入浏览器；名称不存在时构建会直接报错。
+- `ariaLabel` 是链接的无障碍名称；省略且使用内置图标名时，默认使用该图标名。
+- 每个语言可以在自己的 `locales.<key>.themeConfig.socialLinks` 中单独配置社交链接。
+
+### 关闭默认本地搜索 {#disable-local-search}
+
+nagi 默认启用本地全文搜索（`@kawapress/plugin-search`）。如果站点改用 [Algolia 搜索](/plugins/algolia-search)等其他搜索方案，可以在 `nagi()` 顶层传入 `search: false` 去掉内置的本地搜索：
+
+```ts
+import algoliaSearchPlugin from '@kawapress/plugin-algolia-search'
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  search: false,
+  plugins: [
+    algoliaSearchPlugin({
+      appId: 'YOUR_APP_ID',
+      apiKey: 'YOUR_SEARCH_API_KEY',
+      indexName: 'your_index_name',
+    }),
+  ],
+})
+```
+
 ### 每种语言各写各的 {#per-locale-navigation}
 
 `nav` 和 `sidebar` 都是主题配置，所以每种语言可以覆盖它们。把链接指向各自语言下的页面即可：

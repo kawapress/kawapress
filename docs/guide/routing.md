@@ -81,6 +81,70 @@ docs/guide/getting-started.md → /guide/getting-started
 
 `srcDir` 必须是相对于站点根目录的路径，不能使用绝对路径。
 
+## 排除非页面文件 {#excluding-source-files}
+
+有时 `srcDir` 里会放一些不打算作为独立页面发布的 `.md` 文件，比如供 `<!--@include-->` 复用的公共片段、写作草稿或子包的 `README.md`。用 `srcExclude` 把它们排除在页面列表之外：
+
+```ts
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  srcExclude: [
+    'snippets/**',
+    '**/README.md',
+    '**/TODO.md',
+  ],
+})
+```
+
+`srcExclude` 是相对于 `srcDir` 的 glob 模式列表（支持匹配以 `.` 开头的隐藏文件或目录）。命中的文件不会生成路由和 HTML，也不会进入站内搜索和 nagi 的自动侧边栏，但依然可以被 `<!--@include-->`、`<<<` 或 Data Loader 正常读取。
+
+## 路由重写 {#route-rewrites}
+
+在 monorepo 等目录结构里，文档可能分散在各个子包内部（如 `packages/pkg-a/src/intro.md`），但你希望访客看到简洁的公开地址（如 `/pkg-a/intro`）。`rewrites` 可以在不移动磁盘文件的情况下改写页面的路径。
+
+### 规则对象 {#rewrite-rules}
+
+对象的键是相对于 `srcDir`、带 `.md` 后缀的源文件路径模式，值是改写后的页面路径。模式支持 `:param` 参数和 `*` 通配符（`path-to-regexp` 语法，以 `^` 开头时按正则表达式匹配），按书写顺序依次匹配，第一条命中的规则生效：
+
+```ts
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  rewrites: {
+    'packages/pkg-a/src/index.md': 'pkg-a/index.md',
+    'packages/:pkg/src/:page*': ':pkg/:page*',
+  },
+})
+```
+
+上面的规则会把 `packages/core/src/guide/start.md` 改写为 `core/guide/start.md`，对应的公开路由就是 `/core/guide/start`。
+
+### 函数形式 {#rewrite-function}
+
+需要更灵活的判断时，可以传入一个函数。函数接收相对于 `srcDir` 的源文件路径，返回新路径；返回 `undefined` 则保持原位：
+
+```ts
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  rewrites(id) {
+    if (id.startsWith('packages/')) {
+      return id.replace(/^packages\/([^/]+)\/src\//, '$1/')
+    }
+  },
+})
+```
+
+### 重写后的页面身份 {#rewritten-page-identity}
+
+一旦页面路径被 `rewrites` 改写，新路径就成为该页面在站点中的唯一身份：
+
+- **公开路由与构建产物**：路由、HTML 输出、站内搜索、nagi 自动侧边栏、`llms.txt`、`sitemap.xml` 以及 `createContentLoader()` 的 `url` 都使用改写后的路径。
+- **相对链接解析**：页面内部的相对链接（如 `[下一篇](./next.md)`）从**改写后的页面位置**开始解析，这样写链接时只需按最终的 URL 目录结构思考。
+- **死链报告与源文件定位**：死链检查的报错信息（以及插件 `pageData()` 的 `sourcePath`）仍然显示磁盘上的真实源文件路径，方便你直接打开对应文件修改。
+- **重复路由报错**：如果两个不同的源文件在改写后落到同一个路由，构建会直接报错并列出冲突的两个文件。
+
 ## 在页面之间建立链接 {#linking-between-pages}
 
 链接到另一个 KawaPress 页面时，可以使用无后缀、`.md` 或 `.html`。也可以选择相对路径，或从站点根路径开始写：
@@ -234,4 +298,4 @@ export default nagi({
 
 `dist/404.html` 只在构建时为 `/404` 这一个路由渲染一次，静态托管却会用它回应任意未知路径。为了不让首屏与服务器 HTML 不一致，客户端先按 `/404` 完成 hydration，再把路由切换到地址栏里的真实路径；地址栏始终不变。因此依赖当前路由的输出（例如语言切换链接、未找到页面的文案）会在 hydration 完成后更新为真实路径对应的值。
 
-KawaPress 0.1 的路由由 Markdown 文件决定，暂不提供路由重写、动态路由或插件虚拟页面。需要新页面时，直接添加新的 Markdown 文件即可。
+KawaPress 的路由由 Markdown 文件决定（可通过 `rewrites` 改写公开路径），暂不提供参数化动态路由或插件虚拟页面。需要新页面时，直接添加新的 Markdown 文件即可。

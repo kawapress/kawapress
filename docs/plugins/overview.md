@@ -21,7 +21,10 @@ KawaPress 的功能分成很多个小插件，每个插件只做一件事。你�
 | `@kawapress/plugin-code-group` | 把几个代码块合成带标签页的一组，常用来并排展示 npm、pnpm、Yarn 的命令。 |
 | `@kawapress/plugin-container` | 提示容器：`info`、`tip`、`warning`、`danger` 和可折叠的 `details`。 |
 | `@kawapress/plugin-github-alerts` | GitHub 风格的提示块，写法是 `> [!NOTE]`。 |
-| `@kawapress/plugin-search` | 本地全文搜索，首次打开搜索时才加载索引，不占首屏。 |
+| `@kawapress/plugin-badge` | 行内徽标组件 `<Badge>`，用于在标题或正文中标记状态和版本。详见 [Markdown 语法扩展](/guide/markdown-extensions#badges)。 |
+| `@kawapress/plugin-toc` | 把单独一行的 `[[toc]]` 渲染成当前页面的章节目录。详见 [Markdown 语法扩展](/guide/markdown-extensions#table-of-contents)。 |
+| `@kawapress/plugin-emoji` | 支持 `:tada:` 等 GitHub 风格的 Emoji 短代码。详见 [Markdown 语法扩展](/guide/markdown-extensions#emoji)。 |
+| `@kawapress/plugin-search` | 本地全文搜索，首次打开搜索时才加载索引，不占首屏（可在 `nagi()` 中写 `search: false` 关闭）。 |
 | `@kawapress/plugin-llms` | 为每个页面生成 `.md`，并输出 `llms.txt` 和 `llms-full.txt`，同时提供标题下的「复制页面」按钮。详见[面向 AI 的文档](/guide/ai-ready-documentation)。 |
 | `@kawapress/plugin-unocss` | 接入 UnoCSS，可以在 Markdown 里直接写工具类。 |
 | `@kawapress/plugin-sitemap` | 生成 `sitemap.xml`，默认关闭，设置站点地址后才启用。详见[站点地图](/plugins/sitemap)。 |
@@ -34,6 +37,7 @@ KawaPress 的功能分成很多个小插件，每个插件只做一件事。你�
 | [`@kawapress/plugin-image-zoom`](/plugins/image-zoom) | 点击正文图片放大查看。 |
 | [`@kawapress/plugin-last-updated`](/plugins/last-updated) | 在页面底部显示「最后更新于」和「编辑此页」。 |
 | [`@kawapress/plugin-comments`](/plugins/comments) | 用 GitHub Discussions 给每篇文档开一个评论区。 |
+| [`@kawapress/plugin-algolia-search`](/plugins/algolia-search) | 接入 Algolia DocSearch 云端搜索，支持按需加载与多语言 `lang:` 过滤。 |
 | `@kawapress/plugin-mathjax` | 在构建时把 `$…$` 和 `$$…$$` 渲染成数学公式。用法见 [Markdown 语法扩展](/guide/markdown-extensions)。 |
 
 ## 怎么安装 {#how-to-install}

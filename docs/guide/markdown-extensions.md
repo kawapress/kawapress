@@ -48,6 +48,8 @@ KawaPress 在标准 Markdown 之上提供了一些适合技术文档的语法扩
 
 页面上不会显示 `{#installation}`。本页目录和搜索结果也会使用这个 ID。**自定义 ID 在同一页中必须保持唯一。** 建议使用小写英文单词、数字和连字符，例如 `getting-started`。
 
+标题中如果带有 `<Badge text="beta" />` 等行内 HTML 或组件，它们只会在正文标题处渲染，不会进入页面标题、右侧大纲、`[[toc]]` 和搜索结果，也不会改变自动生成的锚点（像 `<kbd>Ctrl</kbd>` 这样包住文字的标签会去掉标签、保留里面的 `Ctrl`）。
+
 ## 链接 {#links}
 
 KawaPress 会区分站内页面链接、页面内锚点和外部链接，并为它们保留各自合适的浏览器行为。
@@ -106,6 +108,65 @@ KawaPress 会区分站内页面链接、页面内锚点和外部链接，并为�
 | 预览服务器 | 本地 | 4173 |
 
 表格过宽时，nagi 会让表格区域横向滚动，不会撑破正文布局。
+
+## 页内目录 {#table-of-contents}
+
+当你想在文章正文中直接放一份章节目录时，单独写一行 `[[toc]]`（不区分大小写）：
+
+```md
+[[toc]]
+```
+
+nagi 默认内置 `@kawapress/plugin-toc`，会把这一行替换成 `<nav class="kawa-toc">` 包裹的嵌套列表。它只收录页面顶层的标题（提示容器和引用块里的标题不会进入），链接指向标题最终的锚点 ID，标题文字与右侧大纲和搜索索引保持一致。
+
+默认收录二级和三级标题（`h2` 与 `h3`）。需要调整收录级别时，可以在 `kawapress.config.ts` 的 `plugins` 中传入 `tocPlugin()` 覆盖默认配置：
+
+```ts
+import tocPlugin from '@kawapress/plugin-toc'
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  plugins: [
+    tocPlugin({
+      level: [2, 3, 4],
+    }),
+  ],
+})
+```
+
+## 徽标 {#badges}
+
+需要给标题或功能名称标上简短的状态标签（如版本号、实验性标记）时，可以直接在 Markdown 中使用 `<Badge>` 组件。nagi 已默认内置 `@kawapress/plugin-badge`。
+
+```md
+- 默认提示 <Badge text="推荐" />
+- 信息说明 <Badge type="info" text="v0.3" />
+- 注意事项 <Badge type="warning" text="实验性" />
+- 废弃警告 <Badge type="danger">已移除</Badge>
+```
+
+实际效果如下：
+
+- 默认提示 <Badge text="推荐" />
+- 信息说明 <Badge type="info" text="v0.3" />
+- 注意事项 <Badge type="warning" text="实验性" />
+- 废弃警告 <Badge type="danger">已移除</Badge>
+
+`type` 支持 `'tip'`（默认）、`'info'`、`'warning'` 和 `'danger'`，文字可以通过 `text` 属性或默认插槽传入。写在标题行里的 `<Badge text="beta" />` 不会进入大纲、搜索标题和浏览器标签页标题，也不会影响标题锚点。
+
+## Emoji 表情 {#emoji}
+
+nagi 默认内置 `@kawapress/plugin-emoji`，支持用 `:名称:` 短代码写出 Emoji：
+
+```md
+发布完成 :tada: 欢迎体验 :rocket:
+```
+
+实际效果如下：
+
+发布完成 :tada: 欢迎体验 :rocket:
+
+短代码名称与 GitHub 一致。未知名称、行内代码和代码围栏里的短代码保持原样；`:)` 这类字符表情不会自动转换，避免把技术文档里的标点误改成表情。标题里的短代码在右侧大纲和搜索索引中会保留源码形式，标题锚点也不会因此改变。
 
 ## 自定义容器 {#custom-containers}
 
@@ -321,6 +382,74 @@ const price = toCurrency(19.9)
 ```
 
 只有带 `twoslash` 的代码块会被分析，其余代码块照常高亮。分析和浮层样式都只在用得上它们的页面出现：没有 Twoslash 代码块的页面不会为此多下载任何东西。
+
+### 导入代码片段 {#import-code-snippets}
+
+不想把长代码直接贴进 Markdown 时，可以用 `<<<` 从真实源码文件导入代码片段。这样示例可以和项目代码放在一起维护，修改源码后文档会自动同步。
+
+单独写一行 `<<<` 加文件路径：
+
+```md
+<<< ./snippets/example.ts
+```
+
+路径相对于当前 Markdown 文件；以 `@/` 开头时相对于站点 `srcDir`：
+
+```md
+<<< @/snippets/example.ts
+```
+
+可以在源文件里用 `#region` 和 `#endregion` 注释圈出要展示的片段，导入时会自动去掉标记行和多余缩进：
+
+```ts
+// snippets/example.ts
+export function setup() {
+  // #region config
+  const port = 5173
+  const host = 'localhost'
+  // #endregion config
+  return { port, host }
+}
+```
+
+然后在路径后加上 `#片段名`，还可以接着在花括号里指定高亮行、语言和 `:line-numbers` 等围栏属性，在方括号里指定代码组的标签名（不写时默认使用文件名）：
+
+````md
+::: code-group
+<<< ./snippets/example.ts#config{1 ts:line-numbers} [开发配置]
+<<< ./snippets/prod.ts [生产配置]
+:::
+````
+
+## 引入 Markdown 文件 {#markdown-file-inclusion}
+
+多篇文档需要共用同一段说明或参数表格时，可以用 `<!--@include-->` 把另一个 Markdown 文件的内容直接展开到当前位置：
+
+```md
+<!--@include: ./parts/prerequisites.md-->
+
+<!-- 以 @/ 开头时相对于 srcDir -->
+<!--@include: @/parts/shared-note.md-->
+```
+
+被完整引入的 `.md` 文件会自动去掉它自己的 Frontmatter。如果整行只有这一条指令且带有缩进（例如放在列表项下面），引入的每一行都会保留相同的缩进。被引入的文件里还可以继续引入其他文件；一旦出现循环引入，构建会报错并指出完整的文件链路和行号。
+
+只想引入文件的一部分时，可以配合 `#region` 区域或 `{起始行,结束行}` 行号范围（起始行或结束行可以省略其一）：
+
+```md
+<!-- 只引入 <!-- #region intro --> 到 <!-- #endregion intro --> 之间的内容 -->
+<!--@include: ./parts/guide.md#intro-->
+
+<!-- 只引入第 3 行到第 10 行 -->
+<!--@include: ./parts/guide.md{3,10}-->
+
+<!-- 从第 5 行引入到文件末尾 -->
+<!--@include: ./parts/guide.md{5,}-->
+```
+
+`<!--@include-->` 和 `<<<` 在 Markdown 编译最开始就会展开，因此页面渲染、本页目录、站内搜索、`llms.txt` 和死链检查看到的都是展开后的完整内容；如果被引入片段里的链接失效，死链报告会指向当前页面写下这条指令的那一行。
+
+如果这些被引入的片段文件也放在 `srcDir` 里，请用 [`srcExclude`](./routing#excluding-source-files) 把它们排除，避免它们被当成独立页面生成路由。
 
 ## 数学公式 {#math-equations}
 

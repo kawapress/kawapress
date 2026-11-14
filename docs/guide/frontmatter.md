@@ -73,7 +73,7 @@ titleTemplate: '%s · KawaPress 指南'
 
 上面的浏览器标签标题是“配置站点 · KawaPress 指南”。页面标题也会用于站内搜索。
 
-`title` 没写时，页面标题取第一个一级标题的文字，并去掉 Markdown 格式：`**加粗**`、`[链接](/guide)` 只留下文字，行内代码去掉反引号；公式和行内 HTML 这类写法不是格式，会按你写的原样保留。所以标题 `# Energy $E=mc^2$` 的页面标题是 `Energy $E=mc^2$`。
+`title` 没写时，页面标题取第一个一级标题的文字，并去掉 Markdown 格式和行内 HTML 标签：`**加粗**`、`[链接](/guide)` 和 `<kbd>Ctrl</kbd>` 只留下里面的文字，`<Badge text="beta" />` 不留文字，行内代码去掉反引号；公式和表情短代码会按源码原样保留。所以标题 `# Energy $E=mc^2$ <Badge text="beta" />` 的页面标题是 `Energy $E=mc^2$`。
 
 ## 页面 head {#page-head}
 

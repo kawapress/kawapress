@@ -31,7 +31,7 @@ Each outlet wraps a piece of content the theme draws. The theme puts that conten
 | :--- | :--- | :--- | :--- |
 | `layout.header` | The whole top bar | Theme | Prepend: announcement banner |
 | `layout.header.start` | Logo and site title | Theme | Append: version picker |
-| `layout.header.end` | Language menu, appearance switch, GitHub link | Theme | Prepend: search trigger |
+| `layout.header.end` | Language menu, appearance switch, social links | Theme | Prepend: search trigger |
 | `layout.sidebar` | Navigation tree | Theme | Prepend: site switcher, append: sponsor link |
 | `layout.footer` | Copyright text | Theme | Append: legal notice |
 | `doc` | Document body and prev/next links | Theme | Append: last updated, comments |
@@ -211,7 +211,10 @@ Themes can extend the `ThemeConfig` interface to provide full autocompletion and
 declare module 'kawapress' {
   interface ThemeConfig {
     logo?: string
-    githubUrl?: string
+    socialLinks?: Array<{
+      icon: string
+      link: string
+    }>
     sidebar?: Array<{
       text: string
       link: string

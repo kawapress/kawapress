@@ -31,7 +31,7 @@ Outlet 的名字由「范围 + 位置」组成，不写里面放什么：
 | :--- | :--- | :--- | :--- |
 | `layout.header` | 整条顶栏 | 主题 | 前置：公告横幅 |
 | `layout.header.start` | Logo 与站点名 | 主题 | 后置：版本选择器 |
-| `layout.header.end` | 语言菜单、外观切换、GitHub 链接 | 主题 | 前置：搜索按钮 |
+| `layout.header.end` | 语言菜单、外观切换、社交链接 | 主题 | 前置：搜索按钮 |
 | `layout.sidebar` | 导航树 | 主题 | 前置：站点切换，后置：赞助入口 |
 | `layout.footer` | 版权文字 | 主题 | 后置：备案号 |
 | `doc` | 正文与上下篇导航 | 主题 | 后置：最后更新时间、评论区 |
@@ -216,7 +216,10 @@ KawaPress 不主动解释 `themeConfig` 的字段。主题可以把自己的配�
 declare module 'kawapress' {
   interface ThemeConfig {
     logo?: string
-    githubUrl?: string
+    socialLinks?: Array<{
+      icon: string
+      link: string
+    }>
     sidebar?: Array<{
       text: string
       link: string

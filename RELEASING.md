@@ -1,10 +1,10 @@
 # 发布 KawaPress
 
-KawaPress 有 17 个公开包，每个包有自己的版本号，各发各的。一次发布由 `scripts/release.mjs` 把全部包打包、校验，然后只发布「npm 上还没有这个版本」的包，其余的原样跳过，按依赖顺序发布。所以要发哪个包，只需要提高它自己的版本号。
+KawaPress 有 21 个公开包，每个包有自己的版本号，各发各的。一次发布由 `scripts/release.mjs` 把全部包打包、校验，然后只发布「npm 上还没有这个版本」的包，其余的原样跳过，按依赖顺序发布。所以要发哪个包，只需要提高它自己的版本号。
 
 真正的发布在 GitHub Actions 里跑，走 npm 的 trusted publishing（OIDC）：工作流不需要、也不应该保存任何 npm token，npm 从 GitHub 的短期身份令牌里认出「这是 `kawapress/kawapress` 的 `release.yml`，跑在 `npm` 环境里」，然后才允许发布，并自动带上 provenance（来源证明）。推送 `v*` tag 之后全程自动，不需要人工介入。
 
-发布成功后，同一个工作流还会把 15 个带 `@kawapress/` 前缀的包镜像到 GitHub Packages（`npm.pkg.github.com`），这样仓库页面右侧的 Packages 列表里能看到它们。认证用工作流自带的 `GITHUB_TOKEN`（job 权限 `packages: write`），不需要额外配置任何 token。GitHub 要求包的 scope 和仓库所有者同名，所以不带 scope 的 `kawapress` 和 `create-kawapress` 不会出现在那里。镜像只用来展示，用户仍然从 npmjs.com 安装；已经存在的版本会被跳过，重跑是安全的。
+发布成功后，同一个工作流还会把 19 个带 `@kawapress/` 前缀的包镜像到 GitHub Packages（`npm.pkg.github.com`），这样仓库页面右侧的 Packages 列表里能看到它们。认证用工作流自带的 `GITHUB_TOKEN`（job 权限 `packages: write`），不需要额外配置任何 token。GitHub 要求包的 scope 和仓库所有者同名，所以不带 scope 的 `kawapress` 和 `create-kawapress` 不会出现在那里。镜像只用来展示，用户仍然从 npmjs.com 安装；已经存在的版本会被跳过，重跑是安全的。
 
 下面分成两部分：**只做一次的准备**，和**每次发版的固定动作**。
 
@@ -81,10 +81,10 @@ npm 要求这类账号级操作必须做两步验证，这一步脚本无法代�
 
 ### 5. 第一次 CI 发布成功之后，关掉 token 发布
 
-把 17 个包的发布权限都改成「必须两步验证，不接受绕过两步验证的 token」（网页上的 Require two-factor authentication and disallow bypass 2fa tokens）：
+把 21 个包的发布权限都改成「必须两步验证，不接受绕过两步验证的 token」（网页上的 Require two-factor authentication and disallow bypass 2fa tokens）：
 
 ```sh
-pnpm release:lock            # 先打印 17 条命令，不改任何东西
+pnpm release:lock            # 先打印 21 条命令，不改任何东西
 pnpm release:lock --apply    # 真正修改；第一次会在浏览器里做两步验证
 ```
 
@@ -133,7 +133,7 @@ gh release create v2026-05-30-mermaid --title "0.2.1" --notes-file <正文文件
 
 `release.yml` 里有两个 job：
 
-- `verify`：跑 lint / typecheck / test / 构建文档，再打 17 个 tarball 并逐个校验（README、不含测试文件、`workspace:`/`catalog:` 都换成了真实范围、导出目标存在），然后 `npm publish --dry-run` 一遍。它没有任何发布权限，也不需要 token。
+- `verify`：跑 lint / typecheck / test / 构建文档，再打 21 个 tarball 并逐个校验（README、不含测试文件、`workspace:`/`catalog:` 都换成了真实范围、导出目标存在），然后 `npm publish --dry-run` 一遍。它没有任何发布权限，也不需要 token。
 - `publish`：`verify` 通过后自动启动，跑在 `npm` 环境里，同一个 tag、同一套校验，真实发布。
 
 ### 版本号已经在 npm 上时
