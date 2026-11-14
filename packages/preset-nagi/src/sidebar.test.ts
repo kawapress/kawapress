@@ -4,6 +4,7 @@ import {
   createSidebar,
   defineLocalizedSidebars,
   findSidebarNavigation,
+  hasActiveSidebarLink,
   isSidebarLinkActive,
   resolveConfiguredSidebar,
 } from './sidebar'
@@ -119,6 +120,31 @@ describe('nagi sidebar metadata', () => {
     expect(resolveConfiguredSidebar({
       '/guide/': [],
     }, '/reference/api')).toBeUndefined()
+  })
+
+  it('keeps the collapsed flag through locales, section bases and _meta.json', () => {
+    const [localized] = defineLocalizedSidebars({
+      locales: { en: '/en' },
+      items: [{ text: 'Guide', collapsed: true, items: [{ text: 'Start', link: '/start' }] }],
+    }).en
+    expect(localized).toEqual({ text: 'Guide', collapsed: true, items: [{ text: 'Start', link: '/en/start' }] })
+
+    expect(resolveConfiguredSidebar({
+      '/guide/': { base: '/guide/', items: [{ text: 'Guide', collapsed: false, items: [{ text: 'Start', link: 'start' }] }] },
+    }, '/guide/start')).toEqual([{ text: 'Guide', collapsed: false, items: [{ text: 'Start', link: '/guide/start' }] }])
+
+    expect(createSidebar({ '/guide/start': page('Start') }, {
+      meta: { '/': [{ type: 'dir', name: 'guide', collapsed: true }] },
+    })).toEqual([{ text: 'Guide', collapsed: true, items: [{ text: 'Start', link: '/guide/start' }] }])
+  })
+
+  it('finds the current page anywhere below a group', () => {
+    const group = {
+      text: 'Guide',
+      items: [{ text: 'Deep', items: [{ text: 'Routing', link: '/guide/routing' }] }],
+    }
+    expect(hasActiveSidebarLink(group, '/guide/routing/')).toBe(true)
+    expect(hasActiveSidebarLink(group, '/guide/markdown')).toBe(false)
   })
 
   it('matches the active link by route path only', () => {

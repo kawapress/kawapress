@@ -99,6 +99,71 @@ describe('sidebar item links', () => {
   })
 })
 
+describe('collapsible sidebar groups', () => {
+  it('always shows a group that sets no collapsed flag, without a toggle', () => {
+    mount({ text: 'Guide', items: [{ text: 'Start', link: '/start' }] }, '/other')
+
+    expect(document.querySelector('.nagi-sidebar-item__toggle')).toBeNull()
+    expect(items().style.display).toBe('')
+  })
+
+  it('starts closed with collapsed: true and folds from the title', async () => {
+    mount({ text: 'Guide', collapsed: true, items: [{ text: 'Start', link: '/start' }] }, '/other')
+
+    const toggle = document.querySelector<HTMLButtonElement>('.nagi-sidebar-item__toggle')!
+    expect(toggle.textContent).toContain('Guide')
+    expect(toggle.getAttribute('aria-expanded')).toBe('false')
+    expect(toggle.getAttribute('aria-controls')).toBe(items().id)
+    // Closed links stay in the HTML.
+    expect(items().style.display).toBe('none')
+    expect(items().querySelector('a')!.getAttribute('href')).toBe('/start')
+
+    toggle.click()
+    await nextTick()
+    expect(toggle.getAttribute('aria-expanded')).toBe('true')
+    expect(items().style.display).toBe('')
+
+    toggle.click()
+    await nextTick()
+    expect(items().style.display).toBe('none')
+  })
+
+  it('starts open with collapsed: false', () => {
+    mount({ text: 'Guide', collapsed: false, items: [{ text: 'Start', link: '/start' }] }, '/other')
+
+    expect(document.querySelector('.nagi-sidebar-item__toggle')!.getAttribute('aria-expanded')).toBe('true')
+    expect(items().style.display).toBe('')
+  })
+
+  it('opens a closed group that holds the current page', () => {
+    mount({ text: 'Guide', collapsed: true, items: [{ text: 'Start', link: '/start' }] }, '/start')
+
+    expect(items().style.display).toBe('')
+  })
+
+  it('keeps the link of a linked group and folds from the caret', async () => {
+    const navigations = mount({
+      text: 'Guide',
+      link: '/guide/',
+      collapsed: true,
+      items: [{ text: 'Start', link: '/guide/start' }],
+    }, '/other')
+
+    const toggle = document.querySelector<HTMLButtonElement>('.nagi-sidebar-item__toggle')!
+    expect(toggle.getAttribute('aria-label')).toBe('Guide')
+    expect(document.querySelector('.nagi-sidebar-item__link')!.getAttribute('href')).toBe('/guide/')
+
+    toggle.click()
+    await nextTick()
+    expect(items().style.display).toBe('')
+    expect(navigations).toHaveLength(0)
+  })
+})
+
+function items(): HTMLUListElement {
+  return document.querySelector<HTMLUListElement>('.nagi-sidebar-item__items')!
+}
+
 function mount(value: NagiSidebarItem, activePath: string): number[] {
   const navigations: number[] = []
   app = createApp({
