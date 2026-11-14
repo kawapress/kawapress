@@ -1,5 +1,6 @@
 import process from 'node:process'
 import referenceTheme from '@kawapress/e2e-reference-theme'
+import algoliaSearchPlugin from '@kawapress/plugin-algolia-search'
 import badgePlugin from '@kawapress/plugin-badge'
 import codeBlockPlugin from '@kawapress/plugin-code-block'
 import codeGroupPlugin from '@kawapress/plugin-code-group'
@@ -62,5 +63,13 @@ export default defineConfig({
       },
     }),
     imageZoomPlugin(),
+    algoliaSearchPlugin({
+      // Placeholders: the specs intercept Algolia and never reach it. The local
+      // search above owns the keyboard shortcuts on this site.
+      appId: 'FIXTUREAPP',
+      apiKey: 'fixture-search-key',
+      indexName: 'reference',
+      keyboardShortcuts: { 'Ctrl/Cmd+K': false, '/': false },
+    }),
   ],
 })

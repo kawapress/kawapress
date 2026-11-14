@@ -39,6 +39,8 @@ catalogs:
     vitest: ^4.1.11
     vue-tsc: ^3.3.11
   frontend:
+    '@docsearch/css': ^5.2.0
+    '@docsearch/js': ^5.2.0
     '@unhead/vue': ^3.3.2
     '@vue/server-renderer': ^3.5.41
     floating-vue: ^5.2.2

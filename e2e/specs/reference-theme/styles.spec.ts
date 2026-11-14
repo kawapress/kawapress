@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test'
+import { stubAlgolia } from '../../support/algolia'
 import { expect, test } from '../../support/fixtures'
 import { stubGiscus } from '../../support/giscus'
 import { sitePath } from '../../support/site'
@@ -49,6 +50,18 @@ test('a badge takes its accent from the public tokens', async ({ page }) => {
   await expect(badge).toHaveCSS('border-top-width', '1px')
   const color = await readStyle(page, '.ref-doc .kawa-badge--warning', 'color')
   expect(color).toBe(await resolveToken(page, '--kawa-c-warning'))
+})
+
+test('the DocSearch modal takes its colors from the public tokens', async ({ page }) => {
+  await stubAlgolia(page, [])
+  await page.locator('.ref-header .kawa-algolia-search').click()
+  // The search icon takes the accent color while the input has focus.
+  await expect(page.locator('.DocSearch-Input')).toBeFocused()
+
+  // DocSearch ships a blue accent; the theme's brand override has to replace it.
+  await expect(page.locator('.DocSearch-MagnifierLabel svg')).toHaveCSS('color', 'rgb(179, 0, 92)')
+  const text = await readStyle(page, '.DocSearch-Input', 'color')
+  expect(text).toBe(await resolveToken(page, '--kawa-c-text-1'))
 })
 
 test('the brand override of the theme reaches a plugin element', async ({ page }) => {

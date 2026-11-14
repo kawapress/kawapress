@@ -1,0 +1,143 @@
+@layer kawa.plugin {
+  /*
+   * DocSearch reads its colors from --docsearch-* variables that it declares on
+   * :root. Declaring them on its own elements wins regardless of load order,
+   * and the shared tokens already follow the light and dark appearance.
+   */
+  .DocSearch {
+    --docsearch-font-family: var(--kawa-font-sans);
+    --docsearch-primary-color: var(--kawa-c-brand);
+    --docsearch-primary-dark-color: var(--kawa-c-brand);
+    --docsearch-highlight-color: var(--kawa-c-brand);
+    --docsearch-focus-color: var(--kawa-c-brand);
+    --docsearch-soft-primary-color: color-mix(in oklab, var(--kawa-c-brand) 14%, transparent);
+    --docsearch-text-color: var(--kawa-c-text-1);
+    --docsearch-secondary-text-color: var(--kawa-c-text-2);
+    --docsearch-muted-color: var(--kawa-c-text-3);
+    --docsearch-muted-color-darker: color-mix(in oklab, var(--kawa-c-text-3) 25%, transparent);
+    --docsearch-icon-color: var(--kawa-c-text-2);
+    --docsearch-logo-color: var(--kawa-c-text-2);
+    --docsearch-subtle-color: var(--kawa-c-divider);
+    --docsearch-error-color: var(--kawa-c-danger);
+    --docsearch-background-color: var(--kawa-c-bg-soft);
+    --docsearch-container-background: oklch(0.12 0.01 286 / 58%);
+    --docsearch-modal-background: var(--kawa-c-bg-elv);
+    --docsearch-modal-shadow: var(--kawa-shadow-overlay);
+    --docsearch-searchbox-background: var(--kawa-c-bg-soft);
+    --docsearch-searchbox-focus-background: var(--kawa-c-bg-soft);
+    --docsearch-hit-color: var(--kawa-c-text-1);
+    --docsearch-hit-background: var(--kawa-c-bg);
+    --docsearch-hit-focus-background: color-mix(in oklab, var(--kawa-c-brand) 12%, var(--kawa-c-bg));
+    --docsearch-hit-highlight-color: color-mix(in oklab, var(--kawa-c-brand) 18%, transparent);
+    --docsearch-hit-shadow: none;
+    --docsearch-key-background: var(--kawa-c-bg-soft);
+    --docsearch-key-color: var(--kawa-c-text-2);
+    --docsearch-key-pressed-shadow: none;
+    --docsearch-footer-background: var(--kawa-c-bg-elv);
+    --docsearch-footer-shadow: 0 -1px 0 0 var(--kawa-c-divider);
+    --docsearch-dropdown-menu-background: var(--kawa-c-bg-elv);
+    --docsearch-dropdown-menu-item-hover-background: var(--kawa-c-bg-soft);
+    --docsearch-popover-background: var(--kawa-c-bg-elv);
+    --docsearch-chip-background: color-mix(in oklab, var(--kawa-c-brand) 14%, transparent);
+    --docsearch-chip-text-color: var(--kawa-c-brand);
+    --docsearch-menu-trigger-active-background: color-mix(in oklab, var(--kawa-c-brand) 14%, transparent);
+    --docsearch-menu-trigger-active-text-color: var(--kawa-c-brand);
+    --docsearch-code-block-background: var(--kawa-c-bg-soft);
+  }
+
+  .kawa-algolia-search {
+    display: grid;
+    flex: none;
+    box-sizing: border-box;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    color: var(--kawa-c-text-2);
+    font: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition:
+      color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .kawa-algolia-search:hover {
+    color: var(--kawa-c-text-1);
+    background: var(--kawa-c-bg-soft);
+  }
+
+  .kawa-algolia-search:focus-visible {
+    outline: 2px solid var(--kawa-c-brand);
+    outline-offset: 2px;
+  }
+
+  .kawa-algolia-search svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    fill: none;
+    stroke: currentcolor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.75;
+  }
+
+  .kawa-algolia-search__text,
+  .kawa-algolia-search__keys {
+    display: none;
+  }
+
+  .kawa-algolia-search__keys kbd {
+    display: inline-grid;
+    min-width: 1.25rem;
+    min-height: 1.25rem;
+    place-items: center;
+    padding: 0 0.25rem;
+    color: inherit;
+    font: inherit;
+    line-height: 1;
+    background: color-mix(in oklab, currentcolor 8%, transparent);
+    border: 1px solid var(--kawa-c-divider);
+    border-radius: 0.25rem;
+  }
+
+  .kawa-algolia-search__command,
+  :root[data-kawa-platform='apple'] .kawa-algolia-search__control {
+    display: none;
+  }
+
+  :root[data-kawa-platform='apple'] .kawa-algolia-search__command {
+    display: inline;
+  }
+
+  @media (min-width: 48rem) {
+    .kawa-algolia-search {
+      display: flex;
+      width: auto;
+      gap: 0.625rem;
+      padding: 0 0.625rem;
+      background: var(--kawa-c-bg-soft);
+    }
+
+    .kawa-algolia-search__text {
+      display: inline;
+      font-size: 0.8125rem;
+      font-weight: 500;
+    }
+
+    .kawa-algolia-search__keys {
+      display: flex;
+      align-items: center;
+      gap: 0.125rem;
+      color: var(--kawa-c-text-3);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kawa-algolia-search {
+      transition: none;
+    }
+  }
+}

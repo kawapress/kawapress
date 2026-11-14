@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import type { SearchTranslations } from '../translations'
-import { useHead } from '@unhead/vue'
-import { useSite } from 'kawapress/client'
+import { usePlatformAttribute, useSite } from 'kawapress/client'
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from 'vue'
-import platformDetectionScript from '../platform-detection.js?raw'
 import { resolveSearchTranslations } from '../translations'
 import SearchOverlay from './SearchOverlay.vue'
 
@@ -23,12 +21,7 @@ const resolvedTranslations = computed(() => resolveSearchTranslations(
 const open = shallowRef(false)
 const trigger = useTemplateRef<HTMLButtonElement>('trigger')
 
-useHead({
-  script: [{
-    id: 'kawa-search-platform',
-    textContent: platformDetectionScript,
-  }],
-})
+usePlatformAttribute()
 
 onMounted(() => {
   window.addEventListener('keydown', handleGlobalKeydown)

@@ -44,6 +44,12 @@ catalogs:
       specifier: ^3.3.11
       version: 3.3.11
   frontend:
+    '@docsearch/css':
+      specifier: ^5.2.0
+      version: 5.2.0
+    '@docsearch/js':
+      specifier: ^5.2.0
+      version: 5.2.0
     '@unhead/vue':
       specifier: ^3.3.2
       version: 3.3.2
@@ -280,6 +286,9 @@ importers:
       '@kawapress/e2e-reference-theme':
         specifier: workspace:*
         version: link:../reference-theme
+      '@kawapress/plugin-algolia-search':
+        specifier: workspace:*
+        version: link:../../../packages/plugin-algolia-search
       '@kawapress/plugin-badge':
         specifier: workspace:*
         version: link:../../../packages/plugin-badge
@@ -366,7 +375,7 @@ importers:
         version: 1.1.1(markdown-it@14.3.0)
       '@unhead/vue':
         specifier: catalog:frontend
-        version: 3.3.2(@oxc-project/types@0.146.0)(lightningcss@1.33.0)(oxc-parser@0.131.0)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
+        version: 3.3.2(@oxc-project/types@0.146.0)(esbuild@0.21.5)(lightningcss@1.33.0)(oxc-parser@0.131.0)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@vitejs/plugin-vue':
         specifier: catalog:node
         version: 6.0.8(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
@@ -403,6 +412,31 @@ importers:
       tinyglobby:
         specifier: catalog:node
         version: 0.2.17
+      vite:
+        specifier: catalog:node
+        version: 8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)
+      vue:
+        specifier: catalog:frontend
+        version: 3.5.41(typescript@6.0.3)
+
+  packages/plugin-algolia-search:
+    dependencies:
+      '@docsearch/css':
+        specifier: catalog:frontend
+        version: 5.2.0
+      '@docsearch/js':
+        specifier: catalog:frontend
+        version: 5.2.0
+      '@unhead/vue':
+        specifier: catalog:frontend
+        version: 3.3.2(@oxc-project/types@0.146.0)(esbuild@0.21.5)(lightningcss@1.33.0)(oxc-parser@0.131.0)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
+    devDependencies:
+      happy-dom:
+        specifier: catalog:dev
+        version: 20.11.6
+      kawapress:
+        specifier: workspace:*
+        version: link:../kawapress
       vite:
         specifier: catalog:node
         version: 8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)
@@ -617,9 +651,6 @@ importers:
       '@mdit/plugin-container':
         specifier: catalog:markdown
         version: 1.0.2(markdown-it@14.3.0)
-      '@unhead/vue':
-        specifier: catalog:frontend
-        version: 3.3.2(@oxc-project/types@0.146.0)(lightningcss@1.33.0)(oxc-parser@0.131.0)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       markdown-exit:
         specifier: catalog:markdown
         version: 1.3.0
@@ -765,7 +796,7 @@ importers:
         version: link:../plugin-unocss
       '@unhead/vue':
         specifier: catalog:frontend
-        version: 3.3.2(@oxc-project/types@0.146.0)(lightningcss@1.33.0)(oxc-parser@0.131.0)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
+        version: 3.3.2(@oxc-project/types@0.146.0)(esbuild@0.21.5)(lightningcss@1.33.0)(oxc-parser@0.131.0)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       overlayscrollbars:
         specifier: catalog:frontend
         version: 2.16.0
@@ -970,8 +1001,14 @@ packages:
   '@docsearch/css@3.8.2':
     resolution: {integrity: sha512-y05ayQFyUmCXze79+56v/4HpycYF3uFqB78pLPrSV5ZKAlDuIAAJNhaRi8tTdRNXh05yxX/TyNnzD6LwSM89vQ==}
 
+  '@docsearch/css@5.2.0':
+    resolution: {integrity: sha512-KqJjLYMniiiKgZFdK+f7LTy3ZTL5r13buvxagNjDnYVGfa0NR+bb9BnjZq3FTl3VvsmkeW3aSr9AGIZsiQXY/A==}
+
   '@docsearch/js@3.8.2':
     resolution: {integrity: sha512-Q5wY66qHn0SwA7Taa0aDbHiJvaFJLOJyHmooQ7y8hlwwQLQ/5WwCcoX0g7ii04Qi2DJlHsd0XXzJ8Ypw9+9YmQ==}
+
+  '@docsearch/js@5.2.0':
+    resolution: {integrity: sha512-5gIXOpG72MIptdCL40xPRDElWKzIM/gZpCLXN115cOOCWFbUUv+AkXhPPVZv5uRuIqIXygrT2ZpUgSxsD2xifA==}
 
   '@docsearch/react@3.8.2':
     resolution: {integrity: sha512-xCRrJQlTt8N9GU0DG4ptwHRkfnSnD/YpdeaXe02iKfqs97TkZJv60yE+1eq/tjPcVnTW8dP5qLP7itifFVV5eg==}
@@ -5053,6 +5090,8 @@ snapshots:
 
   '@docsearch/css@3.8.2': {}
 
+  '@docsearch/css@5.2.0': {}
+
   '@docsearch/js@3.8.2(@algolia/client-search@5.60.0)(search-insights@2.17.3)':
     dependencies:
       '@docsearch/react': 3.8.2(@algolia/client-search@5.60.0)(search-insights@2.17.3)
@@ -5064,6 +5103,8 @@ snapshots:
       - react
       - react-dom
       - search-insights
+
+  '@docsearch/js@5.2.0': {}
 
   '@docsearch/react@3.8.2(@algolia/client-search@5.60.0)(search-insights@2.17.3)':
     dependencies:
@@ -6274,13 +6315,14 @@ snapshots:
 
   '@ungap/structured-clone@1.3.3': {}
 
-  '@unhead/bundler@3.3.2(@oxc-project/types@0.146.0)(lightningcss@1.33.0)(oxc-parser@0.131.0)(rolldown@1.2.5)(rollup@4.65.0)(unhead@3.3.2(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)))(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))':
+  '@unhead/bundler@3.3.2(@oxc-project/types@0.146.0)(esbuild@0.21.5)(lightningcss@1.33.0)(oxc-parser@0.131.0)(rolldown@1.2.5)(rollup@4.65.0)(unhead@3.3.2(esbuild@0.21.5)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)))(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))':
     dependencies:
       magic-string: 1.2.2
       oxc-walker: 1.1.1(@oxc-project/types@0.146.0)(oxc-parser@0.131.0)(rolldown@1.2.5)
-      unhead: 3.3.2(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))
-      unplugin: 3.3.0(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))
+      unhead: 3.3.2(esbuild@0.21.5)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))
+      unplugin: 3.3.0(esbuild@0.21.5)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))
     optionalDependencies:
+      esbuild: 0.21.5
       lightningcss: 1.33.0
       oxc-parser: 0.131.0
       rolldown: 1.2.5
@@ -6293,12 +6335,12 @@ snapshots:
       - rollup
       - unloader
 
-  '@unhead/vue@3.3.2(@oxc-project/types@0.146.0)(lightningcss@1.33.0)(oxc-parser@0.131.0)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))':
+  '@unhead/vue@3.3.2(@oxc-project/types@0.146.0)(esbuild@0.21.5)(lightningcss@1.33.0)(oxc-parser@0.131.0)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))':
     dependencies:
-      '@unhead/bundler': 3.3.2(@oxc-project/types@0.146.0)(lightningcss@1.33.0)(oxc-parser@0.131.0)(rolldown@1.2.5)(rollup@4.65.0)(unhead@3.3.2(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)))(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))
+      '@unhead/bundler': 3.3.2(@oxc-project/types@0.146.0)(esbuild@0.21.5)(lightningcss@1.33.0)(oxc-parser@0.131.0)(rolldown@1.2.5)(rollup@4.65.0)(unhead@3.3.2(esbuild@0.21.5)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)))(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))
       hookable: 6.1.1
-      unhead: 3.3.2(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))
-      unplugin: 3.3.0(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))
+      unhead: 3.3.2(esbuild@0.21.5)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))
+      unplugin: 3.3.0(esbuild@0.21.5)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))
       vue: 3.5.41(typescript@6.0.3)
     optionalDependencies:
       vite: 8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)
@@ -8898,10 +8940,10 @@ snapshots:
 
   undici-types@8.3.0: {}
 
-  unhead@3.3.2(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)):
+  unhead@3.3.2(esbuild@0.21.5)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)):
     dependencies:
       hookable: 6.1.1
-      unplugin: 3.3.0(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))
+      unplugin: 3.3.0(esbuild@0.21.5)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0))
     optionalDependencies:
       vite: 8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)
     transitivePeerDependencies:
@@ -8976,12 +9018,13 @@ snapshots:
       picomatch: 4.0.5
       webpack-virtual-modules: 0.6.2
 
-  unplugin@3.3.0(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)):
+  unplugin@3.3.0(esbuild@0.21.5)(rolldown@1.2.5)(rollup@4.65.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)):
     dependencies:
       '@jridgewell/remapping': 2.3.5
       picomatch: 4.0.7
       webpack-virtual-modules: 0.6.2
     optionalDependencies:
+      esbuild: 0.21.5
       rolldown: 1.2.5
       rollup: 4.65.0
       vite: 8.2.2(@types/node@26.2.0)(jiti@2.7.0)(yaml@2.9.0)
