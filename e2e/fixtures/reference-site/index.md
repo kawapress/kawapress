@@ -4,6 +4,8 @@ title: Reference site home
 
 # Reference site
 
+[[toc]]
+
 Every official UI plugin is installed in this site, but the theme is the small
 reference theme from `e2e/fixtures/reference-theme`. Nothing here comes from a
 preset.

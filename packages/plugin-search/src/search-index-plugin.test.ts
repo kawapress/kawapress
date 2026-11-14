@@ -158,6 +158,15 @@ Literal raw marker.
     )
   })
 
+  it('leaves the [[toc]] marker out of the text only when the toc switch is on', () => {
+    const source = '# Page\n\n[[toc]]\n\nIntro.\n'
+
+    expect(createSearchDocuments(source, '/guide/page', {
+      callouts: { toc: true },
+    })[0]?.text).toBe('Intro.')
+    expect(createSearchDocuments(source, '/guide/page')[0]?.text).toBe('[[toc]] Intro.')
+  })
+
   it('uses custom heading anchors for search section links', () => {
     const documents = createSearchDocuments(`# 页面\n\n介绍。\n\n## 配置 {#configuration}\n\n配置正文。\n`, '/guide/page')
 
