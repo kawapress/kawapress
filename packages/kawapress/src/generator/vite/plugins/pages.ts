@@ -64,6 +64,7 @@ export function pageScope(
     sourceRoot: pageLoader.sourceRoot,
     publicDir: resolve(pageLoader.sourceRoot, publicDir),
     exclude: pageLoader.srcExclude,
+    rewrites: pageLoader.rewrites,
   }
 }
 

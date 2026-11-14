@@ -128,6 +128,7 @@ describe('createGeneratorPluginRunner', () => {
       source: 'B1',
       file: '/site/b.md',
       sourcePath: '/b.md',
+      pagePath: '/b.md',
       routePath: '/b',
       pageData,
     })
@@ -135,6 +136,7 @@ describe('createGeneratorPluginRunner', () => {
       source: 'A',
       file: '/site/a.md',
       sourcePath: '/a.md',
+      pagePath: '/a.md',
       routePath: '/a',
       pageData,
     })
@@ -142,6 +144,7 @@ describe('createGeneratorPluginRunner', () => {
       source: 'B2',
       file: '/site/b.md',
       sourcePath: '/b.md',
+      pagePath: '/b.md',
       routePath: '/b',
       pageData,
     })

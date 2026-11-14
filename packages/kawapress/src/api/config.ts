@@ -1,7 +1,7 @@
 import type { DeadLinkConfig } from '../core/dead-links'
 import type { ThemeConfig } from '../core/extension-points'
 import type { HeadConfig } from '../core/head'
-import type { LocaleConfig } from '../core/site'
+import type { LocaleConfig, PageRewrites } from '../core/site'
 import type { KawaPressPlugin } from './plugin'
 
 export interface KawapressConfig {
@@ -13,6 +13,11 @@ export interface KawapressConfig {
    * for example `snippets/**` for a folder of shared parts.
    */
   srcExclude?: string[]
+  /**
+   * Moves pages to other routes without moving their files, for example
+   * `{ 'packages/:pkg/src/:page*': ':pkg/:page*' }`.
+   */
+  rewrites?: PageRewrites
   publicDir?: string
   head?: HeadConfig[]
   themeConfig?: Partial<ThemeConfig>

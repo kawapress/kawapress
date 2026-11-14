@@ -17,6 +17,7 @@ import { markdownPagePathToRoutePath } from '../core/markdown-route'
 import { findDataLoaderFiles, normalizeDataLoaderGlob } from '../generator/data/glob'
 import { createMarkdownCompiler } from './markdown'
 import { readMarkdownSource } from './markdown-source'
+import { resolvePagePathRewriter } from './page-path'
 
 interface CachedContent {
   data: ContentData
@@ -84,7 +85,9 @@ async function loadContentFile(
   try {
     const { source: src } = readMarkdownSource({ file, sourceRoot: context.srcDir })
     const parsed = parseContentSource(src, options.excerpt)
-    const sourcePath = contentFileToSourcePath(file, context.srcDir)
+    const sourcePath = resolvePagePathRewriter(context.rewrites)(
+      contentFileToSourcePath(file, context.srcDir),
+    )
     const url = markdownPagePathToRoutePath(sourcePath)
     const data: ContentData = {
       url,

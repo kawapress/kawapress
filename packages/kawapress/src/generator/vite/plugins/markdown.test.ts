@@ -14,6 +14,7 @@ describe('markdownPlugin', () => {
     const pageLoader: MarkdownPageLoader = {
       sourceRoot: directory,
       srcExclude: [],
+      rewrites: undefined,
       registry: createLinkRegistry(),
       async load(source, loadedFile) {
         calls.push({ file: loadedFile, source })

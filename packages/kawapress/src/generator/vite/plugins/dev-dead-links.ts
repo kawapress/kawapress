@@ -2,9 +2,8 @@ import type { Plugin, ViteDevServer } from 'vite'
 import type { MarkdownPageLoader } from '../../../compiler/page-loader'
 import type { DeadLink, ResolvedDeadLinkConfig } from '../../../core/dead-links'
 import type { PageRouteIndex } from './pages'
-import { markdownFileToSourcePath } from '../../../compiler/page-loader'
+import { markdownFileToRoutePath } from '../../../compiler/page-path'
 import { findPageDeadLinks, formatDeadLink } from '../../../core/dead-links'
-import { markdownPagePathToRoutePath } from '../../../core/markdown-route'
 
 export interface DevDeadLinksOptions {
   pageLoader: MarkdownPageLoader
@@ -35,8 +34,10 @@ export function devDeadLinksPlugin(options: DevDeadLinksOptions): Plugin {
         return
       }
 
-      const route = markdownPagePathToRoutePath(
-        markdownFileToSourcePath(file, options.pageLoader.sourceRoot),
+      const route = markdownFileToRoutePath(
+        file,
+        options.pageLoader.sourceRoot,
+        options.pageLoader.rewrites,
       )
       const page = options.pageLoader.registry.get(route)
       if (!page) {

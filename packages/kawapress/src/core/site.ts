@@ -14,12 +14,22 @@ export interface LocaleConfig {
   themeConfig?: Partial<ThemeConfig>
 }
 
+/**
+ * Moves pages to other routes: rules from a source path pattern to a page
+ * path, or a function from the source path to the page path. Paths are
+ * relative to srcDir and keep their `.md` extension.
+ */
+export type PageRewrites
+  = | Record<string, string>
+    | ((id: string) => string | undefined)
+
 export interface SiteConfig {
   title?: string
   base?: string
   srcDir?: string
   /** Glob patterns, relative to `srcDir`, of Markdown files that are not pages. */
   srcExclude?: string[]
+  rewrites?: PageRewrites
   publicDir?: string
   head?: HeadConfig[]
   themeConfig?: Partial<ThemeConfig>

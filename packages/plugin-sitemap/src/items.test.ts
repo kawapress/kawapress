@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { createSitemapItems } from './items'
 
 function page(routePath: string, frontmatter: Record<string, unknown> = {}, file = `/site${routePath}.md`): PageBuildArtifact {
+  const sourcePath = `${routePath === '/' ? '/index' : routePath}.md`
   return {
     source: '',
     file,
-    sourcePath: `${routePath === '/' ? '/index' : routePath}.md`,
+    sourcePath,
+    pagePath: sourcePath,
     routePath,
     pageData: { path: routePath, title: '', headers: [], frontmatter } as unknown as PageBuildArtifact['pageData'],
   }

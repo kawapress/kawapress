@@ -1,5 +1,5 @@
 import type { MarkdownItContainerOptions } from '@mdit/plugin-container'
-import type { PageFrontmatter } from 'kawapress'
+import type { PageFrontmatter, PageRewrites } from 'kawapress'
 import type { MarkdownPageScope } from 'kawapress/generator'
 import type { MarkdownExit, Token } from 'markdown-exit'
 import type { Plugin } from 'vite'
@@ -47,6 +47,8 @@ interface SearchIndexPluginOptions {
   srcDir: string
   /** `srcExclude` of the site config: Markdown files that are not pages. */
   srcExclude?: readonly string[]
+  /** `rewrites` of the site config, which moves pages to other routes. */
+  rewrites?: PageRewrites | undefined
   locales: string[]
   localeLanguages?: Record<string, string | undefined>
   callouts?: SearchCalloutOptions
@@ -150,6 +152,7 @@ export function searchIndexPlugin(
   let scope: MarkdownPageScope = {
     sourceRoot: resolve(options.srcDir),
     exclude: options.srcExclude,
+    rewrites: options.rewrites,
   }
   let indexVersion = 0
   let cachedIndexes: Promise<Record<string, string>> | undefined
@@ -176,6 +179,7 @@ export function searchIndexPlugin(
         sourceRoot: resolve(config.root, options.srcDir),
         publicDir: config.publicDir ? resolve(config.publicDir) : undefined,
         exclude: options.srcExclude,
+        rewrites: options.rewrites,
       }
     },
     resolveId(id) {

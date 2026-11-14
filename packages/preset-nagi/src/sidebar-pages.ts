@@ -1,4 +1,5 @@
 import type { LocaleConfig } from 'kawapress'
+import type { MarkdownPageScope } from 'kawapress/generator'
 import type { NagiSidebarConfig, SidebarPage, SidebarPages } from './sidebar'
 import { resolveLocaleIndex } from 'kawapress'
 import {
@@ -10,13 +11,7 @@ import {
 import { isDocumentPage, resolveConfiguredSidebar } from './sidebar'
 
 /** Where the pages of the site are and which of them a hand-written sidebar shows. */
-export interface SidebarPageScope {
-  /** Absolute directory holding the Markdown sources. */
-  sourceRoot: string
-  /** Absolute directory of copied assets, which holds no pages. */
-  publicDir?: string | undefined
-  /** Glob patterns, relative to `sourceRoot`, of Markdown files that are not pages. */
-  exclude?: readonly string[] | undefined
+export interface SidebarPageScope extends MarkdownPageScope {
   /** Site `themeConfig`, as the site config declares it; only `sidebar` is read. */
   themeConfig?: object | undefined
   /** Site locales, whose `themeConfig` can replace the site sidebar. */
@@ -70,7 +65,7 @@ export function createSidebarPageReader(
     },
     async readChanged(file) {
       const scope = getScope()
-      const routePath = markdownFileToRoutePath(file, scope.sourceRoot)
+      const routePath = markdownFileToRoutePath(file, scope.sourceRoot, scope.rewrites)
       return readPage(scope, routePath, file, readSource(scope, file))
     },
   }

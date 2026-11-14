@@ -193,6 +193,7 @@ interface PageBuildArtifact {
   source: string
   file: string
   sourcePath: string
+  pagePath: string
   routePath: string
   pageData: Readonly<PageData>
 }
@@ -635,6 +636,7 @@ interface KawaPressConfig {
   base?: string
   srcDir?: string
   srcExclude?: string[]
+  rewrites?: Record<string, string> | ((id: string) => string | undefined)
   publicDir?: string
   head?: HeadConfig[]
   themeConfig?: Partial<ThemeConfig>
@@ -647,6 +649,8 @@ interface KawaPressConfig {
 `head` 与 `deadLinks` 的规则见 `0.2-core-plan.md` 第一、二节。
 
 `srcExclude` 是相对 `srcDir` 的 glob 列表（picomatch 语法，匹配点开头的路径），命中的 Markdown 文件不是页面：不生成路由与构建入口，不进入搜索索引与 nagi 自动侧边栏。它只决定"哪些文件是页面"，文件仍可被 include 或 Data Loader 读取。只接受相对路径字符串组成的数组，其他取值在配置加载时报错。
+
+`rewrites` 把页面挪到另一个路由而不移动文件，写法与 VitePress 相同：对象形式的键是相对 `srcDir`、带 `.md` 的源路径模式（`path-to-regexp` 6 语法，`^` 开头按正则处理），值是新页面路径，按书写顺序第一条命中生效；函数形式接收源路径，返回新路径或不返回以保持原位。重写后的页面路径是唯一的"页面身份"：路由、构建入口、页面相对链接解析、Search、nagi 自动侧边栏、SSG-MD、Sitemap 与 `createContentLoader()` 的 `url` 都使用它；死链报告与 `PageDataContext.sourcePath` 继续指向真实源文件，方便作者打开。两个文件重写到同一路由时在列出页面时报错。
 
 `defineConfig()` 只提供类型推断与配置归一化，不引入额外生命周期。Core 的配置类型通过可合并的 `ThemeConfig` 接口为顶层与各语言的 `themeConfig` 提供同一份类型，Core 不解释主题私有字段。`base` 表示站点部署路径，归一化为以 `/` 开头和结尾的绝对路径；Vite 资源、站内路由、Markdown 根路径链接、站点与 locale 首页链接、开发 SSR 和预渲染 HTML 必须统一使用它，保证 GitHub Pages 等子路径部署可用。
 
