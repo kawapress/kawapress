@@ -9,7 +9,7 @@ import {
   createBaseViteConfig,
   createSitePageLoader,
 } from '../generator/vite/config'
-import { entryClientPath, entryServerPath } from '../generator/vite/entries'
+import { entryClientPath, entryServerPath, SERVER_ENTRY_FILE, SERVER_OUT_DIR } from '../generator/vite/entries'
 import { createPageInputs } from '../generator/vite/page-inputs'
 import {
   createBuildArtifactEmitter,
@@ -68,8 +68,11 @@ export async function buildSite(root: string) {
       ssr: {
         consumer: 'server',
         build: {
-          outDir: 'dist/.server',
-          rollupOptions: { input: entryServerPath },
+          outDir: SERVER_OUT_DIR,
+          rolldownOptions: {
+            input: entryServerPath,
+            output: { entryFileNames: SERVER_ENTRY_FILE },
+          },
         },
       },
     },

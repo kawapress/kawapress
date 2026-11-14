@@ -6,6 +6,10 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+### 修复
+
+- **站点 `package.json` 不是 ES 模块包时，`kawapress build` 也能正常构建。** 没有设置 `"type": "module"` 的项目（例如用 `npm init -y` 创建的项目）不再报错 `Cannot find module '…/dist/.server/entry-server.js'`。（[#44](https://github.com/kawapress/kawapress/issues/44)）
+
 ## [0.4.0] - 2026-11-15
 
 ### 破坏性变更

@@ -6,6 +6,10 @@ The 21 public packages are released together and share one version number. [简�
 
 ## [Unreleased]
 
+### Fixed
+
+- **`kawapress build` works when the site's `package.json` is not an ES module package.** A project without `"type": "module"` (for example one created with `npm init -y`) no longer fails with `Cannot find module '…/dist/.server/entry-server.js'`. ([#44](https://github.com/kawapress/kawapress/issues/44))
+
 ## [0.4.0] - 2026-11-15
 
 ### Breaking changes

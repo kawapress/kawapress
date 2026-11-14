@@ -13,6 +13,7 @@ import { NOT_FOUND_ROUTE_PATH } from '../core/not-found'
 import { findUnconsumedOutletItems, formatUnconsumedOutletWarnings } from '../core/outlet'
 import { pageChunkFileName, pageChunkHash } from '../core/page-chunk'
 import { pageTableFileName } from '../core/page-manifest'
+import { SERVER_ENTRY_FILE, SERVER_OUT_DIR } from '../generator/vite/entries'
 import { collectPageAssets, collectPageChunk } from './page-assets'
 import { renderHtmlTemplate } from './template'
 
@@ -34,7 +35,8 @@ interface ServerBundle {
 
 export async function prerenderPages(root: string): Promise<void> {
   const distDir = join(root, 'dist')
-  const serverEntry = join(distDir, '.server/entry-server.js')
+  const serverDir = join(root, SERVER_OUT_DIR)
+  const serverEntry = join(serverDir, SERVER_ENTRY_FILE)
   const { render, getOutletRegistry, pages, pageModules, site } = await import(
     pathToFileURL(serverEntry).href,
   ) as ServerBundle
@@ -83,7 +85,7 @@ export async function prerenderPages(root: string): Promise<void> {
   reportUnconsumedOutlets(getOutletRegistry(), renderedOutlets)
   consola.success(`KawaPress: prerendered ${paths.length} pages`)
 
-  await rm(join(distDir, '.server'), { recursive: true })
+  await rm(serverDir, { recursive: true })
   await rm(join(distDir, '.vite'), { recursive: true })
 }
 

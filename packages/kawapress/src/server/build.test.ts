@@ -97,11 +97,11 @@ afterEach(async () => {
  * "development" for the client build. `node_modules/kawapress` is a symlink
  * because the site is not installed, just like a `link:` dependency.
  */
-async function createSite(config = CONFIG): Promise<void> {
+async function createSite(config = CONFIG, moduleType: 'module' | 'commonjs' = 'module'): Promise<void> {
   await writeFile(join(siteDirectory, 'package.json'), JSON.stringify({
     name: 'build-env-test',
     private: true,
-    type: 'module',
+    type: moduleType,
   }, null, 2))
   await writeFile(join(siteDirectory, 'kawapress.config.ts'), config)
   await writeFile(join(siteDirectory, 'index.md'), HOME_PAGE)
@@ -183,6 +183,18 @@ async function pageChunkOf(route: string): Promise<string> {
 }
 
 describe('buildSite', () => {
+  it('builds a site whose package.json is a CommonJS package', async () => {
+    // Without `"type": "module"` Vite gives the server entry an `.mjs` name,
+    // which prerendering has to find all the same.
+    await createSite(CONFIG, 'commonjs')
+
+    await buildWithoutNodeEnv()
+
+    await expect(readFile(join(siteDirectory, 'dist/index.html'), 'utf8'))
+      .resolves
+      .toContain('Build Env Test')
+  }, 300_000)
+
   it('ships the production build even when NODE_ENV is unset', async () => {
     await createSite()
     await buildWithoutNodeEnv()
