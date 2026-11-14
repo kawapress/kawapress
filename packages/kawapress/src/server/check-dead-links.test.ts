@@ -137,6 +137,29 @@ describe('checkDeadLinks', () => {
   })
 })
 
+describe('included content', () => {
+  it('checks the links of an included part and names the line of the page', async () => {
+    const siteConfig: ResolvedSiteConfig = {
+      ...await resolveSiteConfig({ srcExclude: ['parts/**'] }),
+      deadLinks: { level: 'warn' as const, ignore: [] },
+    }
+    await mkdir(join(root, 'parts'))
+    await writeFile(join(root, 'parts/shared.md'), '[home](/)\n\n[gone](/gone)\n')
+    await writeFile(join(root, 'with-part.md'), '# With part\n\n<!--@include: ./parts/shared.md-->\n')
+    vi.spyOn(consola, 'warn').mockImplementation(() => {})
+    const pageLoader = createSitePageLoader(root, siteConfig)
+    for (const page of ['index.md', 'with-part.md']) {
+      await pageLoader.load(await readFile(join(root, page), 'utf8'), join(root, page))
+    }
+
+    const deadLinks = await checkDeadLinks({ root, siteConfig, pageLoader })
+
+    expect(deadLinks
+      .filter(link => link.source === '/with-part.md')
+      .map(link => `${link.source}:${link.line} ${link.target}`)).toEqual(['/with-part.md:3 /gone'])
+  })
+})
+
 describe('reportDeadLinks', () => {
   const deadLink = {
     href: './missing',

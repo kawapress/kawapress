@@ -462,6 +462,18 @@ Markdown 页面链接属于 Core 的文件路由契约，不拆成可选 Plugin�
 
 GitHub 风格表格由 Markdown 引擎的默认规则直接提供，是 Core 基础 Markdown 语法，不拆成 Plugin。Core 使用回归测试固定表头、表体与左中右对齐输出；nagi 只负责表格的响应式滚动、边框和明暗模式视觉。
 
+### 7.0 文件引入与代码片段
+
+`<!--@include: path-->` 与 `<<< path` 属于 Core，语法与 VitePress 相同，在源码层展开：任何 markdown-it 解析之前，Core 先把页面源码展开成一份完整 Markdown，页面渲染、`pageArtifact.source`、Search 索引、SSG-MD、nagi 自动侧边栏、`createContentLoader()` 与死链检查都读这同一份展开结果，不各自解析指令。公开入口为 `kawapress/generator` 的 `expandMarkdownSource()` 与 `readMarkdownSource()`。
+
+- 路径相对当前文件，`@/` 开头时相对 `srcDir`；include 可嵌套，循环引入在构建时报错并指出文件与行号。
+- include 支持 `#region` 与 `{start,end}` 行范围；被引入的 `.md` 去掉自身 frontmatter，整行指令保留所在行缩进。
+- `<<< path#region{lines lang attrs} [title]` 展开为普通 fenced code block：语言默认取扩展名，region 去掉标记行并整体去缩进，代码含反引号时自动加长围栏。
+- 位于代码围栏内的指令按字面保留。
+- 死链报告的行号映射回页面自身源码行。
+- 开发模式把被引入文件登记为页面依赖，修改后页面与搜索索引同步更新。
+- 被引入文件若放在 `srcDir` 内且不应成为页面，用 `srcExclude` 排除。
+
 ### 7.1 标题锚点与自定义锚点
 
 标题身份属于 Core 的 Markdown 编译契约。KawaPress 在 `markdown-it-anchor` 之前使用 `@mdit/plugin-attrs`，只启用 `heading` 规则并只允许 `id` 属性，从而支持 VitePress 风格的标题后缀 `## 标题 {#stable-id}`，但不顺带开放标题 `class`、`style` 或事件属性。后缀不进入可见标题；显式 ID 直接成为标题 DOM `id` 和 permalink `href`。自动锚点继续根据标题生成并对重复值追加数字后缀；重复的显式 ID 在构建时直接报错。

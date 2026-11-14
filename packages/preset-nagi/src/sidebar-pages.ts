@@ -1,8 +1,12 @@
 import type { LocaleConfig } from 'kawapress'
 import type { NagiSidebarConfig, SidebarPage, SidebarPages } from './sidebar'
-import { readFile } from 'node:fs/promises'
 import { resolveLocaleIndex } from 'kawapress'
-import { createPageSummaryReader, listMarkdownPages, markdownFileToRoutePath } from 'kawapress/generator'
+import {
+  createPageSummaryReader,
+  listMarkdownPages,
+  markdownFileToRoutePath,
+  readMarkdownSource,
+} from 'kawapress/generator'
 import { isDocumentPage, resolveConfiguredSidebar } from './sidebar'
 
 /** Where the pages of the site are and which of them a hand-written sidebar shows. */
@@ -58,19 +62,23 @@ export function createSidebarPageReader(
     async readAll() {
       const scope = getScope()
       const pages = await listMarkdownPages(scope)
-      const entries = await Promise.all(pages.map(async (page) => {
-        const source = await readFile(page.file, 'utf8')
-        const entry = readPage(scope, page.routePath, page.file, source)
+      const entries = pages.map((page) => {
+        const entry = readPage(scope, page.routePath, page.file, readSource(scope, page.file))
         return entry === undefined ? [] : [[page.routePath, entry] as [string, SidebarPage]]
-      }))
+      })
       return Object.fromEntries(entries.flat())
     },
     async readChanged(file) {
       const scope = getScope()
       const routePath = markdownFileToRoutePath(file, scope.sourceRoot)
-      return readPage(scope, routePath, file, await readFile(file, 'utf8'))
+      return readPage(scope, routePath, file, readSource(scope, file))
     },
   }
+}
+
+/** The page source as the compiler reads it, with includes written out. */
+function readSource(scope: SidebarPageScope, file: string): string {
+  return readMarkdownSource({ file, sourceRoot: scope.sourceRoot }).source
 }
 
 /**

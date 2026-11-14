@@ -6,10 +6,16 @@ import { markdownPagePathToRoutePath } from '../core/markdown-route'
 import { assertPageDataSerializable } from '../core/site'
 import { createLinkRegistry } from './link-registry'
 import { createMarkdownCompiler, parseMarkdown } from './markdown'
+import { expandMarkdownSource } from './markdown-source'
 
 interface CachedPage {
   source: string
-  parsed: Promise<ParsedMarkdown>
+  parsed: Promise<LoadedMarkdownPage>
+}
+
+export interface LoadedMarkdownPage extends ParsedMarkdown {
+  /** Files the page reads through `<!--@include-->` and `<<<`, as absolute paths. */
+  dependencies: string[]
 }
 
 export interface MarkdownPageLoader {
@@ -18,7 +24,8 @@ export interface MarkdownPageLoader {
   srcExclude: readonly string[]
   /** Links and heading IDs of every page loaded so far. */
   registry: LinkRegistry
-  load: (source: string, file: string) => Promise<ParsedMarkdown>
+  /** Compiles the page whose file holds `source`, as written on disk. */
+  load: (source: string, file: string) => Promise<LoadedMarkdownPage>
 }
 
 export interface MarkdownPageLoaderOptions {
@@ -44,7 +51,17 @@ export function createMarkdownPageLoader(
     sourceRoot,
     srcExclude: options.srcExclude ?? [],
     registry,
-    load(source, file) {
+    load(rawSource, file) {
+      // Expanding first makes an edit to an included file a new page source,
+      // so the cache can never return a page built from an older include.
+      let expanded: ReturnType<typeof expandMarkdownSource>
+      try {
+        expanded = expandMarkdownSource(rawSource, { file, sourceRoot })
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
+      const { source, dependencies, lineOrigins } = expanded
       const cached = cache.get(file)
       if (cached?.source === source) {
         return cached.parsed
@@ -58,6 +75,7 @@ export function createMarkdownPageLoader(
           source,
           routePath,
           sourcePath,
+          lineOrigins,
         )
         registry.set({
           route: routePath,
@@ -75,7 +93,7 @@ export function createMarkdownPageLoader(
           routePath,
           pageData: result.pageData,
         })
-        return result
+        return { ...result, dependencies }
       })
       cache.set(file, { source, parsed })
       return parsed

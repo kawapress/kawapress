@@ -11,6 +11,7 @@ export type MaybePromise<T> = T | Promise<T>
 export type GeneratorPluginHandler<T> = (value: T) => MaybePromise<void>
 
 export interface PageBuildArtifact {
+  /** Markdown source of the page, with `<!--@include-->` and `<<<` written out. */
   source: string
   file: string
   sourcePath: string
