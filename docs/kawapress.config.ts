@@ -35,7 +35,7 @@ export default nagi({
       dark: '/kawapress-logo-dark.png',
       alt: 'KawaPress',
     },
-    githubUrl: 'https://github.com/kawapress/kawapress',
+    socialLinks: [{ icon: 'github', link: 'https://github.com/kawapress/kawapress' }],
     nav: [
       { text: '指南', link: '/guide/what-is-kawapress', activeMatch: '/guide' },
       { text: '插件', link: '/plugins/plugin-system', activeMatch: '/plugins' },

@@ -17,7 +17,7 @@ import type { PageHeader } from './site'
  * ```ts
  * declare module 'kawapress' {
  *   interface ThemeConfig {
- *     githubUrl?: string
+ *     socialLinks?: { icon: string, link: string }[]
  *   }
  * }
  * ```

@@ -36,6 +36,7 @@ export type {
   NagiSidebarItem,
   NagiSidebarSection,
 } from './sidebar'
+export type { NagiSocialIcons, NagiSocialLink, NagiSocialLinkIcon } from './social-links'
 export type { NagiNavItem } from './theme-config'
 
 export function nagi(userConfig: NagiConfig = {}): NagiConfig {

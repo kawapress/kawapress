@@ -1,6 +1,7 @@
 import type { ThemeConfig } from 'kawapress'
 import type { NagiHomeImage } from './home'
 import type { NagiSidebarConfig } from './sidebar'
+import type { NagiSocialLink } from './social-links'
 
 /** One link in the top navigation bar. */
 export interface NagiNavItem {
@@ -39,7 +40,7 @@ declare module 'kawapress' {
     footerLicenseText?: string
     footerPoweredByText?: string
     logo?: NagiHomeImage
-    githubUrl?: string
+    socialLinks?: NagiSocialLink[]
     nav?: NagiNavItem[]
     sidebar?: NagiSidebarConfig
   }
@@ -61,7 +62,7 @@ export interface ResolvedNagiThemeConfig extends Required<Pick<ThemeConfig, | 's
   | 'notFoundMessage'
   | 'notFoundHomeLabel'
   | 'footerLicenseText'
-  | 'footerPoweredByText'>>, Pick<ThemeConfig, 'logo' | 'githubUrl' | 'nav' | 'sidebar'> {}
+  | 'footerPoweredByText'>>, Pick<ThemeConfig, 'logo' | 'socialLinks' | 'nav' | 'sidebar'> {}
 
 const EN_THEME_CONFIG: ResolvedNagiThemeConfig = {
   sidebarMenuLabel: 'Menu',
@@ -130,8 +131,8 @@ export function resolveNagiThemeConfig(
   if (config.logo !== undefined) {
     resolved.logo = config.logo
   }
-  if (config.githubUrl !== undefined) {
-    resolved.githubUrl = config.githubUrl
+  if (config.socialLinks !== undefined) {
+    resolved.socialLinks = config.socialLinks
   }
   if (config.nav !== undefined) {
     resolved.nav = config.nav
