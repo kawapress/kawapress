@@ -1,0 +1,5 @@
+/*
+ * The DocSearch modal styles. They load together with the library on the first
+ * search and must name a layer, otherwise they outrank the site theme.
+ */
+@import url('@docsearch/css/dist/style.css') layer(kawa.plugin);

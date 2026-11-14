@@ -1,3 +1,4 @@
+import { stubAlgolia } from '../../support/algolia'
 import { expect, test } from '../../support/fixtures'
 import { stubGiscus } from '../../support/giscus'
 import { sitePath } from '../../support/site'
@@ -136,4 +137,44 @@ test('a plain anchor link navigates without loading a new document', async ({ pa
     await page.evaluate(() => (window as MarkerWindow).__referenceThemeDocument),
     'a full document load would drop the marker',
   ).toBe('first document')
+})
+
+test('Algolia DocSearch loads on the first click and Enter opens the hit inside the app', async ({ page }) => {
+  await stubGiscus(page)
+  const queries = await stubAlgolia(page, [
+    // The crawler records the deployed URL, base included.
+    { title: 'Second page', url: `https://docs.example.com${sitePath('/second.html')}#second-page` },
+  ])
+  const docsearchChunks: string[] = []
+  page.on('request', (request) => {
+    if (/docsearch/i.test(request.url())) {
+      docsearchChunks.push(request.url())
+    }
+  })
+  await page.goto(sitePath('/'))
+  await page.evaluate(() => {
+    (window as MarkerWindow).__referenceThemeDocument = 'first'
+  })
+
+  const button = page.locator('.ref-header .ref-actions .kawa-algolia-search')
+  await expect(button).toBeVisible()
+  expect(docsearchChunks, 'DocSearch must not load before the reader asks for it').toEqual([])
+
+  await button.click()
+  const input = page.locator('.DocSearch-Input')
+  await expect(input).toBeFocused()
+  await input.fill('second')
+
+  await expect(page.locator('.DocSearch-Hit').first()).toContainText('Second page')
+  expect(JSON.stringify(queries)).toContain('lang:en')
+
+  await page.keyboard.press('Enter')
+
+  await expect(page.locator('.DocSearch-Modal')).toHaveCount(0)
+  await expect(page).toHaveURL(/\/second#second-page$/)
+  await expect(page.locator('.ref-doc h1')).toHaveText(/Second page/)
+  expect(
+    await page.evaluate(() => (window as MarkerWindow).__referenceThemeDocument),
+    'the hit must open through the router, without a document load',
+  ).toBe('first')
 })
