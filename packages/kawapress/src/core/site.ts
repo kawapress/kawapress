@@ -18,6 +18,8 @@ export interface SiteConfig {
   title?: string
   base?: string
   srcDir?: string
+  /** Glob patterns, relative to `srcDir`, of Markdown files that are not pages. */
+  srcExclude?: string[]
   publicDir?: string
   head?: HeadConfig[]
   themeConfig?: Partial<ThemeConfig>

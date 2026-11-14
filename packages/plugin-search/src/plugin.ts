@@ -18,6 +18,7 @@ export function searchPlugin(options: SearchPluginOptions = {}): KawaPressPlugin
         config.plugins ??= []
         config.plugins.push(searchIndexPlugin({
           srcDir: siteConfig?.srcDir ?? '.',
+          srcExclude: siteConfig?.srcExclude,
           locales: Object.keys(siteConfig?.locales ?? { root: {} }),
           localeLanguages: Object.fromEntries(
             Object.entries(siteConfig?.locales ?? {}).map(([locale, config]) => (

@@ -17,6 +17,8 @@ const IGNORED_DIRECTORIES = new Set(['dist', 'node_modules'])
 export interface NagiSidebarMetaPluginOptions {
   /** `srcDir` of the site config, relative to the site root. */
   srcDir: string
+  /** `srcExclude` of the site config: Markdown files that are not pages. */
+  srcExclude?: readonly string[] | undefined
   /** `themeConfig` of the site config; only `sidebar` is read. */
   themeConfig?: object | undefined
   /** `locales` of the site config, which can each declare their own sidebar. */
@@ -24,7 +26,10 @@ export interface NagiSidebarMetaPluginOptions {
 }
 
 export function nagiSidebarMetaPlugin(options: NagiSidebarMetaPluginOptions): Plugin {
-  let scope: SidebarPageScope = { sourceRoot: resolve(options.srcDir) }
+  let scope: SidebarPageScope = {
+    sourceRoot: resolve(options.srcDir),
+    exclude: options.srcExclude,
+  }
   /**
    * Page list of the module as the browser last received it, so editing a page
    * only refreshes the browser when the sidebar would show something else.
@@ -50,6 +55,7 @@ export function nagiSidebarMetaPlugin(options: NagiSidebarMetaPluginOptions): Pl
       scope = {
         sourceRoot: resolve(config.root, options.srcDir),
         publicDir: config.publicDir ? resolve(config.publicDir) : undefined,
+        exclude: options.srcExclude,
         themeConfig: options.themeConfig,
         locales: options.locales,
       }

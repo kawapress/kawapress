@@ -13,6 +13,8 @@ export interface ResolvedSiteConfig {
   title: string
   base: string
   srcDir: string
+  /** Glob patterns, relative to `srcDir`, of Markdown files that are not pages. */
+  srcExclude: string[]
   publicDir: string
   head: HeadConfig[]
   themeConfig?: object
@@ -39,6 +41,7 @@ export async function resolveSiteConfig(
     title: userConfig.title,
     base: userConfig.base,
     srcDir: userConfig.srcDir,
+    srcExclude: userConfig.srcExclude,
     publicDir: userConfig.publicDir,
     head: userConfig.head,
     themeConfig: userConfig.themeConfig,
@@ -51,6 +54,7 @@ export async function resolveSiteConfig(
     throw new Error(`KawaPress: srcDir must be relative to the site root, got ${JSON.stringify(srcDir)}`)
   }
 
+  const srcExclude = resolveSrcExclude(site.srcExclude)
   const publicDir = normalizePublicDir(site.publicDir ?? 'public')
   const head = resolveHeadConfig(site.head, {
     owner: 'the site config',
@@ -63,6 +67,7 @@ export async function resolveSiteConfig(
     title: site.title ?? 'KawaPress',
     base: normalizeBase(site.base),
     srcDir,
+    srcExclude,
     publicDir,
     head,
     themeConfig: site.themeConfig,
@@ -123,6 +128,25 @@ function describeValue(value: unknown): string {
     return 'null'
   }
   return Array.isArray(value) ? 'an array' : typeof value
+}
+
+function resolveSrcExclude(srcExclude: unknown): string[] {
+  if (srcExclude === undefined) {
+    return []
+  }
+  if (!Array.isArray(srcExclude)) {
+    throw new TypeError(
+      `KawaPress: srcExclude must be an array of glob patterns, got ${describeValue(srcExclude)} in kawapress.config.ts.`,
+    )
+  }
+  return srcExclude.map((pattern, index) => {
+    if (typeof pattern !== 'string' || !pattern.trim() || isAbsolute(pattern)) {
+      throw new Error(
+        `KawaPress: srcExclude[${index}] must be a glob pattern relative to srcDir, got ${JSON.stringify(pattern)} in kawapress.config.ts.`,
+      )
+    }
+    return pattern
+  })
 }
 
 function normalizePublicDir(publicDir: string): string {

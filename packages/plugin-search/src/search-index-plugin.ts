@@ -1,17 +1,16 @@
 import type { MarkdownItContainerOptions } from '@mdit/plugin-container'
 import type { PageFrontmatter } from 'kawapress'
+import type { MarkdownPageScope } from 'kawapress/generator'
 import type { MarkdownExit, Token } from 'markdown-exit'
-import type { Dirent } from 'node:fs'
 import type { Plugin } from 'vite'
 import type { SearchDocument } from './search'
-import { readdir, readFile } from 'node:fs/promises'
-import { isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { readFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import { frontmatterPlugin } from '@mdit-vue/plugin-frontmatter'
 import { alert as alertPlugin } from '@mdit/plugin-alert'
 import { attrs as attrsPlugin } from '@mdit/plugin-attrs'
 import { container as containerPlugin } from '@mdit/plugin-container'
 import {
-  markdownPagePathToRoutePath,
   normalizeFrontmatterSource,
   resolveHeadingTitle,
   resolveLocaleIndex,
@@ -19,6 +18,7 @@ import {
   stringifyJson,
   useMarkdownItPlugin,
 } from 'kawapress'
+import { isMarkdownPage, listMarkdownPages } from 'kawapress/generator'
 import { createMarkdownExit } from 'markdown-exit'
 import anchorPlugin from 'markdown-it-anchor'
 import { createSearchIndex } from './search'
@@ -27,7 +27,6 @@ export const SEARCH_INDEX_MODULE_ID = 'virtual:kawapress-search-index'
 const RESOLVED_MODULE_ID = `\0${SEARCH_INDEX_MODULE_ID}`
 const INDEX_MODULE_PREFIX = `${SEARCH_INDEX_MODULE_ID}/`
 const RESOLVED_INDEX_MODULE_PREFIX = `\0${INDEX_MODULE_PREFIX}`
-const IGNORED_DIRECTORIES = new Set(['dist', 'node_modules'])
 
 export type SearchGitHubAlertType = 'note'
   | 'tip'
@@ -47,6 +46,8 @@ export interface SearchCalloutOptions {
 
 interface SearchIndexPluginOptions {
   srcDir: string
+  /** `srcExclude` of the site config: Markdown files that are not pages. */
+  srcExclude?: readonly string[]
   locales: string[]
   localeLanguages?: Record<string, string | undefined>
   callouts?: SearchCalloutOptions
@@ -145,14 +146,17 @@ export function searchIndexPlugin(
   options: SearchIndexPluginOptions,
 ): Plugin {
   const localeIndexes = [...new Set(['root', ...options.locales])]
-  let sourceRoot = resolve(options.srcDir)
+  let scope: MarkdownPageScope = {
+    sourceRoot: resolve(options.srcDir),
+    exclude: options.srcExclude,
+  }
   let indexVersion = 0
   let cachedIndexes: Promise<Record<string, string>> | undefined
   const resolvedIndexModules = new Set<string>()
 
   function getIndexes(): Promise<Record<string, string>> {
     return cachedIndexes ??= loadSearchIndexes(
-      sourceRoot,
+      scope,
       localeIndexes,
       {
         localeLanguages: options.localeLanguages,
@@ -164,7 +168,11 @@ export function searchIndexPlugin(
   return {
     name: 'kawapress:search-index',
     configResolved(config) {
-      sourceRoot = resolve(config.root, options.srcDir)
+      scope = {
+        sourceRoot: resolve(config.root, options.srcDir),
+        publicDir: config.publicDir ? resolve(config.publicDir) : undefined,
+        exclude: options.srcExclude,
+      }
     },
     resolveId(id) {
       if (id === SEARCH_INDEX_MODULE_ID) {
@@ -199,7 +207,7 @@ export function searchIndexPlugin(
       })}`
     },
     handleHotUpdate(context) {
-      if (!isMarkdownFile(context.file, sourceRoot)) {
+      if (!isMarkdownPage(context.file, scope)) {
         return
       }
 
@@ -221,18 +229,17 @@ export function searchIndexPlugin(
 }
 
 export async function loadSearchIndexes(
-  sourceRoot: string,
+  scope: MarkdownPageScope,
   locales: string[],
   options: LoadSearchIndexesOptions = {},
 ): Promise<Record<string, string>> {
   const localeIndexes = Object.fromEntries(locales.map(locale => (
     [locale, createSearchIndex()]
   )))
-  const files = await findMarkdownFiles(sourceRoot)
+  const pages = await listMarkdownPages(scope)
 
-  for (const file of files) {
+  for (const { file, routePath: route } of pages) {
     const source = await readFile(file, 'utf8')
-    const route = markdownPagePathToRoutePath(relative(sourceRoot, file))
     const locale = resolveLocaleIndex(route, locales)
     const index = localeIndexes[locale]
     if (index) {
@@ -437,36 +444,4 @@ function resolveGitHubAlertLabels(
 
 function normalizeText(text: string): string {
   return text.replace(/\s+/g, ' ').trim()
-}
-
-async function findMarkdownFiles(directory: string): Promise<string[]> {
-  const entries = await readdir(directory, { withFileTypes: true })
-  const files = await Promise.all(entries
-    .sort(compareEntries)
-    .filter(entry => !shouldIgnore(entry))
-    .map(async (entry) => {
-      const path = join(directory, entry.name)
-      if (entry.isDirectory()) {
-        return findMarkdownFiles(path)
-      }
-      return entry.isFile() && entry.name.endsWith('.md') ? [path] : []
-    }))
-  return files.flat()
-}
-
-function isMarkdownFile(file: string, sourceRoot: string): boolean {
-  const relativePath = relative(sourceRoot, file)
-  return file.endsWith('.md')
-    && !isAbsolute(relativePath)
-    && relativePath !== '..'
-    && !relativePath.startsWith(`..${sep}`)
-}
-
-function compareEntries(a: Dirent, b: Dirent): number {
-  return a.name.localeCompare(b.name)
-}
-
-function shouldIgnore(entry: Dirent): boolean {
-  return entry.name.startsWith('.')
-    || (entry.isDirectory() && IGNORED_DIRECTORIES.has(entry.name))
 }

@@ -11,6 +11,8 @@ export interface SidebarPageScope {
   sourceRoot: string
   /** Absolute directory of copied assets, which holds no pages. */
   publicDir?: string | undefined
+  /** Glob patterns, relative to `sourceRoot`, of Markdown files that are not pages. */
+  exclude?: readonly string[] | undefined
   /** Site `themeConfig`, as the site config declares it; only `sidebar` is read. */
   themeConfig?: object | undefined
   /** Site locales, whose `themeConfig` can replace the site sidebar. */
