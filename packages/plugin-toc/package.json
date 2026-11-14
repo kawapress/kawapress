@@ -1,0 +1,45 @@
+{
+  "name": "@kawapress/plugin-toc",
+  "type": "module",
+  "version": "0.3.0",
+  "description": "[[toc]] table of contents for KawaPress pages",
+  "license": "MIT",
+  "homepage": "https://kawapress.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kawapress/kawapress.git",
+    "directory": "packages/plugin-toc"
+  },
+  "bugs": {
+    "url": "https://github.com/kawapress/kawapress/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "README-zh-CN.md",
+    "src/**/!(*.test.*)"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "kawapress": "workspace:^"
+  },
+  "dependencies": {
+    "markdown-exit": "catalog:markdown"
+  },
+  "devDependencies": {
+    "@mdit/plugin-attrs": "catalog:markdown",
+    "markdown-it-anchor": "catalog:markdown"
+  }
+}

@@ -5,6 +5,7 @@ import type { MarkdownExit, Token } from 'markdown-exit'
 import type { Plugin } from 'vite'
 import type { SearchDocument } from './search'
 import { resolve } from 'node:path'
+import { installToc } from '@kawapress/plugin-toc'
 import { frontmatterPlugin } from '@mdit-vue/plugin-frontmatter'
 import { alert as alertPlugin } from '@mdit/plugin-alert'
 import { attrs as attrsPlugin } from '@mdit/plugin-attrs'
@@ -41,6 +42,8 @@ export interface SearchCalloutOptions {
     labels?: Partial<SearchGitHubAlertLabels>
     localeLabels?: Record<string, Partial<SearchGitHubAlertLabels>>
   }
+  /** Reads `[[toc]]` lines as a table of contents, which adds no text. */
+  toc?: boolean
 }
 
 interface SearchIndexPluginOptions {
@@ -107,7 +110,7 @@ const DEFAULT_GITHUB_ALERT_LABELS = {
 const searchMarkdownCache = new Map<string, MarkdownExit>()
 
 function getSearchMarkdown(callouts: SearchCalloutOptions = {}): MarkdownExit {
-  const key = `${Boolean(callouts.containers)}:${Boolean(callouts.githubAlerts)}`
+  const key = [callouts.containers, callouts.githubAlerts, callouts.toc].map(Boolean).join(':')
   const cached = searchMarkdownCache.get(key)
   if (cached) {
     return cached
@@ -139,6 +142,10 @@ function getSearchMarkdown(callouts: SearchCalloutOptions = {}): MarkdownExit {
       }
       useMarkdownItPlugin(markdown, containerPlugin, options)
     }
+  }
+
+  if (callouts.toc) {
+    installToc(markdown)
   }
 
   searchMarkdownCache.set(key, markdown)

@@ -542,6 +542,10 @@ Alert 标题与 Custom Container 一样由生成期页面 `path` 和 locale `lan
 
 行内徽标由独立逻辑插件包 `@kawapress/plugin-badge` 提供。写法与 VitePress 相同：Markdown 中直接写 `<Badge type="tip" text="New" />` 或带默认插槽，`type` 取 `info`、`tip`（默认）、`warning`、`danger`。Runtime Plugin 全局注册 `Badge` 组件，输出 `.kawa-badge` 与 `.kawa-badge--{type}` 稳定 class；颜色只读公共语义 Token，样式位于 `kawa.plugin` 层。标题中的 `<Badge text="…" />` 按第八节的标题纯文本规则不进入页面标题、目录与搜索标题，自动锚点也不受它影响。
 
+### 7.6.2 页内目录
+
+页内目录由独立生成侧插件包 `@kawapress/plugin-toc` 提供，语法与 VitePress 相同：单独一行的 `[[toc]]`（不区分大小写，前面最多三个空格）替换为页面目录；同一行有其他文字、缩进四格或位于代码围栏内时保持原样。目录默认收录 h2 与 h3，可用 `level` 选项调整；只收页面顶层标题，容器与引用块内的标题不进入。链接指向最终锚点 ID（含 `{#id}` 自定义锚点），文字使用第八节的标题纯文本规则，与大纲、搜索看到的标题一致。输出 `<nav class="kawa-toc">` 包裹的嵌套 `<ul>`，不自带样式，由主题正文样式决定外观；没有符合条件的标题时不输出任何内容。Search Plugin 的 `toc: true` 复用同一解析规则，使 `[[toc]]` 不作为正文文字进入索引。
+
 ### 7.7 Code Block UI
 
 代码块外壳由独立逻辑插件包 `@kawapress/plugin-code-block` 提供，不依赖 Shiki。Generator Plugin 在标准 fence renderer 外增加 `.kawa-code-block*` 稳定结构，显示语言标签、可访问的复制按钮和可选行号；Runtime Plugin 只使用一次 document 事件委托处理复制，不为每个代码块创建 Vue App 或组件。nagi 在 Code Group 之前安装本插件，使每个 Tab panel 包含完整代码块外壳。图标、颜色、间距和复制成功状态由插件在 `kawa.plugin` 层提供，主题只做微调。nagi 从顶层 `codeBlock` 字段接收这一个内置插件的选项并在生成 Config 前移除该字段，用户不通过追加第二个同名 Plugin 来覆盖默认实例。

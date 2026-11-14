@@ -12,6 +12,7 @@ import llmsPlugin from '@kawapress/plugin-llms'
 import mathjaxPlugin from '@kawapress/plugin-mathjax'
 import searchPlugin from '@kawapress/plugin-search'
 import shikiPlugin from '@kawapress/plugin-shiki'
+import tocPlugin from '@kawapress/plugin-toc'
 import { defineConfig } from 'kawapress'
 
 /**
@@ -27,6 +28,7 @@ export default defineConfig({
     containerPlugin(),
     githubAlertsPlugin(),
     badgePlugin(),
+    tocPlugin(),
     codeBlockPlugin(),
     codeGroupPlugin(),
     shikiPlugin({
@@ -40,6 +42,7 @@ export default defineConfig({
     searchPlugin({
       containers: true,
       githubAlerts: true,
+      toc: true,
     }),
     llmsPlugin(),
     lastUpdatedPlugin({

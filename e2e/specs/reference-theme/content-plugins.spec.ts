@@ -35,6 +35,17 @@ test('a badge renders in a heading and in text, and stays out of the heading id'
   await expect(page.locator('.ref-doc p .kawa-badge--tip')).toHaveText('new')
 })
 
+test('[[toc]] lists the headings of the page with links to their anchors', async ({ page }) => {
+  const links = page.locator('.ref-doc .kawa-toc a')
+  await expect(links).toHaveText(['Badges', 'Filler'])
+
+  for (const link of await links.all()) {
+    const id = (await link.getAttribute('href'))!.slice(1)
+    await expect(page.locator(`.ref-doc [id="${id}"]`)).toHaveCount(1)
+  }
+  await expect(page.locator('.ref-doc')).not.toContainText('[[toc]]')
+})
+
 test('a code block gets the plugin shell with a language label and a copy button', async ({ page }) => {
   const block = page.locator('.ref-doc .kawa-code-block').first()
   await expect(block.locator('.kawa-code-block__language')).toHaveText('Bash')
