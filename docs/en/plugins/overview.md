@@ -21,7 +21,10 @@ Plugins come in two kinds:
 | `@kawapress/plugin-code-group` | Groups several code blocks into tabs. Often used to show npm, pnpm and Yarn commands side by side. |
 | `@kawapress/plugin-container` | Callout containers: `info`, `tip`, `warning`, `danger` and a collapsible `details`. |
 | `@kawapress/plugin-github-alerts` | GitHub-style callouts, written as `> [!NOTE]`. |
-| `@kawapress/plugin-search` | Local full-text search. The index loads only when search is first opened, so it does not slow the first paint. |
+| `@kawapress/plugin-badge` | Inline `<Badge>` component for status and version labels in headings and text. See [Markdown Extensions](/en/guide/markdown-extensions#badges). |
+| `@kawapress/plugin-toc` | Turns a standalone `[[toc]]` line into a table of contents for the page. See [Markdown Extensions](/en/guide/markdown-extensions#table-of-contents). |
+| `@kawapress/plugin-emoji` | Turns GitHub-style `:tada:` shortcodes into emoji. See [Markdown Extensions](/en/guide/markdown-extensions#emoji). |
+| `@kawapress/plugin-search` | Local full-text search. The index loads only when search is first opened, so it does not slow the first paint (disable with `search: false` in `nagi()`). |
 | `@kawapress/plugin-llms` | Writes a `.md` file for every page and the `llms.txt` and `llms-full.txt` files. Also adds a "copy page" button under the title. See [AI-Ready Documentation](/en/guide/ai-ready-documentation). |
 | `@kawapress/plugin-unocss` | Adds UnoCSS, so you can write utility classes in Markdown. |
 | `@kawapress/plugin-sitemap` | Writes `sitemap.xml`. It is off by default and turns on when you set the site address. See [Sitemap](/en/plugins/sitemap). |
@@ -34,6 +37,7 @@ Plugins come in two kinds:
 | [`@kawapress/plugin-image-zoom`](/en/plugins/image-zoom) | Click an image in the text to see it larger. |
 | [`@kawapress/plugin-last-updated`](/en/plugins/last-updated) | Shows "Last updated" and "Edit this page" at the bottom of each page. |
 | [`@kawapress/plugin-comments`](/en/plugins/comments) | Gives every page a comment section backed by GitHub Discussions. |
+| [`@kawapress/plugin-algolia-search`](/en/plugins/algolia-search) | Searches the site with Algolia DocSearch, with lazy loading and per-language `lang:` filtering. |
 | `@kawapress/plugin-mathjax` | Renders `$…$` and `$$…$$` as math at build time. See [Markdown Extensions](/en/guide/markdown-extensions) for usage. |
 
 ## How to install {#how-to-install}

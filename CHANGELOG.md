@@ -2,7 +2,56 @@
 
 All notable changes to KawaPress are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/). Before 1.0, a change to the second number (`0.2` → `0.3`) can contain breaking changes.
 
-The 17 public packages are released together and share one version number. [简体中文](https://github.com/kawapress/kawapress/blob/main/CHANGELOG.zh-CN.md)
+The 21 public packages are released together and share one version number. [简体中文](https://github.com/kawapress/kawapress/blob/main/CHANGELOG.zh-CN.md)
+
+## [Unreleased]
+
+### Breaking changes
+
+**`themeConfig.githubUrl` in nagi is replaced by `themeConfig.socialLinks`.** A configuration that still sets `githubUrl` fails the build with a hint on how to rewrite it. In CSS, `.nagi-github-link` is replaced by `.nagi-social-link`.
+
+- **Site authors**: replace `themeConfig.githubUrl` (and any per-locale `githubUrl`) with `themeConfig.socialLinks`.
+- **Site authors with custom CSS**: rename `.nagi-github-link` selectors to `.nagi-social-link`.
+
+```diff
+ export default nagi({
+   themeConfig: {
+-    githubUrl: 'https://github.com/kawapress/kawapress',
++    socialLinks: [
++      { icon: 'github', link: 'https://github.com/kawapress/kawapress' },
++    ],
+   },
+ })
+```
+
+**Heading titles drop inline HTML tags.** Plain-text heading titles (used in `pageData.title`, `pageData.headers`, the page outline, `[[toc]]`, local search, and `llms.txt`) now strip inline HTML tags while keeping the text between them: `<kbd>Ctrl</kbd>` reads `Ctrl` and `<Badge text="beta" />` leaves nothing. Heading anchor IDs are unchanged.
+
+- **Site authors**: if a heading relied on an inline HTML tag or attribute (such as `<Badge text="beta" />`) appearing in the browser tab title or outline, move that text outside the tag or set `title` in frontmatter.
+
+**`loadSearchIndexes()` in `@kawapress/plugin-search` takes a `MarkdownPageScope` instead of a `sourceRoot` string, and `markdownFileToRoutePath()` takes an optional `rewrites` argument.** `MarkdownPage` and `PageBuildArtifact` also include `pagePath` (the source path after `rewrites`).
+
+- **Plugin authors**: pass `{ sourceRoot, publicDir, exclude, rewrites }` to `loadSearchIndexes()`, and include `pagePath` when constructing `PageBuildArtifact` or `MarkdownPage` test fixtures.
+
+```diff
+-const indexes = await loadSearchIndexes(sourceRoot, locales, options)
++const indexes = await loadSearchIndexes(
++  { sourceRoot, publicDir, exclude: srcExclude, rewrites },
++  locales,
++  options,
++)
+```
+
+**Platform detection head script ID changed.** The inline platform script moved from `@kawapress/plugin-search` to `usePlatformAttribute()` in `kawapress/client`, and its `<script>` `id` changed from `kawa-search-platform` to `kawa-platform`.
+
+### Added
+
+- **Markdown file inclusion (`<!--@include: ...-->`) and code snippets (`<<< ...`).** Include whole Markdown files, `#region` blocks, or `{start,end}` line ranges, and import code snippets with `#region`, `{lines lang attrs}`, and `[title]` tab labels. Export `expandMarkdownSource()` and `readMarkdownSource()` from `kawapress/generator`. See [Markdown Extensions](https://kawapress.dev/en/guide/markdown-extensions#import-code-snippets).
+- **`srcExclude` and `rewrites` in site configuration.** Exclude non-page Markdown files with `srcExclude` globs, and map source paths to new page routes with `rewrites` rules or a function. Export `markdownFileToPagePath()` from `kawapress/generator`. See [Routing](https://kawapress.dev/en/guide/routing#excluding-source-files).
+- **`@kawapress/plugin-badge`, `@kawapress/plugin-toc`, and `@kawapress/plugin-emoji` (enabled by default in nagi).** Use `<Badge>`, `[[toc]]`, and `:tada:` emoji shortcodes out of the box in nagi sites.
+- **`@kawapress/plugin-algolia-search` and `nagi({ search: false })`.** Connect Algolia DocSearch with lazy script loading, automatic `lang:<lang>` facet filtering per locale, and `--kawa-*` token styling. Pass `search: false` to `nagi()` to omit the built-in local search. See [Algolia Search](https://kawapress.dev/en/plugins/algolia-search).
+- **Collapsible sidebar groups (`collapsed`) and `socialLinks` in nagi.** Fold sidebar groups in `themeConfig.sidebar` or directory `_meta.json` files with `collapsed: true | false`, and render Simple Icons or custom SVG links in the top bar with `themeConfig.socialLinks`. See [Internationalization](https://kawapress.dev/en/guide/internationalization#collapsible-sidebar-groups).
+- **`usePlatformAttribute()` and `withoutBase()` in `kawapress/client`.** Detect Apple vs Control/Windows platforms before first paint with `data-kawa-platform`, and strip the site `base` from a URL path with `withoutBase()`.
+- **[Migrating from VitePress](https://kawapress.dev/en/guide/migrate-from-vitepress) guide.** Step-by-step migration instructions, site and theme config mapping tables, and composable equivalents.
 
 ## [0.3.0] - 2026-10-28
 
@@ -104,6 +153,7 @@ What changes for each kind of user:
 - The CSS target is a browser that supports `light-dark()`, so theme override tokens no longer lose their colors in production builds.
 - A release no longer fails when a version is already on npm.
 
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.3.0...HEAD
 [0.3.0]: https://github.com/kawapress/kawapress/releases/tag/v0.3.0
 [0.2.2]: https://github.com/kawapress/kawapress/commit/5a9b6f2
 [0.2.1]: https://github.com/kawapress/kawapress/commit/5456bfa

@@ -413,7 +413,7 @@ api.vite((config) => {
         publicDir: resolved.publicDir,
       })
       // 每项形如
-      // { file: '/site/src/guide/intro.md', sourcePath: '/guide/intro.md', routePath: '/guide/intro' }
+      // { file: '/site/src/guide/intro.md', sourcePath: '/guide/intro.md', pagePath: '/guide/intro.md', routePath: '/guide/intro' }
       console.log(pages.map(page => page.routePath))
     },
   })
@@ -515,7 +515,7 @@ Outlet 的名字由「范围 + 位置」组成：`layout` 是整个页面框架�
 | --- | --- | --- | --- |
 | `layout.header` | 主题 | 整条顶栏 | 前置：公告横幅 |
 | `layout.header.start` | 主题 | Logo 与站点名 | 后置：版本选择器 |
-| `layout.header.end` | 主题 | 语言、外观、GitHub 等控件 | 前置：搜索按钮 |
+| `layout.header.end` | 主题 | 语言、外观、社交链接等控件 | 前置：搜索按钮 |
 | `layout.sidebar` | 主题 | 导航树 | 前置：站点切换，后置：赞助入口 |
 | `layout.footer` | 主题 | 站点页脚 | 后置：备案号 |
 | `doc` | 主题 | 正文与上下篇导航 | 后置：最后更新时间、评论区 |

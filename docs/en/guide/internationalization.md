@@ -204,6 +204,99 @@ export default nagi({
 
 A page that matches no prefix falls back to the sidebar nagi generates from your directories. The home page uses `layout: home`, which never shows a sidebar.
 
+### Collapsible Sidebar Groups {#collapsible-sidebar-groups}
+
+When a sidebar has many groups, add `collapsed` to let readers fold and unfold them:
+
+- Omitted: the group stays open and shows no toggle button.
+- `collapsed: false`: the group starts open and can be folded.
+- `collapsed: true`: the group starts closed and can be unfolded.
+
+```ts
+export default nagi({
+  themeConfig: {
+    sidebar: [
+      {
+        text: 'Guide',
+        collapsed: false,
+        items: [
+          { text: 'Getting Started', link: '/guide/getting-started' },
+        ],
+      },
+      {
+        text: 'Advanced',
+        collapsed: true,
+        items: [
+          { text: 'SSR Compatibility', link: '/guide/ssr-compatibility' },
+        ],
+      },
+    ],
+  },
+})
+```
+
+For an automatic sidebar generated from directories, set `collapsed` on `"type": "dir"` entries in `_meta.json` (setting `collapsed` on a `"file"` entry or passing a non-boolean value fails the build):
+
+```json
+[
+  "getting-started",
+  {
+    "type": "dir",
+    "name": "advanced",
+    "label": "Advanced",
+    "collapsed": true
+  }
+]
+```
+
+A group that contains the current page opens automatically regardless of its `collapsed` setting, both in the initial SSR HTML and when navigating into it. Folded child lists remain in the HTML so crawlers can still follow their links.
+
+### Social Links {#social-links}
+
+Use `themeConfig.socialLinks` to place repository or community icon links at the right end of the top navigation bar:
+
+```ts
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  themeConfig: {
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/kawapress/kawapress' },
+      { icon: 'discord', link: 'https://discord.gg/your-invite', ariaLabel: 'Join our Discord' },
+      {
+        icon: { svg: '<svg viewBox="0 0 24 24" aria-hidden="true">...</svg>' },
+        link: 'https://example.com',
+        ariaLabel: 'Website',
+      },
+    ],
+  },
+})
+```
+
+- `icon` takes a [Simple Icons](https://simpleicons.org) name (such as `'github'`, `'discord'`, or `'x'`) or raw SVG markup as `{ svg: '<svg>…</svg>' }`. Named icons are resolved to SVG at build time and only the icons in use are sent to the browser; an unknown icon name fails the build.
+- `ariaLabel` sets the accessible name of the link and defaults to the icon name when omitted.
+- Each language can override `socialLinks` in its own `locales.<key>.themeConfig`.
+
+### Disable Built-In Local Search {#disable-local-search}
+
+nagi includes local full-text search (`@kawapress/plugin-search`) by default. Pass `search: false` to `nagi()` when replacing it with another search plugin such as [Algolia Search](/en/plugins/algolia-search):
+
+```ts
+import algoliaSearchPlugin from '@kawapress/plugin-algolia-search'
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  search: false,
+  plugins: [
+    algoliaSearchPlugin({
+      appId: 'YOUR_APP_ID',
+      apiKey: 'YOUR_SEARCH_API_KEY',
+      indexName: 'your_index_name',
+    }),
+  ],
+})
+```
+
 ### Write them for each language {#per-locale-navigation}
 
 `nav` and `sidebar` are theme configuration, so each language can override them. Point the links at the pages of that language:

@@ -48,6 +48,8 @@ Both pages now use `#installation`. Language switching still lands on the instal
 
 The page does not display `{#installation}`. Its outline and search results use the same ID. **Custom IDs must be unique within a page.** Prefer lowercase English words, numbers, and hyphens, such as `getting-started`.
 
+Inline HTML or components inside a heading, such as `<Badge text="beta" />`, render in the heading on the page, but HTML tags are dropped from the plain-text title used in the page outline, search results, and browser tab title (text inside tags such as `<kbd>Ctrl</kbd>` stays as `Ctrl`), and they do not change the automatic anchor.
+
 ## Links {#links}
 
 KawaPress distinguishes internal page links, same-page anchors, and external links so each keeps the appropriate browser behavior.
@@ -106,6 +108,65 @@ The result is:
 | Preview server | Local | 4173 |
 
 When a table is wider than the article, nagi makes the table region horizontally scrollable instead of overflowing the document layout.
+
+## Table of Contents {#table-of-contents}
+
+To place a table of contents directly inside the article body, write `[[toc]]` (case-insensitive) on a line of its own:
+
+```md
+[[toc]]
+```
+
+nagi includes `@kawapress/plugin-toc` by default and replaces that line with a nested list wrapped in `<nav class="kawa-toc">`. Only top-level headings of the page are listed (headings inside containers or blockquotes are skipped), links point to the final heading anchor IDs, and titles match the page outline and search index.
+
+By default, `h2` and `h3` headings are included. To change which heading levels appear, pass `tocPlugin()` in `plugins` in `kawapress.config.ts`:
+
+```ts
+import tocPlugin from '@kawapress/plugin-toc'
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  plugins: [
+    tocPlugin({
+      level: [2, 3, 4],
+    }),
+  ],
+})
+```
+
+## Badges {#badges}
+
+Use the `<Badge>` component to attach a short status label, such as a version number or stability tag, to a heading or phrase. nagi includes `@kawapress/plugin-badge` by default.
+
+```md
+- Default <Badge text="Recommended" />
+- Info <Badge type="info" text="v0.3" />
+- Warning <Badge type="warning" text="Experimental" />
+- Danger <Badge type="danger">Deprecated</Badge>
+```
+
+The result is:
+
+- Default <Badge text="Recommended" />
+- Info <Badge type="info" text="v0.3" />
+- Warning <Badge type="warning" text="Experimental" />
+- Danger <Badge type="danger">Deprecated</Badge>
+
+`type` accepts `'tip'` (default), `'info'`, `'warning'`, or `'danger'`. Pass the label through the `text` prop or the default slot. A `<Badge text="beta" />` inside a heading is omitted from the outline, search titles, and browser tab title, and does not change the heading anchor.
+
+## Emoji {#emoji}
+
+nagi includes `@kawapress/plugin-emoji` by default, so `:name:` shortcodes turn into emoji characters:
+
+```md
+Release complete :tada: Ready to ship :rocket:
+```
+
+The result is:
+
+Release complete :tada: Ready to ship :rocket:
+
+Shortcode names follow GitHub's emoji list. Unknown names and shortcodes inside inline code or fenced code blocks stay as written. ASCII emoticons such as `:)` are not converted, so punctuation in technical writing stays untouched. Shortcodes inside headings keep their `:name:` text in the outline and search index, and anchors remain unchanged.
 
 ## Custom Containers {#custom-containers}
 
@@ -321,6 +382,72 @@ const price = toCurrency(19.9)
 ```
 
 Only blocks marked with `twoslash` are analysed; every other block is highlighted as usual. The analysis happens at build time, and the popup styles load only on the pages that use them, so pages without Twoslash code blocks download nothing extra.
+
+### Import Code Snippets {#import-code-snippets}
+
+Instead of copying long code examples into Markdown, use `<<<` on its own line to pull code directly from a source file. Your examples stay in real files and update automatically when the source changes.
+
+```md
+<<< ./snippets/example.ts
+```
+
+Paths are relative to the current Markdown file, or start with `@/` to resolve from `srcDir`:
+
+```md
+<<< @/snippets/example.ts
+```
+
+Mark a section of the source file with `#region` and `#endregion` comments to import only that part. The marker lines and shared leading indentation are stripped automatically:
+
+```ts
+// snippets/example.ts
+export function setup() {
+  // #region config
+  const port = 5173
+  const host = 'localhost'
+  // #endregion config
+  return { port, host }
+}
+```
+
+Append `#region-name` to the path, add `{lines lang attrs}` for line highlights, language override, and fence attributes such as `:line-numbers`, and add `[title]` to set the tab label inside a code group (which defaults to the file name):
+
+````md
+::: code-group
+<<< ./snippets/example.ts#config{1 ts:line-numbers} [Dev Config]
+<<< ./snippets/prod.ts [Prod Config]
+:::
+````
+
+## Markdown File Inclusion {#markdown-file-inclusion}
+
+When several pages share the same note or parameter table, use `<!--@include-->` to inline another Markdown file at that spot:
+
+```md
+<!--@include: ./parts/prerequisites.md-->
+
+<!-- Start with @/ to resolve from srcDir -->
+<!--@include: @/parts/shared-note.md-->
+```
+
+When a full `.md` file is included, its own frontmatter is stripped automatically. If the directive is the only content on an indented line (for instance inside a list item), every included line keeps that indentation. Included files can include other files; circular includes stop the build with the full file chain and line number.
+
+To include only part of a file, add a `#region` name or a `{start,end}` line range (either bound can be omitted):
+
+```md
+<!-- Include only between <!-- #region intro --> and <!-- #endregion intro --> -->
+<!--@include: ./parts/guide.md#intro-->
+
+<!-- Include lines 3 through 10 -->
+<!--@include: ./parts/guide.md{3,10}-->
+
+<!-- Include from line 5 to the end of the file -->
+<!--@include: ./parts/guide.md{5,}-->
+```
+
+`<!--@include-->` and `<<<` expand before Markdown parsing begins, so page rendering, the page outline, local search, `llms.txt`, and dead-link checking all see the same expanded content. If a link inside an included file is broken, the dead-link report points back to the line of the page that included it.
+
+If shared Markdown files live inside `srcDir`, exclude them with [`srcExclude`](./routing#excluding-source-files) so KawaPress does not build standalone pages for them.
 
 ## Math Equations {#math-equations}
 

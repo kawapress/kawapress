@@ -2,7 +2,56 @@
 
 KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。1.0 之前，第二位数字的变化（如 `0.2` → `0.3`）可能包含破坏性变更。
 
-17 个公开包一起发布，使用同一个版本号。[English](https://github.com/kawapress/kawapress/blob/main/CHANGELOG.md)
+21 个公开包一起发布，使用同一个版本号。[English](https://github.com/kawapress/kawapress/blob/main/CHANGELOG.md)
+
+## [Unreleased]
+
+### 破坏性变更
+
+**nagi 的 `themeConfig.githubUrl` 替换为 `themeConfig.socialLinks`。** 配置中仍然保留 `githubUrl` 时会在构建时报错并提示改写方式。样式 class `.nagi-github-link` 同步改为 `.nagi-social-link`。
+
+- **站点作者**：把 `themeConfig.githubUrl`（以及各语言下的 `githubUrl`）改为 `themeConfig.socialLinks`。
+- **写过自定义样式的站点作者**：把 `.nagi-github-link` 选择器改为 `.nagi-social-link`。
+
+```diff
+ export default nagi({
+   themeConfig: {
+-    githubUrl: 'https://github.com/kawapress/kawapress',
++    socialLinks: [
++      { icon: 'github', link: 'https://github.com/kawapress/kawapress' },
++    ],
+   },
+ })
+```
+
+**标题纯文本去掉行内 HTML 标签。** 用于 `pageData.title`、`pageData.headers`、右侧大纲、`[[toc]]`、本地搜索和 `llms.txt` 的标题纯文本现在会去掉行内 HTML 标签、只保留标签之间的文字：`<kbd>Ctrl</kbd>` 读作 `Ctrl`，`<Badge text="beta" />` 不保留任何文字。标题锚点 ID 不变。
+
+- **站点作者**：如果此前依赖行内 HTML 标签或组件属性（如 `<Badge text="beta" />`）进入页面标题或大纲，请把文字移到标签外，或在 frontmatter 中显式设置 `title`。
+
+**`@kawapress/plugin-search` 的 `loadSearchIndexes()` 第一个参数由 `sourceRoot` 字符串改为 `MarkdownPageScope`，`markdownFileToRoutePath()` 支持可选的 `rewrites` 参数。** `MarkdownPage` 与 `PageBuildArtifact` 新增 `pagePath` 字段（表示经 `rewrites` 改写后的页面路径）。
+
+- **插件作者**：调用 `loadSearchIndexes()` 时传入 `{ sourceRoot, publicDir, exclude, rewrites }`；在测试中构造 `PageBuildArtifact` 或 `MarkdownPage` 时补上 `pagePath`。
+
+```diff
+-const indexes = await loadSearchIndexes(sourceRoot, locales, options)
++const indexes = await loadSearchIndexes(
++  { sourceRoot, publicDir, exclude: srcExclude, rewrites },
++  locales,
++  options,
++)
+```
+
+**平台检测脚本标签的 `id` 变更。** 识别访客平台的内联脚本从 `@kawapress/plugin-search` 移入 `kawapress/client` 的 `usePlatformAttribute()`，`<head>` 中对应 `<script>` 的 `id` 由 `kawa-search-platform` 改为 `kawa-platform`。
+
+### 新增
+
+- **Markdown 文件引入（`<!--@include: ...-->`）与代码片段导入（`<<< ...`）。** 支持整文件引入、`#region` 片段、`{start,end}` 行号范围，以及带 `#region`、`{lines lang attrs}` 和 `[title]` 标签名的代码片段导入；`kawapress/generator` 公开 `expandMarkdownSource()` 与 `readMarkdownSource()`。详见 [Markdown 语法扩展](https://kawapress.dev/guide/markdown-extensions#import-code-snippets)。
+- **站点配置新增 `srcExclude` 与 `rewrites`。** 用 `srcExclude` 排除不作为页面的 Markdown 文件，用 `rewrites` 规则对象或函数改写页面公开路由；`kawapress/generator` 公开 `markdownFileToPagePath()`。详见[路由](https://kawapress.dev/guide/routing#excluding-source-files)。
+- **`@kawapress/plugin-badge`、`@kawapress/plugin-toc` 与 `@kawapress/plugin-emoji`（nagi 默认启用）。** 使用 nagi 的站点可直接在 Markdown 中写 `<Badge>`、`[[toc]]` 和 `:tada:` 表情短代码。
+- **`@kawapress/plugin-algolia-search` 与 `nagi({ search: false })`。** 接入 Algolia DocSearch，按需加载脚本、自动按当前语言附加 `lang:<lang>` 过滤并映射到 `--kawa-*` Token；在 `nagi()` 中传 `search: false` 可关闭内置本地搜索。详见 [Algolia 搜索](https://kawapress.dev/plugins/algolia-search)。
+- **nagi 侧边栏分组折叠（`collapsed`）与 `socialLinks`。** 在 `themeConfig.sidebar` 或目录 `_meta.json` 中用 `collapsed: true | false` 控制分组折叠，在 `themeConfig.socialLinks` 中使用 Simple Icons 名称或自定义 SVG 配置顶栏社交图标链接。详见[国际化](https://kawapress.dev/guide/internationalization#collapsible-sidebar-groups)。
+- **`kawapress/client` 公开 `usePlatformAttribute()` 与 `withoutBase()`。** 在首屏绘制前写入 `data-kawa-platform` 属性，并提供从路径中移除站点 `base` 的 `withoutBase()`。
+- **[从 VitePress 迁移](https://kawapress.dev/guide/migrate-from-vitepress)指南。** 提供迁移步骤、站点与主题配置对照表，以及组合式函数替换说明。
 
 ## [0.3.0] - 2026-10-28
 
@@ -104,6 +153,7 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.3.0...HEAD
 [0.3.0]: https://github.com/kawapress/kawapress/releases/tag/v0.3.0
 [0.2.2]: https://github.com/kawapress/kawapress/commit/5a9b6f2
 [0.2.1]: https://github.com/kawapress/kawapress/commit/5456bfa

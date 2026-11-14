@@ -31,6 +31,13 @@ export const guideSidebars = defineLocalizedSidebars({
         },
         {
           text: {
+            zhCN: '从 VitePress 迁移',
+            en: 'Migrating from VitePress',
+          },
+          link: '/guide/migrate-from-vitepress',
+        },
+        {
+          text: {
             zhCN: '面向 AI 的文档',
             en: 'AI-Ready Documentation',
           },
@@ -192,6 +199,13 @@ export const pluginSidebars = defineLocalizedSidebars({
             en: 'Sitemap',
           },
           link: '/plugins/sitemap',
+        },
+        {
+          text: {
+            zhCN: 'Algolia 搜索',
+            en: 'Algolia Search',
+          },
+          link: '/plugins/algolia-search',
         },
       ],
     },

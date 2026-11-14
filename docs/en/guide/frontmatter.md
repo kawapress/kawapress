@@ -73,7 +73,7 @@ titleTemplate: '%s · KawaPress Guide'
 
 The browser-tab title for this page is “Configure your site · KawaPress Guide”. The page title is also used by site search.
 
-Without `title`, the page title is the text of the first H1 with its Markdown formatting removed: `**bold**` and `[links](/guide)` keep only their words, and inline code loses its backticks. Formulas and inline HTML are not formatting, so they stay exactly as you wrote them: the heading `# Energy $E=mc^2$` gives the page title `Energy $E=mc^2$`.
+Without `title`, the page title is the text of the first H1 with its Markdown formatting and inline HTML tags removed: `**bold**`, `[links](/guide)`, and `<kbd>Ctrl</kbd>` keep only the words inside them, `<Badge text="beta" />` leaves nothing, and inline code loses its backticks. Formulas and emoji shortcodes stay as written: the heading `# Energy $E=mc^2$ <Badge text="beta" />` gives the page title `Energy $E=mc^2$`.
 
 ## Page Head {#page-head}
 

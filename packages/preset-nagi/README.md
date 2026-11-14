@@ -11,7 +11,7 @@ nagi (凪), the default documentation preset of KawaPress.
 - Responsive documentation layout with a sidebar, a page outline and a top navigation bar.
 - Light and dark appearance, and a language switcher for multilingual sites.
 - A `home` layout for landing pages and a `page` layout for plain content.
-- Brings the official plugins for code, containers, search, AI output, sitemap and UnoCSS.
+- Brings the official plugins for code, containers, badges, table of contents, emoji, search, AI output, sitemap and UnoCSS.
 
 ## Install
 

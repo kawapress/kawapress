@@ -108,10 +108,10 @@ pnpm exec kawapress build
 
 | 范围 | 内置能力 |
 | --- | --- |
-| 内容编写 | Markdown、Frontmatter、在 Markdown 中使用 Vue、文件路由、Data Loader |
-| 渲染 | 开发与构建共享 SSR 语义、Hydration、Vue Router 站内导航 |
-| 文档界面 | nagi 布局、响应式 Sidebar、本页目录、深浅色模式、多语言 |
-| 内容增强 | Shiki、Twoslash、代码组、代码复制、提示容器、GitHub Alerts |
+| 内容编写 | Markdown、Frontmatter、文件引入、代码片段、在 Markdown 中使用 Vue、文件路由、Data Loader |
+| 渲染 | 开发与构建共享 SSR 语义、Hydration、站内路由导航 |
+| 文档界面 | nagi 布局、响应式 Sidebar、本页目录、深浅色模式、多语言、社交链接 |
+| 内容增强 | Shiki、Twoslash、代码组、代码复制、提示容器、GitHub Alerts、徽标、页内目录、Emoji |
 | 内容发现 | 按需加载的本地搜索与多语言导航 |
 | AI 读取 | 页面 `.md`、`llms.txt`、`llms-full.txt`、页面复制操作 |
 | 样式 | UnoCSS 集成与 nagi 默认配置 |
@@ -131,6 +131,7 @@ KawaPress 把扩展边界分得很清楚：
 ## 文档
 
 - [快速开始](https://kawapress.dev/guide/getting-started)
+- [从 VitePress 迁移](https://kawapress.dev/guide/migrate-from-vitepress)
 - [KawaPress 是什么？](https://kawapress.dev/guide/what-is-kawapress)
 - [Markdown 语法扩展](https://kawapress.dev/guide/markdown-extensions)
 - [国际化](https://kawapress.dev/guide/internationalization)

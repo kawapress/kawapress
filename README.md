@@ -108,10 +108,10 @@ The deployed output is static and does not require a Node.js server. npm and Yar
 
 | Area | Included capability |
 | --- | --- |
-| Authoring | Markdown, frontmatter, Vue in Markdown, file-based routing, data loaders |
-| Rendering | Shared development/build SSR semantics, hydration, Vue Router navigation |
-| Documentation UI | nagi layouts, responsive sidebar, page outline, dark mode, i18n |
-| Content | Shiki, Twoslash, code groups, code copy, containers, GitHub alerts |
+| Authoring | Markdown, frontmatter, file includes, code snippets, Vue in Markdown, file-based routing, data loaders |
+| Rendering | Shared development/build SSR semantics, hydration, client router navigation |
+| Documentation UI | nagi layouts, responsive sidebar, page outline, dark mode, i18n, social links |
+| Content | Shiki, Twoslash, code groups, code copy, containers, GitHub alerts, badges, inline TOC, emoji |
 | Discovery | Lazy local search and locale-aware navigation |
 | AI consumption | Page `.md`, `llms.txt`, `llms-full.txt`, copy actions |
 | Styling | UnoCSS integration with sensible nagi defaults |
@@ -131,6 +131,7 @@ A logical plugin is installed once and can provide both generator and runtime be
 ## Documentation
 
 - [Getting Started](https://kawapress.dev/en/guide/getting-started)
+- [Migrating from VitePress](https://kawapress.dev/en/guide/migrate-from-vitepress)
 - [What is KawaPress?](https://kawapress.dev/en/guide/what-is-kawapress)
 - [Markdown Extensions](https://kawapress.dev/en/guide/markdown-extensions)
 - [Internationalization](https://kawapress.dev/en/guide/internationalization)

@@ -403,7 +403,7 @@ api.vite((config) => {
         publicDir: resolved.publicDir,
       })
       // Each entry looks like
-      // { file: '/site/src/guide/intro.md', sourcePath: '/guide/intro.md', routePath: '/guide/intro' }
+      // { file: '/site/src/guide/intro.md', sourcePath: '/guide/intro.md', pagePath: '/guide/intro.md', routePath: '/guide/intro' }
       console.log(pages.map(page => page.routePath))
     },
   })
@@ -505,7 +505,7 @@ An outlet name is a scope plus a position: `layout` is the whole page frame, `do
 | --- | --- | --- | --- |
 | `layout.header` | Theme | The whole top bar | Prepend: announcement banner |
 | `layout.header.start` | Theme | Logo and site title | Append: version picker |
-| `layout.header.end` | Theme | Language, appearance, GitHub controls | Prepend: search trigger |
+| `layout.header.end` | Theme | Language, appearance, social links | Prepend: search trigger |
 | `layout.sidebar` | Theme | Navigation tree | Prepend: site switcher, append: sponsor link |
 | `layout.footer` | Theme | Site footer | Append: legal notice |
 | `doc` | Theme | Document body and prev/next links | Append: last updated, comments |
