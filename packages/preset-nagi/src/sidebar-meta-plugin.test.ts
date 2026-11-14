@@ -128,6 +128,22 @@ describe('the automatic sidebar page list', () => {
 
     expect(sidebarMeta).toEqual({ '/guide': ['a'] })
   })
+
+  it('carries the collapsed flag of a directory entry', async () => {
+    await writePage('guide/a.md', '# A\n')
+    await writePage('_meta.json', '[{ "type": "dir", "name": "guide", "collapsed": true }]\n')
+
+    const { sidebarMeta } = await renderModule()
+
+    expect(sidebarMeta).toEqual({ '/': [{ type: 'dir', name: 'guide', collapsed: true }] })
+  })
+
+  it('rejects collapsed on a file entry', async () => {
+    await writePage('guide.md', '# Guide\n')
+    await writePage('_meta.json', '[{ "type": "file", "name": "guide", "collapsed": true }]\n')
+
+    await expect(renderModule()).rejects.toThrow('item 0.collapsed must be a boolean on a "dir" item')
+  })
 })
 
 describe('dev updates of the module', () => {

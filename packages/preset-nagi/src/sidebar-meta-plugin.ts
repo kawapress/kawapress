@@ -197,6 +197,9 @@ function parseMetaItem(
   if (item.label !== undefined && typeof item.label !== 'string') {
     throw metaError(file, `item ${index}.label must be a string`)
   }
+  if (item.collapsed !== undefined && (item.type !== 'dir' || typeof item.collapsed !== 'boolean')) {
+    throw metaError(file, `item ${index}.collapsed must be a boolean on a "dir" item`)
+  }
 
   const parsed: SidebarMetaEntry = {
     type: item.type,
@@ -204,6 +207,9 @@ function parseMetaItem(
   }
   if (item.label !== undefined) {
     parsed.label = item.label
+  }
+  if (item.collapsed !== undefined) {
+    parsed.collapsed = item.collapsed
   }
   return parsed
 }

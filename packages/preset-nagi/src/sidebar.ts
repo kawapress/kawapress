@@ -3,6 +3,12 @@ export interface NagiSidebarItem {
   link?: string
   base?: string
   items?: NagiSidebarItem[]
+  /**
+   * Makes a group foldable. `false` starts open, `true` starts closed, and
+   * leaving it out keeps the group always open. A group that holds the current
+   * page opens regardless.
+   */
+  collapsed?: boolean
 }
 
 export interface NagiSidebarSection {
@@ -34,6 +40,8 @@ export interface SidebarMetaEntry {
   type: 'file' | 'dir'
   name: string
   label?: string
+  /** For a directory: same meaning as {@link NagiSidebarItem.collapsed}. */
+  collapsed?: boolean
 }
 
 export type SidebarMetaItem = string | SidebarMetaEntry
@@ -140,6 +148,12 @@ export function isSidebarLinkActive(link: string, routePath: string): boolean {
     && normalizePageRoute(link) === normalizePageRoute(routePath)
 }
 
+/** Whether `item` or any item below it links to the current route. */
+export function hasActiveSidebarLink(item: NagiSidebarItem, routePath: string): boolean {
+  return (item.link !== undefined && isSidebarLinkActive(item.link, routePath))
+    || (item.items?.some(child => hasActiveSidebarLink(child, routePath)) ?? false)
+}
+
 export function createSidebar(
   pages: SidebarPages,
   options: CreateSidebarOptions = {},
@@ -221,18 +235,19 @@ function localizeSidebarItems<Locale extends string>(
   locale: Locale,
   prefix: string,
 ): NagiSidebarItem[] {
-  return items.map((item) => {
+  return items.map(({ text, items: children, ...rest }) => {
     const localized: NagiSidebarItem = {
-      text: typeof item.text === 'string' ? item.text : item.text[locale],
+      ...rest,
+      text: typeof text === 'string' ? text : text[locale],
     }
-    if (item.link !== undefined) {
-      localized.link = prefixSidebarRoute(item.link, prefix)
+    if (rest.link !== undefined) {
+      localized.link = prefixSidebarRoute(rest.link, prefix)
     }
-    if (item.base !== undefined) {
-      localized.base = prefixSidebarRoute(item.base, prefix)
+    if (rest.base !== undefined) {
+      localized.base = prefixSidebarRoute(rest.base, prefix)
     }
-    if (item.items !== undefined) {
-      localized.items = localizeSidebarItems(item.items, locale, prefix)
+    if (children !== undefined) {
+      localized.items = localizeSidebarItems(children, locale, prefix)
     }
     return localized
   })
@@ -265,12 +280,9 @@ function applySidebarBase(
 ): NagiSidebarItem[] {
   return items.map((item) => {
     const base = item.base ?? inheritedBase
-    const resolved: NagiSidebarItem = { text: item.text }
-    if (item.link !== undefined) {
-      resolved.link = base ? withSidebarBase(item.link, base) : item.link
-    }
-    if (item.base !== undefined) {
-      resolved.base = item.base
+    const resolved: NagiSidebarItem = { ...item }
+    if (item.link !== undefined && base) {
+      resolved.link = withSidebarBase(item.link, base)
     }
     if (item.items !== undefined) {
       resolved.items = applySidebarBase(item.items, base)
@@ -326,13 +338,17 @@ function toSidebarItems(
         item => getMetaName(item) === node.segment,
       )
       const items = toSidebarItems(node.children, node.path, meta)
-      return {
+      const item: SidebarItem = {
         text: typeof configured === 'object' && configured.label
           ? configured.label
           : node.text,
         link: node.link,
         items: items.length > 0 ? items : undefined,
       }
+      if (typeof configured === 'object' && configured.collapsed !== undefined && items.length > 0) {
+        item.collapsed = configured.collapsed
+      }
+      return item
     })
 }
 
