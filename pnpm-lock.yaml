@@ -773,6 +773,9 @@ importers:
       '@iconify-json/simple-icons':
         specifier: catalog:node
         version: 1.2.100
+      '@kawapress/plugin-badge':
+        specifier: workspace:^
+        version: link:../plugin-badge
       '@kawapress/plugin-code-block':
         specifier: workspace:^
         version: link:../plugin-code-block
@@ -782,6 +785,9 @@ importers:
       '@kawapress/plugin-container':
         specifier: workspace:^
         version: link:../plugin-container
+      '@kawapress/plugin-emoji':
+        specifier: workspace:^
+        version: link:../plugin-emoji
       '@kawapress/plugin-github-alerts':
         specifier: workspace:^
         version: link:../plugin-github-alerts
@@ -797,6 +803,9 @@ importers:
       '@kawapress/plugin-sitemap':
         specifier: workspace:^
         version: link:../plugin-sitemap
+      '@kawapress/plugin-toc':
+        specifier: workspace:^
+        version: link:../plugin-toc
       '@kawapress/plugin-unocss':
         specifier: workspace:^
         version: link:../plugin-unocss

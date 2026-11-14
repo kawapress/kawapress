@@ -540,15 +540,15 @@ Alert 标题与 Custom Container 一样由生成期页面 `path` 和 locale `lan
 
 ### 7.6.1 Badge
 
-行内徽标由独立逻辑插件包 `@kawapress/plugin-badge` 提供。写法与 VitePress 相同：Markdown 中直接写 `<Badge type="tip" text="New" />` 或带默认插槽，`type` 取 `info`、`tip`（默认）、`warning`、`danger`。Runtime Plugin 全局注册 `Badge` 组件，输出 `.kawa-badge` 与 `.kawa-badge--{type}` 稳定 class；颜色只读公共语义 Token，样式位于 `kawa.plugin` 层。标题中的 `<Badge text="…" />` 按第八节的标题纯文本规则不进入页面标题、目录与搜索标题，自动锚点也不受它影响。
+行内徽标由独立逻辑插件包 `@kawapress/plugin-badge` 提供。写法与 VitePress 相同：Markdown 中直接写 `<Badge type="tip" text="New" />` 或带默认插槽，`type` 取 `info`、`tip`（默认）、`warning`、`danger`。Runtime Plugin 全局注册 `Badge` 组件，输出 `.kawa-badge` 与 `.kawa-badge--{type}` 稳定 class；颜色只读公共语义 Token，样式位于 `kawa.plugin` 层。标题中的 `<Badge text="…" />` 按第八节的标题纯文本规则不进入页面标题、目录与搜索标题，自动锚点也不受它影响。nagi Preset 默认组合该插件。
 
 ### 7.6.2 页内目录
 
-页内目录由独立生成侧插件包 `@kawapress/plugin-toc` 提供，语法与 VitePress 相同：单独一行的 `[[toc]]`（不区分大小写，前面最多三个空格）替换为页面目录；同一行有其他文字、缩进四格或位于代码围栏内时保持原样。目录默认收录 h2 与 h3，可用 `level` 选项调整；只收页面顶层标题，容器与引用块内的标题不进入。链接指向最终锚点 ID（含 `{#id}` 自定义锚点），文字使用第八节的标题纯文本规则，与大纲、搜索看到的标题一致。输出 `<nav class="kawa-toc">` 包裹的嵌套 `<ul>`，不自带样式，由主题正文样式决定外观；没有符合条件的标题时不输出任何内容。Search Plugin 的 `toc: true` 复用同一解析规则，使 `[[toc]]` 不作为正文文字进入索引。
+页内目录由独立生成侧插件包 `@kawapress/plugin-toc` 提供，语法与 VitePress 相同：单独一行的 `[[toc]]`（不区分大小写，前面最多三个空格）替换为页面目录；同一行有其他文字、缩进四格或位于代码围栏内时保持原样。目录默认收录 h2 与 h3，可用 `level` 选项调整；只收页面顶层标题，容器与引用块内的标题不进入。链接指向最终锚点 ID（含 `{#id}` 自定义锚点），文字使用第八节的标题纯文本规则，与大纲、搜索看到的标题一致。输出 `<nav class="kawa-toc">` 包裹的嵌套 `<ul>`，不自带样式，由主题正文样式决定外观；没有符合条件的标题时不输出任何内容。Search Plugin 的 `toc: true` 复用同一解析规则，使 `[[toc]]` 不作为正文文字进入索引。nagi Preset 默认组合该插件，并同时为默认的 `searchPlugin()` 打开 `toc: true`。
 
 ### 7.6.3 Emoji 短代码
 
-Emoji 短代码由独立生成侧插件包 `@kawapress/plugin-emoji` 提供，使用 `markdown-it-emoji` 的完整 GitHub 名称表，与 VitePress 一致：`:tada:` 渲染为 🎉，未知名称、行内代码与代码围栏中的短代码保持原样。`:)` 一类颜文字不转换，技术文档中它们更常是标点。emoji token 保留作者写下的短代码，因此标题纯文本、目录、大纲与搜索读到的仍是 `:tada:`，与不安装本插件时一致，锚点也不变。
+Emoji 短代码由独立生成侧插件包 `@kawapress/plugin-emoji` 提供，使用 `markdown-it-emoji` 的完整 GitHub 名称表，与 VitePress 一致：`:tada:` 渲染为 🎉，未知名称、行内代码与代码围栏中的短代码保持原样。`:)` 一类颜文字不转换，技术文档中它们更常是标点。emoji token 保留作者写下的短代码，因此标题纯文本、目录、大纲与搜索读到的仍是 `:tada:`，与不安装本插件时一致，锚点也不变。nagi Preset 默认组合该插件。
 
 ### 7.7 Code Block UI
 
