@@ -8,7 +8,7 @@ import type {
   ContentLoaderSpecification,
 } from '../api/data'
 import type { InternalDataLoaderContext } from '../generator/data/context'
-import { readFile, stat } from 'node:fs/promises'
+import { stat } from 'node:fs/promises'
 import { isAbsolute, relative, sep } from 'node:path'
 import matter from 'gray-matter'
 import { normalizePath } from 'vite'
@@ -16,6 +16,7 @@ import { normalizeFrontmatterSource } from '../core/frontmatter'
 import { markdownPagePathToRoutePath } from '../core/markdown-route'
 import { findDataLoaderFiles, normalizeDataLoaderGlob } from '../generator/data/glob'
 import { createMarkdownCompiler } from './markdown'
+import { readMarkdownSource } from './markdown-source'
 
 interface CachedContent {
   data: ContentData
@@ -81,7 +82,7 @@ async function loadContentFile(
   }
 
   try {
-    const src = await readFile(file, 'utf8')
+    const { source: src } = readMarkdownSource({ file, sourceRoot: context.srcDir })
     const parsed = parseContentSource(src, options.excerpt)
     const sourcePath = contentFileToSourcePath(file, context.srcDir)
     const url = markdownPagePathToRoutePath(sourcePath)

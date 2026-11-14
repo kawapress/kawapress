@@ -4,7 +4,6 @@ import type { MarkdownPageScope } from 'kawapress/generator'
 import type { MarkdownExit, Token } from 'markdown-exit'
 import type { Plugin } from 'vite'
 import type { SearchDocument } from './search'
-import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { frontmatterPlugin } from '@mdit-vue/plugin-frontmatter'
 import { alert as alertPlugin } from '@mdit/plugin-alert'
@@ -18,7 +17,7 @@ import {
   stringifyJson,
   useMarkdownItPlugin,
 } from 'kawapress'
-import { isMarkdownPage, listMarkdownPages } from 'kawapress/generator'
+import { isMarkdownPage, listMarkdownPages, readMarkdownSource } from 'kawapress/generator'
 import { createMarkdownExit } from 'markdown-exit'
 import anchorPlugin from 'markdown-it-anchor'
 import { createSearchIndex } from './search'
@@ -67,6 +66,8 @@ interface CreateSearchDocumentsOptions {
 interface LoadSearchIndexesOptions {
   localeLanguages?: Record<string, string | undefined>
   callouts?: SearchCalloutOptions
+  /** Receives every file the pages read through includes and snippets. */
+  dependencies?: Set<string>
 }
 
 interface MutableSearchSection {
@@ -153,6 +154,8 @@ export function searchIndexPlugin(
   let indexVersion = 0
   let cachedIndexes: Promise<Record<string, string>> | undefined
   const resolvedIndexModules = new Set<string>()
+  /** Files that pages read through includes and snippets. */
+  const dependencies = new Set<string>()
 
   function getIndexes(): Promise<Record<string, string>> {
     return cachedIndexes ??= loadSearchIndexes(
@@ -161,6 +164,7 @@ export function searchIndexPlugin(
       {
         localeLanguages: options.localeLanguages,
         callouts: options.callouts,
+        dependencies,
       },
     )
   }
@@ -207,7 +211,7 @@ export function searchIndexPlugin(
       })}`
     },
     handleHotUpdate(context) {
-      if (!isMarkdownPage(context.file, scope)) {
+      if (!isMarkdownPage(context.file, scope) && !dependencies.has(context.file)) {
         return
       }
 
@@ -239,7 +243,10 @@ export async function loadSearchIndexes(
   const pages = await listMarkdownPages(scope)
 
   for (const { file, routePath: route } of pages) {
-    const source = await readFile(file, 'utf8')
+    const { source, dependencies } = readMarkdownSource({ file, sourceRoot: scope.sourceRoot })
+    for (const dependency of dependencies) {
+      options.dependencies?.add(dependency)
+    }
     const locale = resolveLocaleIndex(route, locales)
     const index = localeIndexes[locale]
     if (index) {

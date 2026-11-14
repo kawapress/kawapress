@@ -339,16 +339,22 @@ export interface ParsedMarkdown {
   pageData: PageData
 }
 
+/**
+ * Compiles one page. `lineOrigins` maps each line of `src` to the line of the
+ * page file it was written on, when includes and snippets were expanded into
+ * `src`, so link warnings name the line the author can open.
+ */
 export async function parseMarkdown(
   md: MarkdownExit,
   src: string,
   path: string,
   sourcePath?: string,
+  lineOrigins?: readonly number[],
 ): Promise<ParsedMarkdown> {
   const env: MarkdownEnv = { path, sourcePath, links: [], headings: [] }
   const html = await md.renderAsync(src, env)
 
-  env.links = shiftLinksToSourceLines(src, env)
+  env.links = shiftLinksToSourceLines(src, env, lineOrigins)
   const frontmatter = env.frontmatter ?? {}
   const headers = env.headers ?? []
   const metadata = resolvePageMetadata(frontmatter, headers)
@@ -370,9 +376,16 @@ export async function parseMarkdown(
  * Token line numbers start at the page body, so frontmatter lines are added back
  * to report the line the author sees in the Markdown file.
  */
-function shiftLinksToSourceLines(src: string, env: MarkdownEnv): LinkRecord[] {
+function shiftLinksToSourceLines(
+  src: string,
+  env: MarkdownEnv,
+  lineOrigins: readonly number[] | undefined,
+): LinkRecord[] {
   const offset = countRemovedLines(src, env.content)
-  return (env.links ?? []).map(link => ({ ...link, line: link.line + offset }))
+  return (env.links ?? []).map((link) => {
+    const line = link.line + offset
+    return { ...link, line: lineOrigins?.[line - 1] ?? line }
+  })
 }
 
 function countRemovedLines(source: string, body: string | undefined): number {

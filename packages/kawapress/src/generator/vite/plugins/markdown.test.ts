@@ -7,7 +7,7 @@ import { createLinkRegistry } from '../../../compiler/link-registry'
 import { markdownPlugin } from './markdown'
 
 describe('markdownPlugin', () => {
-  it('loads Markdown as a Vue SFC before the transform pipeline', async () => {
+  it('loads Markdown as a Vue SFC and watches the files it includes', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'kawapress-markdown-plugin-'))
     const file = join(directory, 'page.md')
     const calls: Array<{ file: string, source: string }> = []
@@ -26,6 +26,7 @@ describe('markdownPlugin', () => {
             frontmatter: {},
             headers: [],
           },
+          dependencies: [join(directory, 'part.md')],
         }
       },
     }
@@ -42,14 +43,17 @@ describe('markdownPlugin', () => {
         return
       }
 
-      await expect(load.call({} as never, `${file}?raw`)).resolves.toBeNull()
-      const result = await load.call({} as never, file)
+      const watched: string[] = []
+      const context = { addWatchFile: (id: string) => watched.push(id) }
+      await expect(load.call(context as never, `${file}?raw`)).resolves.toBeNull()
+      const result = await load.call(context as never, file)
 
       expect(calls).toEqual([{
         file,
         source: await readFile(file, 'utf8'),
       }])
       expect(result).toContain('<template><h1 id="hello">Hello</h1>')
+      expect(watched).toEqual([join(directory, 'part.md')])
     }
     finally {
       await rm(directory, { force: true, recursive: true })
