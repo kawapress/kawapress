@@ -9,6 +9,7 @@ The 21 public packages are released together and share one version number. [ç®€ä
 ### Fixed
 
 - **The theme loads when the site is installed with pnpm.** With pnpm, a site using `kawapress/nagi` built pages with no theme and failed with `rendered page did not contain [data-kawa-ssg-md-root]`. ([#46](https://github.com/kawapress/kawapress/issues/46))
+- **Pages that import `kawapress/client` work in `kawapress dev`.** A page or component that called `usePageData()`, `useSite()` or another client composable left the screen blank in dev with `useRoute() and useRouter() need a KawaPress app`. ([#48](https://github.com/kawapress/kawapress/issues/48))
 
 ## [0.4.1] - 2026-11-15
 

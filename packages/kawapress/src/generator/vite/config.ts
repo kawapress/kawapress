@@ -81,6 +81,11 @@ export function createBaseViteConfig(
     // `index.html` to scan, so every dependency would be discovered after the
     // first page request and force a full reload. See useRuntimeDependencies().
     optimizeDeps: {
+      // The browser entry reaches KawaPress through relative imports. A
+      // pre-bundled copy of `kawapress/client` would bring a second router and
+      // site injection key, and every component importing it from a site or a
+      // plugin would fail to find the app.
+      exclude: [KAWAPRESS_PACKAGE_NAME],
       include: [
         VUE_DEPENDENCY,
         ...runtimeDependencySpecifiers(
