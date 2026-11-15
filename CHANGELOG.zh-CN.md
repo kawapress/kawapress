@@ -6,6 +6,10 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+### 修复
+
+- **用 pnpm 安装的站点也能加载主题。** 之前在 pnpm 下，使用 `kawapress/nagi` 的站点构建出的页面没有主题，并报错 `rendered page did not contain [data-kawa-ssg-md-root]`。（[#46](https://github.com/kawapress/kawapress/issues/46)）
+
 ## [0.4.1] - 2026-11-15
 
 ### 修复
