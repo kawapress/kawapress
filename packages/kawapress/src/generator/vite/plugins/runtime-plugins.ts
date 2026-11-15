@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite'
-import { readFile } from 'node:fs/promises'
+import { readFile, realpath } from 'node:fs/promises'
 import { findPackageJSON } from 'node:module'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
@@ -83,7 +83,7 @@ async function resolvePluginPackages(
   const searchRoots = [root]
   const corePackagePath = findPluginPackage('kawapress', searchRoots)
   if (corePackagePath) {
-    searchRoots.push(dirname(corePackagePath))
+    searchRoots.push(await packageDirectory(corePackagePath))
   }
   let foundPackage = true
 
@@ -104,13 +104,22 @@ async function resolvePluginPackages(
         packagePath,
         exports: packageJson.exports,
       })
-      searchRoots.push(dirname(packagePath))
+      searchRoots.push(await packageDirectory(packagePath))
       unresolved.delete(pluginName)
       foundPackage = true
     }
   }
 
   return packages
+}
+
+/**
+ * Directory a package really lives in. pnpm links a dependency into the site's
+ * `node_modules`, and only the real directory has the package's own
+ * dependencies next to it, such as the preset a plugin package belongs to.
+ */
+async function packageDirectory(packagePath: string): Promise<string> {
+  return dirname(await realpath(packagePath))
 }
 
 function findPluginPackage(
