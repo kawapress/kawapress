@@ -6,6 +6,10 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+### 修复
+
+- **末尾带斜杠的地址不再显示 404 页面。** 在 dev、`kawapress preview` 和站内跳转中，`/guide/` 都会打开页面 `/guide`；Markdown 里写成 `/guide/` 的链接渲染时去掉末尾斜杠。（[#54](https://github.com/kawapress/kawapress/issues/54)）
+
 ## [0.5.0] - 2026-11-16
 
 ### 新增

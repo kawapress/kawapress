@@ -51,6 +51,14 @@ test('the dev server hydrates a page opened with a query and a hash', async ({ p
   ).toHaveAttribute('href', `${sitePath('/en/guide/routing')}?from=test#linking-between-pages`)
 })
 
+test('the dev server serves a page addressed with a trailing slash', async ({ page }) => {
+  const response = await page.goto(`${sitePath('/guide/routing')}/`)
+
+  expect(response?.status()).toBe(200)
+  await expect(page.locator('article h1')).toContainText('路由')
+  await expect(page).toHaveURL(`${devOrigin}${sitePath('/guide/routing')}`)
+})
+
 /**
  * A cold optimizer cache is the normal first visit, and the dev server starts
  * with one (see the webServer command). Every package the page eventually needs

@@ -104,6 +104,33 @@ test('a percent-encoded page path is replaced by the decoded one', async ({ page
   await expect(page).toHaveURL(`${previewOrigin}${sitePath(routing)}`)
 })
 
+test('a directory page opened with a trailing slash shows the page', async ({ page }) => {
+  // `en/index.md` is the page `/en`, built to `en.html`; `/en/` addresses it too.
+  const response = await page.goto(`${sitePath('/en')}/#top`)
+
+  expect(response?.status()).toBe(200)
+  await expect(page.locator('.nagi-notfound')).toHaveCount(0)
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  await expect(page).toHaveURL(`${previewOrigin}${sitePath('/en')}#top`)
+})
+
+test('a link with a trailing slash navigates on the client', async ({ page }) => {
+  await page.goto(sitePath(gettingStarted))
+  await markWindow(page)
+
+  await page.evaluate((href) => {
+    const anchor = document.createElement('a')
+    anchor.href = href
+    anchor.textContent = 'routing with a slash'
+    document.querySelector('article')?.append(anchor)
+  }, `${sitePath(routing)}/`)
+  await page.getByRole('link', { name: 'routing with a slash' }).click()
+
+  await expect(page.locator('article h1')).toContainText('路由')
+  await expect(page).toHaveURL(`${previewOrigin}${sitePath(routing)}`)
+  expect(await readMarker(page), 'the router has to take the link over').toBe('kept')
+})
+
 test('a page with its own styles is styled before its content shows', async ({ page }) => {
   // Records the computed colour the first time the styled element exists, so a
   // stylesheet that arrives after the content would be caught.

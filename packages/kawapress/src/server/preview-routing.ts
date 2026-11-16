@@ -58,7 +58,8 @@ function resolveCandidates(sitePath: string): string[] {
     return ['index.html']
   }
   if (sitePath.endsWith('/')) {
-    return [`${relative}index.html`]
+    // A directory page is built next to its directory: `/guide/` is `guide.html`.
+    return [`${relative}index.html`, `${relative.replace(/\/+$/, '')}.html`]
   }
   return [relative, `${relative}.html`, `${relative}/index.html`]
 }

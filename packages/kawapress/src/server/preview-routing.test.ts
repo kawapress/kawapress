@@ -20,10 +20,10 @@ describe('planPreviewRequest', () => {
     })
   })
 
-  it('only probes the directory index for paths with a trailing slash', () => {
+  it('probes the directory index, then the directory page, for paths with a trailing slash', () => {
     expect(planPreviewRequest('/guide/routing/', '/')).toEqual({
       kind: 'static',
-      candidates: ['guide/routing/index.html'],
+      candidates: ['guide/routing/index.html', 'guide/routing.html'],
     })
   })
 

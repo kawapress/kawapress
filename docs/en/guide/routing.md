@@ -46,6 +46,8 @@ guide/setup/index.md → /guide/setup
 
 Do not create both `guide.md` and `guide/index.md`. They map to the same `/guide` route, so choose one structure.
 
+A trailing slash addresses the same page: `/guide/` opens `/guide`, and the address bar then shows `/guide`. Links written as `/guide/` in the nav, the sidebar or Markdown work as well, and Markdown links are rendered without the slash.
+
 ## Site Root and Source Directory {#site-root-and-source-directory}
 
 The current working directory is the **site root** when you run `kawapress dev` or `kawapress build`. By default, KawaPress reads `kawapress.config.ts` and Markdown pages from this directory and writes the build to `dist`.

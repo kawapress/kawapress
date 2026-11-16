@@ -1,3 +1,5 @@
+import { canonicalRoutePath } from './route-path'
+
 const MARKDOWN_PAGE_EXTENSION_RE = /\.(?:md|html)$/i
 
 /** Convert a source-relative Markdown page path to its public route path. */
@@ -10,10 +12,5 @@ export function markdownPagePathToRoutePath(pagePath: string): string {
     '',
   )
 
-  if (withoutExtension === '/index') {
-    return '/'
-  }
-  return withoutExtension.endsWith('/index')
-    ? withoutExtension.slice(0, -'/index'.length)
-    : withoutExtension
+  return canonicalRoutePath(withoutExtension.replace(/(?:^|\/)index$/, ''))
 }

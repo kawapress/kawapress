@@ -1,6 +1,7 @@
 import type { PageTable } from '../../core/page-manifest'
 import type { Route } from '../../core/router'
 import { decodeUrlPathname } from '../../core/base'
+import { canonicalRoutePath } from '../../core/route-path'
 
 /** Path, query and hash of a location; the delimiters stay with query and hash. */
 export interface LocationParts {
@@ -13,7 +14,8 @@ export interface LocationParts {
 
 /**
  * Split a location into its parts. A percent-encoded path is decoded, because
- * the page table is keyed by the paths the site author wrote.
+ * the page table is keyed by the paths the site author wrote, and a trailing
+ * slash is dropped, because `/guide/` is the page `/guide`.
  */
 export function parseLocation(location: string): LocationParts {
   const hashIndex = location.indexOf('#')
@@ -24,7 +26,7 @@ export function parseLocation(location: string): LocationParts {
   const path = searchIndex === -1 ? beforeHash : beforeHash.slice(0, searchIndex)
 
   return {
-    path: normalizePath(decodeUrlPathname(path)),
+    path: canonicalRoutePath(normalizePath(decodeUrlPathname(path))),
     search,
     hash,
   }
@@ -70,13 +72,9 @@ export function routePathOf(location: string): string {
 
 /** Whether two route paths address the same page, ignoring a trailing slash. */
 export function isSamePagePath(a: string, b: string): boolean {
-  return normalizeTrailingSlash(a) === normalizeTrailingSlash(b)
+  return canonicalRoutePath(a) === canonicalRoutePath(b)
 }
 
 function normalizePath(path: string): string {
   return path.startsWith('/') ? path : `/${path}`
-}
-
-function normalizeTrailingSlash(path: string): string {
-  return path.length > 1 ? path.replace(/\/$/, '') : path
 }
