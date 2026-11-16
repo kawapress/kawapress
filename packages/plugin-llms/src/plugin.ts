@@ -16,6 +16,7 @@ import { definePlugin } from 'kawapress'
 import { createLlmsArtifacts } from './artifacts'
 import { SSG_MD_ENVIRONMENT } from './constants'
 import { renderMarkdownPages } from './ssg/render'
+import { createSsrResolveInheritancePlugin } from './ssr-resolve'
 import {
   createLlmsDevMiddlewarePlugin,
   createSsgMarkdownVitePlugin,
@@ -125,7 +126,10 @@ function installSsgMarkdownPlugins(
     0,
     createSsgMarkdownVitePlugin(options),
   )
-  config.plugins.push(createLlmsDevMiddlewarePlugin(options))
+  config.plugins.push(
+    createLlmsDevMiddlewarePlugin(options),
+    createSsrResolveInheritancePlugin(),
+  )
 }
 
 function installSsgMarkdownEnvironment(config: InlineConfig): void {
