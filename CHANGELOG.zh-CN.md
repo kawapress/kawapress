@@ -6,6 +6,11 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+### 新增
+
+- **nagi 支持自定义页面布局。** `layout: <名字>` 会在页面外框里渲染以该名字注册的全局组件，`layout: false` 不渲染任何 nagi 外框，与 VitePress 一致。（[#52](https://github.com/kawapress/kawapress/issues/52)）
+- **`themeConfig.appearance` 设置 nagi 站点的默认外观。** 写 `'dark'` 或 `'light'` 后，读者还没手动切换时就用这个外观；`'auto'`（默认）继续跟随系统。（[#52](https://github.com/kawapress/kawapress/issues/52)）
+
 ## [0.4.2] - 2026-11-16
 
 ### 修复

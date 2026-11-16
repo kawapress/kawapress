@@ -107,6 +107,42 @@ layout: home
 | `doc` | 默认值。显示文档布局。 |
 | `home` | 落地页布局，可使用 `hero` 和 `features`。 |
 | `page` | 普通页面布局，不显示文档侧栏和本页目录。 |
+| 其他名字 | 自定义布局，见下文。 |
+| `false` | 不要任何 nagi 外框，只渲染页面本身。适合嵌在 iframe 里的页面。 |
+
+### 自定义布局 {#custom-layout}
+
+`layout` 写成其他名字时，nagi 会找同名的全局组件，把它放在顶部导航下面，代替页面正文。组件里用 `<RouterView />` 决定正文放在哪：
+
+```vue
+<!-- ComponentDocs.vue -->
+<script setup lang="ts">
+import { RouterView } from 'kawapress/client'
+</script>
+
+<template>
+  <div class="component-docs">
+    <aside>……</aside>
+    <RouterView />
+  </div>
+</template>
+```
+
+在 Runtime Plugin 里注册它，名字和 frontmatter 里写的一致（`component-docs`、`componentDocs`、`ComponentDocs` 都能匹配）：
+
+```ts
+api.vueApp((app) => {
+  app.component('component-docs', ComponentDocs)
+})
+```
+
+```md
+---
+layout: component-docs
+---
+```
+
+使用自定义布局和 `layout: false` 的页面不进入自动侧边栏。找不到同名组件时，页面按 `page` 布局显示正文。
 
 你也可以在单个页面关闭 nagi 的某些区域：
 

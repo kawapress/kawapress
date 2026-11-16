@@ -2,6 +2,7 @@ import process from 'node:process'
 import algoliaSearchPlugin from '@kawapress/plugin-algolia-search'
 import commentsPlugin from '@kawapress/plugin-comments'
 import { nagi } from 'kawapress/nagi'
+import { siteKit } from './site-kit'
 
 /**
  * Site for the plugin E2E specs. It is built and served on its own port so the
@@ -24,6 +25,7 @@ export default nagi({
     ],
   },
   plugins: [
+    siteKit(),
     algoliaSearchPlugin({
       // Placeholders: the specs intercept Algolia and never reach it.
       appId: 'FIXTUREAPP',

@@ -2,6 +2,10 @@
   "name": "@kawapress/e2e-plugins-site",
   "type": "module",
   "private": true,
+  "exports": {
+    ".": "./site-kit/index.ts",
+    "./runtime-plugin": "./site-kit/runtime-plugin.ts"
+  },
   "scripts": {
     "build": "kawapress build",
     "dev": "kawapress dev",

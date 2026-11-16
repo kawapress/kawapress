@@ -144,6 +144,19 @@ export default nagi({
 
 The `nagi()` preset installs the default documentation interface and its plugins. Its styles are included automatically, so the site does not need a separate theme CSS import.
 
+nagi follows the light or dark mode of the system by default. To make the site dark by default, set `themeConfig.appearance`:
+
+```ts
+export default nagi({
+  title: 'My Docs',
+  themeConfig: {
+    appearance: 'dark',
+  },
+})
+```
+
+The values are `'auto'` (default), `'light'`, and `'dark'`. It only sets the look on a reader's first visit; once the reader switches with the button in the navigation bar, the browser remembers that choice.
+
 ## Add Head Tags {#add-head-tags}
 
 Use `head` to put tags into the `<head>` of every page. Analytics scripts, Open Graph cards for sharing, and site verification tags all go here:

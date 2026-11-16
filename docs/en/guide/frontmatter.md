@@ -107,6 +107,42 @@ layout: home
 | `doc` | The default document layout. |
 | `home` | A landing-page layout with `hero` and `features`. |
 | `page` | A plain-page layout without the document sidebar or page outline. |
+| Any other name | A custom layout, see below. |
+| `false` | No nagi frame at all, only the page itself. Useful for a page shown inside an iframe. |
+
+### Custom Layouts {#custom-layout}
+
+When `layout` is any other name, nagi looks for a global component with that name and renders it below the navigation bar in place of the page content. The component places the page content with `<RouterView />`:
+
+```vue
+<!-- ComponentDocs.vue -->
+<script setup lang="ts">
+import { RouterView } from 'kawapress/client'
+</script>
+
+<template>
+  <div class="component-docs">
+    <aside>…</aside>
+    <RouterView />
+  </div>
+</template>
+```
+
+Register it in a Runtime Plugin under the name the frontmatter uses (`component-docs`, `componentDocs`, and `ComponentDocs` all match):
+
+```ts
+api.vueApp((app) => {
+  app.component('component-docs', ComponentDocs)
+})
+```
+
+```md
+---
+layout: component-docs
+---
+```
+
+Pages with a custom layout or `layout: false` stay out of the automatic sidebar. When no component has the name, the page shows its content like a `page` layout.
 
 You can also turn off individual nagi regions for one page:
 

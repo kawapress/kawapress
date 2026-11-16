@@ -40,6 +40,11 @@ declare module 'kawapress' {
     footerLicenseText?: string
     footerPoweredByText?: string
     logo?: NagiHomeImage
+    /**
+     * Appearance before the reader picks one: `auto` (default) follows the
+     * system setting, `light` and `dark` override it.
+     */
+    appearance?: 'auto' | 'light' | 'dark'
     socialLinks?: NagiSocialLink[]
     nav?: NagiNavItem[]
     sidebar?: NagiSidebarConfig
@@ -62,7 +67,7 @@ export interface ResolvedNagiThemeConfig extends Required<Pick<ThemeConfig, | 's
   | 'notFoundMessage'
   | 'notFoundHomeLabel'
   | 'footerLicenseText'
-  | 'footerPoweredByText'>>, Pick<ThemeConfig, 'logo' | 'socialLinks' | 'nav' | 'sidebar'> {}
+  | 'footerPoweredByText'>>, Pick<ThemeConfig, 'logo' | 'appearance' | 'socialLinks' | 'nav' | 'sidebar'> {}
 
 const EN_THEME_CONFIG: ResolvedNagiThemeConfig = {
   sidebarMenuLabel: 'Menu',
@@ -130,6 +135,9 @@ export function resolveNagiThemeConfig(
   }
   if (config.logo !== undefined) {
     resolved.logo = config.logo
+  }
+  if (config.appearance !== undefined) {
+    resolved.appearance = config.appearance
   }
   if (config.socialLinks !== undefined) {
     resolved.socialLinks = config.socialLinks
