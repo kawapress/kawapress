@@ -6,6 +6,8 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-16
+
 ### Fixed
 
 - **A trailing slash no longer leads to the not-found page.** `/guide/` now opens the page `/guide` in dev, in `kawapress preview` and after a client navigation, and Markdown links written as `/guide/` render without the slash. ([#54](https://github.com/kawapress/kawapress/issues/54))
@@ -189,7 +191,8 @@ What changes for each kind of user:
 - The CSS target is a browser that supports `light-dark()`, so theme override tokens no longer lose their colors in production builds.
 - A release no longer fails when a version is already on npm.
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/kawapress/kawapress/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/kawapress/kawapress/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/kawapress/kawapress/releases/tag/v0.4.2
 [0.4.1]: https://github.com/kawapress/kawapress/releases/tag/v0.4.1

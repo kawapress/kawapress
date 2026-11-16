@@ -6,6 +6,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-16
+
 ### 修复
 
 - **末尾带斜杠的地址不再显示 404 页面。** 在 dev、`kawapress preview` 和站内跳转中，`/guide/` 都会打开页面 `/guide`；Markdown 里写成 `/guide/` 的链接渲染时去掉末尾斜杠。（[#54](https://github.com/kawapress/kawapress/issues/54)）
@@ -189,7 +191,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/kawapress/kawapress/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/kawapress/kawapress/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/kawapress/kawapress/releases/tag/v0.4.2
 [0.4.1]: https://github.com/kawapress/kawapress/releases/tag/v0.4.1
