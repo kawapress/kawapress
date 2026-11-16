@@ -1,6 +1,7 @@
 import type { PageTable } from '../../core/page-manifest'
 import type { Router } from '../../core/router'
 import { decodeUrlPathname, withoutBase } from '../../core/base'
+import { canonicalRoutePath } from '../../core/route-path'
 
 /**
  * Sends clicks on internal links through the router instead of the browser.
@@ -45,7 +46,8 @@ export function installLinkInterceptor(
       return
     }
 
-    const routePath = withoutBase(decodeUrlPathname(url.pathname), base)
+    const sitePath = withoutBase(decodeUrlPathname(url.pathname), base)
+    const routePath = sitePath === undefined ? undefined : canonicalRoutePath(sitePath)
     if (routePath === undefined || !Object.hasOwn(pages, routePath)) {
       return
     }

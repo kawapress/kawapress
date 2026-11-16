@@ -119,6 +119,26 @@ describe('resolveHydrationPlan', () => {
     })
   })
 
+  it('starts on the page a trailing slash addresses and drops the slash', () => {
+    expect(resolveHydrationPlan({
+      isNotFoundDocument: false,
+      requestedLocation: '/guide/routing/#links',
+      hasPage,
+    })).toEqual({
+      startPath: '/guide/routing',
+      adoptPath: '/guide/routing#links',
+      replacePath: '/guide/routing#links',
+    })
+  })
+
+  it('keeps a trailing slash that addresses no page', () => {
+    expect(resolveHydrationPlan({
+      isNotFoundDocument: false,
+      requestedLocation: '/guide/missing/',
+      hasPage,
+    })).toEqual({ startPath: '/guide/missing/' })
+  })
+
   it('decodes a path that names no page without touching the address bar', () => {
     // Dev renders unknown URLs at their own path, so its HTML is hydrated as it is.
     expect(resolveHydrationPlan({

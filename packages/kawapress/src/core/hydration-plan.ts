@@ -1,5 +1,6 @@
 import { decodeUrlPathname } from './base'
 import { NOT_FOUND_ROUTE_PATH } from './not-found'
+import { canonicalRoutePath } from './route-path'
 
 /**
  * Static hosts ignore the query and no browser ever sends the hash, so the HTML
@@ -25,7 +26,7 @@ export interface HydrationPlan {
   startPath: string
   /** Location adopted after mount without a navigation and without a history entry. */
   adoptPath?: string
-  /** Location the address bar should show after mount, for example a decoded path. */
+  /** Location the address bar should show after mount, for example a decoded path or one without its trailing slash. */
   replacePath?: string
 }
 
@@ -36,8 +37,9 @@ export interface HydrationPlan {
  * for every unknown URL, so its first render has to resolve `/404` too. Every
  * other document was rendered for its path alone, so the query and the hash are
  * dropped for the first render and adopted right afterwards, which is a normal
- * update instead of a mismatch. A percent-encoded path was rendered decoded, so
- * the first render uses the decoded path and the address bar follows it.
+ * update instead of a mismatch. A percent-encoded path was rendered decoded and
+ * `/guide/` was rendered as the page `/guide`, so the first render uses that
+ * page path and the address bar follows it.
  */
 export function resolveHydrationPlan(
   { isNotFoundDocument, requestedLocation, hasPage }: HydrationPlanInput,
@@ -50,6 +52,7 @@ export function resolveHydrationPlan(
   // A bare `?` or `#` addresses the same path with nothing to adopt.
   const hasSuffix = /[^?#]/.test(suffix)
   const startPath = decodedPath || '/'
+  const pagePath = canonicalRoutePath(startPath)
 
   if (isNotFoundDocument) {
     return {
@@ -59,11 +62,12 @@ export function resolveHydrationPlan(
     }
   }
 
-  if (wasEncoded && hasPage(decodedPath)) {
+  if ((wasEncoded || pagePath !== startPath) && hasPage(pagePath)) {
+    const pageLocation = `${pagePath}${suffix}`
     return {
-      startPath,
-      ...hasSuffix ? { adoptPath: decodedLocation } : {},
-      replacePath: decodedLocation,
+      startPath: pagePath,
+      ...hasSuffix ? { adoptPath: pageLocation } : {},
+      replacePath: pageLocation,
     }
   }
 

@@ -61,6 +61,12 @@ describe('installLinkInterceptor', () => {
     expect(push).toHaveBeenCalledWith('/guide/routing?from=nav#top')
   })
 
+  it('sends a link with a trailing slash to the page without it', () => {
+    click(createAnchor({ href: '/guide/routing/#top' }))
+
+    expect(push).toHaveBeenCalledWith('/guide/routing#top')
+  })
+
   it('intercepts a same-origin link written as an absolute URL', () => {
     const anchor = createAnchor({ href: `${window.location.origin}/guide/intro` })
 

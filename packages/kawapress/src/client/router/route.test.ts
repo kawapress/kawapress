@@ -31,6 +31,15 @@ describe('parseLocation', () => {
     expect(parseLocation('/guide/%E8%B7%AF%E7%94%B1').path).toBe('/guide/路由')
   })
 
+  it('drops a trailing slash, because a directory page has the route without it', () => {
+    expect(parseLocation('/guide/?from=nav#top')).toEqual({
+      path: '/guide',
+      search: '?from=nav',
+      hash: '#top',
+    })
+    expect(parseLocation('/').path).toBe('/')
+  })
+
   it('keeps a path that cannot be decoded', () => {
     expect(parseLocation('/guide/%E4%B8').path).toBe('/guide/%E4%B8')
   })
@@ -73,6 +82,14 @@ describe('resolveRoute', () => {
 
     expect(route.found).toBe(false)
     expect(route.path).toBe('/guide/missing')
+  })
+
+  it('finds a page addressed with a trailing slash', () => {
+    expect(resolveRoute('/guide/intro/#top', pages)).toMatchObject({
+      path: '/guide/intro',
+      fullPath: '/guide/intro#top',
+      found: true,
+    })
   })
 
   it('looks a page up by its decoded path', () => {

@@ -365,6 +365,7 @@ const focused = true
 [Markdown](./getting-started.md?mode=quick#install)
 [HTML](./deploy.html#platform)
 [Index](./index.md)
+[Directory](../reference/)
 [Asset](./manual.pdf)
 [Heading](#section)
 `,
@@ -380,6 +381,7 @@ const focused = true
         <a href=\"/kawapress/guide/getting-started?mode=quick#install\">Markdown</a>
         <a href=\"/kawapress/guide/deploy#platform\">HTML</a>
         <a href=\"/kawapress/guide\">Index</a>
+        <a href=\"/kawapress/reference\">Directory</a>
         <a href=\"/kawapress/guide/manual.pdf\">Asset</a>
         <a href=\"#section\">Heading</a></p>
         </template>"

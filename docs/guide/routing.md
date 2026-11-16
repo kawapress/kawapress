@@ -46,6 +46,8 @@ guide/setup/index.md → /guide/setup
 
 因此，请不要同时创建 `guide.md` 和 `guide/index.md`。它们都会映射到 `/guide`，应该只保留一种组织方式。
 
+带末尾斜杠的地址指向同一个页面：`/guide/` 打开的就是 `/guide`，地址栏随后显示 `/guide`。导航、侧边栏和 Markdown 里写成 `/guide/` 的链接都能正常跳转，Markdown 链接渲染时还会去掉这个斜杠。
+
 ## 站点根目录与源目录 {#site-root-and-source-directory}
 
 运行 `kawapress dev` 或 `kawapress build` 时，当前工作目录就是**站点根目录**。KawaPress 默认从这里查找 `kawapress.config.ts` 和 Markdown 页面，并把构建结果写入 `dist`。

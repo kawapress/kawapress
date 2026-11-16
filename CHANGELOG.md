@@ -6,6 +6,10 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
+### Fixed
+
+- **A trailing slash no longer leads to the not-found page.** `/guide/` now opens the page `/guide` in dev, in `kawapress preview` and after a client navigation, and Markdown links written as `/guide/` render without the slash. ([#54](https://github.com/kawapress/kawapress/issues/54))
+
 ## [0.5.0] - 2026-11-16
 
 ### Added
