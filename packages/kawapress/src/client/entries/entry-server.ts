@@ -14,6 +14,11 @@ export interface RenderResult {
   found: boolean
   head: string
   htmlAttrs: string
+  /**
+   * Markup of `<Teleport to="body">`. Vue keeps teleported content out of the
+   * app HTML; it has to lead `<body>` for the client to hydrate it.
+   */
+  bodyTeleports: string
   /** Outlets the rendered page actually mounted. */
   outlets: string[]
   /** Module id of the rendered page, the id the client manifest knows it by. */
@@ -54,7 +59,13 @@ export async function render(url: string): Promise<RenderResult> {
     found: current.found,
     head: headTags,
     htmlAttrs,
+    bodyTeleports: readBodyTeleports(ssrContext),
     outlets: getRenderedOutlets(ssrContext),
     pageModuleId: pageModules[current.path],
   }
+}
+
+function readBodyTeleports(ssrContext: Record<string, unknown>): string {
+  const teleports = ssrContext.teleports as Record<string, string> | undefined
+  return teleports?.body ?? ''
 }

@@ -19,6 +19,7 @@ test('the automatic sidebar lists the pages of the site', async ({ page }) => {
     'Page without comments',
     'Second page',
     'Styled page',
+    'Teleport page',
   ])
   await expect(links.nth(2)).toHaveAttribute('aria-current', 'page')
   await expect(links.nth(2)).toHaveAttribute('href', sitePath('/opt-out'))

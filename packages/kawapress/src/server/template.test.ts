@@ -28,6 +28,15 @@ describe('renderHtmlTemplate', () => {
     expect(head.indexOf('kawa-tokens')).toBeLessThan(head.indexOf('<link rel="stylesheet"'))
   })
 
+  it('writes the markup teleported to body before the app root', () => {
+    const teleport = '<!--teleport start--><div class="tip">hi</div><!--teleport end-->'
+    const html = renderHtmlTemplate({ ...baseOptions, bodyTeleports: teleport })
+    const body = html.slice(html.indexOf('<body>'))
+
+    expect(body.startsWith(`<body>${teleport}`)).toBe(true)
+    expect(body.indexOf(teleport)).toBeLessThan(body.indexOf('<div id="app">'))
+  })
+
   it('keeps the rest of the document intact', () => {
     const html = renderHtmlTemplate(baseOptions)
 
