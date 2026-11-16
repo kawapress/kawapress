@@ -1,7 +1,14 @@
 import type { PageFrontmatter } from 'kawapress'
 import type { NagiHomeFeature, NagiHomeHero } from './home'
 
-export type NagiPageLayout = 'doc' | 'home' | 'page'
+/** The page frames nagi draws itself. */
+export type NagiBuiltInLayout = 'doc' | 'home' | 'page'
+
+/**
+ * A built-in frame, the name of a globally registered component that draws
+ * the page inside the `page` frame, or `false` for the page alone.
+ */
+export type NagiPageLayout = NagiBuiltInLayout | (string & {}) | false
 
 /**
  * Frontmatter keys nagi reads. Every reader of `PageFrontmatter` sees them
@@ -10,7 +17,10 @@ export type NagiPageLayout = 'doc' | 'home' | 'page'
  */
 declare module 'kawapress' {
   interface PageFrontmatter {
-    /** `doc` (default), `home` for a landing page, or `page` for a plain page. */
+    /**
+     * `doc` (default), `home` for a landing page, `page` for a plain page, the
+     * name of a globally registered component, or `false` for the page alone.
+     */
     layout?: NagiPageLayout
     /** `false` hides the navigation bar of this page. */
     navbar?: boolean
@@ -58,5 +68,13 @@ export function resolveNagiPageOptions(
 }
 
 function resolveLayout(value: unknown): NagiPageLayout {
-  return value === 'home' || value === 'page' ? value : 'doc'
+  if (value === false) {
+    return false
+  }
+  return typeof value === 'string' && value !== '' ? value : 'doc'
+}
+
+/** Whether `layout` names a frame nagi draws itself. */
+export function isBuiltInLayout(layout: NagiPageLayout): layout is NagiBuiltInLayout {
+  return layout === 'doc' || layout === 'home' || layout === 'page'
 }

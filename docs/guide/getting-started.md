@@ -146,6 +146,19 @@ export default nagi({
 
 这里的 `nagi()` 会为站点准备好默认文档界面和它所需的插件。主题样式也会自动进入最终应用，不需要再手动导入 CSS。
 
+nagi 默认跟随系统的浅色或深色模式。想让站点默认是深色，写 `themeConfig.appearance`：
+
+```ts
+export default nagi({
+  title: 'My Docs',
+  themeConfig: {
+    appearance: 'dark',
+  },
+})
+```
+
+可选值是 `'auto'`（默认）、`'light'` 和 `'dark'`。它只决定读者第一次打开时的样子；读者用顶栏按钮切换后，浏览器会记住他的选择。
+
 ## 添加 head 标签 {#add-head-tags}
 
 `head` 用来往每一页的 `<head>` 里加入标签。统计脚本、分享卡片要用的 Open Graph、站点验证都写在这里：

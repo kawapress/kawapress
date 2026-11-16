@@ -20,6 +20,11 @@
   flex: 1;
 }
 
+.nagi-bare {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 .nagi-main {
   display: flex;
   flex: 1;

@@ -6,6 +6,11 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
+### Added
+
+- **Custom page layouts in nagi.** `layout: <name>` renders the global component registered under that name inside the page frame, and `layout: false` renders the page with no nagi frame at all, as in VitePress. ([#52](https://github.com/kawapress/kawapress/issues/52))
+- **`themeConfig.appearance` sets the default look of a nagi site.** `'dark'` or `'light'` applies before the reader picks one; `'auto'` (default) keeps following the system. ([#52](https://github.com/kawapress/kawapress/issues/52))
+
 ## [0.4.2] - 2026-11-16
 
 ### Fixed

@@ -2,6 +2,27 @@ export type NagiAppearance = 'light' | 'dark'
 
 const STORAGE_KEY = 'kawapress:appearance'
 
+/**
+ * Inline `<head>` script that sets the root class before the first paint: the
+ * reader's saved choice, else the site default. Without either, the page
+ * follows the system setting through CSS alone.
+ */
+export function createAppearanceInitializerScript(
+  fallback: NagiAppearance | undefined,
+): string {
+  return `(() => {
+  try {
+    const stored = localStorage.getItem(${JSON.stringify(STORAGE_KEY)})
+    const appearance = stored === 'light' || stored === 'dark' ? stored : ${JSON.stringify(fallback ?? null)}
+    if (!appearance) return
+    const root = document.documentElement
+    root.classList.remove(appearance === 'dark' ? 'light' : 'dark')
+    root.classList.add(appearance)
+  }
+  catch {}
+})()`
+}
+
 export function applyStoredAppearance(): void {
   try {
     const appearance = window.localStorage.getItem(STORAGE_KEY)

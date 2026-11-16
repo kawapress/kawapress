@@ -3,10 +3,11 @@ import type { Link } from '@unhead/vue'
 import type { NagiHomeImage, NagiImageSource, NagiThemeableImage } from '../home'
 import { useHead } from '@unhead/vue'
 import { RouterView, usePageData, useSite, withBase } from 'kawapress/client'
-import { computed, nextTick, provide, shallowRef, useTemplateRef, watch } from 'vue'
-import appearanceInitializerScript from '../appearance-initializer.js?raw'
+import { computed, getCurrentInstance, nextTick, provide, shallowRef, useTemplateRef, watch } from 'vue'
+import { createAppearanceInitializerScript } from '../appearance'
 import { nagiDocScrollKey } from '../composables/docScroll'
 import { useNagiThemeConfig } from '../composables/useNagiThemeConfig'
+import { resolveCustomLayout } from '../custom-layout'
 import { resolveNagiPageOptions } from '../frontmatter'
 import { getOutlineHeaders } from '../outline'
 import { sidebarWidthInitializerScript } from '../sidebar-width'
@@ -23,6 +24,11 @@ const pageOptions = computed(() => resolveNagiPageOptions(
   page.value?.frontmatter ?? {},
 ))
 const layout = computed(() => page.value ? pageOptions.value.layout : 'page')
+// Any other name is a component the site registered globally. It renders
+// `<RouterView />` itself, inside the `page` frame. A name that matches no
+// component falls back to the plain `page` content.
+const globalComponents = getCurrentInstance()?.appContext.components ?? {}
+const customLayout = computed(() => resolveCustomLayout(layout.value, globalComponents))
 const showSidebar = computed(() => (
   Boolean(page.value)
   && layout.value === 'doc'
@@ -57,7 +63,9 @@ useHead(() => ({
   link: resolveFaviconLinks(theme.value.logo, site.value.base),
   script: [{
     id: 'nagi-initial-appearance',
-    textContent: appearanceInitializerScript,
+    textContent: createAppearanceInitializerScript(
+      theme.value.appearance === 'auto' ? undefined : theme.value.appearance,
+    ),
   }, ...(showSidebar.value
     ? [{
         id: 'nagi-initial-sidebar-width',
@@ -104,6 +112,14 @@ function resolveImageSrc(image: string | NagiImageSource): string {
 
 <template>
   <div
+    v-if="layout === false"
+    class="nagi-bare"
+    :class="pageOptions.pageClass"
+  >
+    <RouterView />
+  </div>
+  <div
+    v-else
     class="nagi"
     :class="[`nagi--${layout}`, pageOptions.pageClass]"
   >
@@ -168,6 +184,7 @@ function resolveImageSrc(image: string | NagiImageSource): string {
       <main v-if="layout === 'home'" class="nagi-main nagi-main--home">
         <Home />
       </main>
+      <component :is="customLayout" v-else-if="customLayout" />
       <main v-else class="nagi-main nagi-main--page">
         <div class="nagi-main__content nagi-doc">
           <RouterView />

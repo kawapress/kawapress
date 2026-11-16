@@ -161,7 +161,7 @@ This table maps top-level VitePress `defineConfig()` options to KawaPress:
 | `transformPageData`, `transformHead`, `buildEnd` | Renamed / different shape | Use `api.pageData()`, `api.pageArtifact()`, and `api.buildArtifacts()` in a Generator Plugin |
 | `postRender`, `transformHtml` | Not available | No full-page HTML string post-processing hook |
 | `outDir`, `assetsDir`, `cacheDir` | Not available | Build output is always written to `dist/`, with assets under `dist/assets/` |
-| `appearance` | Not available | Light and dark mode are built into nagi and follow the system preference by default; not configurable in site config |
+| `appearance` | Renamed / different shape | Set `themeConfig.appearance` to `'auto'` (default, follows the system), `'light'`, or `'dark'`. It only sets the look before a reader switches; the switch always stays |
 | `mpa`, `metaChunk`, `buildConcurrency`, `shouldPreload`, `scrollOffset`, `useWebFonts`, `contentProps`, `vue`, `extends`, `router.prefetchLinks` | Not available | Not provided by KawaPress |
 
 ## Default Theme `themeConfig` Mapping {#theme-config}
@@ -236,6 +236,10 @@ export default defineRuntimePlugin({
 ```
 
 See [Theme Development](/en/plugins/theme-development#standard-outlets) and [Plugin Development](/en/plugins/plugin-development#add-to-outlet) for all eight outlets and how they work.
+
+### Custom Layout Components {#custom-layouts}
+
+A whole-page layout that VitePress picks with `layout: name` plus `app.component('name', Component)` works the same way in nagi: register a global component with that name in a Runtime Plugin, and place the page content with `<RouterView />` instead of `<Content />`. `layout: false` also means no theme frame at all. See [Frontmatter](/en/guide/frontmatter#custom-layout).
 
 ### `useData()` Splits into Focused Composables {#usedata-to-composables}
 
@@ -321,6 +325,6 @@ The following features are not available in KawaPress:
 - **Dynamic route generation (`[pkg].paths.ts`)**: Pages come from Markdown files on disk (with optional `rewrites`), without parameterized virtual-page loaders.
 - **Versioned documentation**: Built-in multi-version management and version switching are not included.
 - **Blog, archives, and RSS**: Built-in blog layouts and RSS generation are not included, though page indexes can be built with `createContentLoader()`.
-- **Per-page `prev` / `next` frontmatter and custom layout names**: Previous and next links always follow the active sidebar, and `layout` accepts `doc`, `home`, or `page`.
+- **Per-page `prev` / `next` frontmatter**: Previous and next links always follow the active sidebar.
 - **`::: raw` style isolation container**: Not included.
 - **Carbon Ads integration**: Not built into nagi; mount custom components through a Runtime Plugin and an outlet such as `doc.toc`.

@@ -68,7 +68,7 @@ function summarizeMarkdown(md: MarkdownExit, source: string): PageSummary {
     frontmatter,
     heading === undefined ? [] : [{ level: 1, title: heading }],
   )
-  const layout = typeof frontmatter.layout === 'string'
+  const layout = typeof frontmatter.layout === 'string' || frontmatter.layout === false
     ? frontmatter.layout
     : undefined
 

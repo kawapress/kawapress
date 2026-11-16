@@ -50,8 +50,8 @@ export type SidebarMeta = Readonly<Record<string, SidebarMetaItem[]>>
 /** What the automatic sidebar needs to know about one page. */
 export interface SidebarPage {
   title: string
-  /** `frontmatter.layout` when it is a string. */
-  layout?: string
+  /** `frontmatter.layout` when it is a string or `false`. */
+  layout?: string | false
 }
 
 /** Pages the automatic sidebar can show, keyed by public route path. */
@@ -299,9 +299,9 @@ function withSidebarBase(link: string, base: string): string {
   return normalizedBase === '/' ? `/${link}` : `${normalizedBase}/${link}`
 }
 
-/** Whether the automatic sidebar lists a page: `home` and `page` layouts build their own. */
+/** Whether the automatic sidebar lists a page: only `doc` pages show it. */
 export function isDocumentPage(page: SidebarPage): boolean {
-  return page.layout !== 'home' && page.layout !== 'page'
+  return page.layout === undefined || page.layout === 'doc'
 }
 
 function comparePages(

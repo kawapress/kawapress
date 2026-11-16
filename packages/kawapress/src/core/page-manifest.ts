@@ -14,8 +14,8 @@ export interface PageModule {
  */
 export interface PageSummary {
   title: string
-  /** `frontmatter.layout` when it is a string. */
-  layout?: string
+  /** `frontmatter.layout` when it is a string or `false`. */
+  layout?: string | false
 }
 
 /**

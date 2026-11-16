@@ -66,6 +66,8 @@ describe('nagi sidebar metadata', () => {
     const pages = {
       '/': { title: 'Home', layout: 'home' },
       '/about': { title: 'About', layout: 'page' },
+      '/frame': { title: 'Frame', layout: false as const },
+      '/custom': { title: 'Custom', layout: 'component-docs' },
       '/guide/start': { title: 'Start' },
     }
 

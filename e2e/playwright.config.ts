@@ -105,6 +105,7 @@ export default defineConfig({
         /comments\.spec\.ts/,
         /sidebar-pages\.spec\.ts/,
         /social-links\.spec\.ts/,
+        /custom-layouts\.spec\.ts/,
         /nagi-content-plugins\.spec\.ts/,
         /nagi-algolia\.spec\.ts/,
         /reference-theme\//,
@@ -118,7 +119,7 @@ export default defineConfig({
     {
       name: 'plugins-site',
       use: { baseURL: pluginsOrigin },
-      testMatch: [/comments\.spec\.ts/, /sidebar-pages\.spec\.ts/, /social-links\.spec\.ts/, /nagi-content-plugins\.spec\.ts/, /nagi-algolia\.spec\.ts/],
+      testMatch: [/comments\.spec\.ts/, /custom-layouts\.spec\.ts/, /sidebar-pages\.spec\.ts/, /social-links\.spec\.ts/, /nagi-content-plugins\.spec\.ts/, /nagi-algolia\.spec\.ts/],
     },
     {
       name: 'reference-theme',

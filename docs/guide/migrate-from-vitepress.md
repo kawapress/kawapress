@@ -161,7 +161,7 @@ export default defineConfig({
 | `transformPageData`、`transformHead`、`buildEnd` | 改名 / 形态不同 | 在 Generator Plugin 中分别使用 `api.pageData()`、`api.pageArtifact()` 和 `api.buildArtifacts()` |
 | `postRender`、`transformHtml` | 暂不支持 | 无整页 HTML 字符串后处理钩子 |
 | `outDir`、`assetsDir`、`cacheDir` | 暂不支持 | 构建产物固定输出到 `dist/`，静态资源位于 `dist/assets/` |
-| `appearance` | 暂不支持 | nagi 默认提供浅色/深色切换并跟随系统偏好，不在站点配置中提供强制单色开关 |
+| `appearance` | 改名 / 形态不同 | 写在 `themeConfig.appearance`：`'auto'`（默认，跟随系统）、`'light'` 或 `'dark'`。它只决定读者还没手动切换时的样子，切换按钮始终保留 |
 | `mpa`、`metaChunk`、`buildConcurrency`、`shouldPreload`、`scrollOffset`、`useWebFonts`、`contentProps`、`vue`、`extends`、`router.prefetchLinks` | 暂不支持 | KawaPress 不提供这些底层选项 |
 
 ## 默认主题 `themeConfig` 对照表 {#theme-config}
@@ -236,6 +236,10 @@ export default defineRuntimePlugin({
 ```
 
 全部八个 Outlet 的位置与用法见[主题开发](/plugins/theme-development#standard-outlets)和[插件开发](/plugins/plugin-development#add-to-outlet)。
+
+### 自定义布局组件 {#custom-layouts}
+
+VitePress 里用 `layout: 名字` 加 `app.component('名字', 组件)` 做的整页布局，在 nagi 中写法不变：在 Runtime Plugin 里注册同名全局组件，组件内用 `<RouterView />` 代替 `<Content />` 放正文。`layout: false` 同样表示不要任何主题外框。详见 [Frontmatter](/guide/frontmatter#custom-layout)。
 
 ### `useData()` 拆分为组合式函数 {#usedata-to-composables}
 
@@ -321,6 +325,6 @@ const site = useSite()
 - **动态路由生成（`[pkg].paths.ts`）**：页面全部来自磁盘上的 Markdown 文件（配合 `rewrites` 改写路径），不提供按参数批量生成虚拟页面的路由加载器。
 - **多版本文档切换**：未内置版本管理与切换功能。
 - **博客、归档与 RSS**：未内置博客布局与 RSS 生成器，文章列表仍可通过 `createContentLoader()` 自行汇总。
-- **单页覆盖上下篇链接与自定义布局名**：上下篇导航固定按当前侧边栏顺序生成，`layout` 只区分 `doc`、`home` 和 `page`。
+- **单页覆盖上下篇链接**：上下篇导航固定按当前侧边栏顺序生成。
 - **`::: raw` 样式隔离容器**：未内置 `::: raw` 容器。
 - **Carbon Ads 广告位**：nagi 未内置广告配置，需要展示内容时可通过 Runtime Plugin 挂入 `doc.toc` 等 Outlet。

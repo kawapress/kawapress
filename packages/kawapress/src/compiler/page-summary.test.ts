@@ -63,9 +63,10 @@ describe('page summary', () => {
     expect(summary.title).toBe('')
   })
 
-  it('keeps the layout only when frontmatter defines a string', () => {
+  it('keeps the layout only when frontmatter defines a string or false', () => {
     expect(summarize('---\nlayout: home\n---\n').layout).toBe('home')
-    expect(summarize('---\nlayout: false\n---\n').layout).toBeUndefined()
+    expect(summarize('---\nlayout: false\n---\n').layout).toBe(false)
+    expect(summarize('---\nlayout: 3\n---\n').layout).toBeUndefined()
     expect(summarize('# Heading\n')).toEqual({ title: 'Heading' })
   })
 
