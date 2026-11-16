@@ -9,6 +9,7 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 ### 修复
 
 - **用 pnpm 安装的站点也能加载主题。** 之前在 pnpm 下，使用 `kawapress/nagi` 的站点构建出的页面没有主题，并报错 `rendered page did not contain [data-kawa-ssg-md-root]`。（[#46](https://github.com/kawapress/kawapress/issues/46)）
+- **导入了 `kawapress/client` 的页面在 `kawapress dev` 下正常显示。** 之前页面或组件只要调用 `usePageData()`、`useSite()` 等客户端组合式函数，开发模式下就会白屏，并报错 `useRoute() and useRouter() need a KawaPress app`。（[#48](https://github.com/kawapress/kawapress/issues/48)）
 
 ## [0.4.1] - 2026-11-15
 

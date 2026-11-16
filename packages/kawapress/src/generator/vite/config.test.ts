@@ -57,3 +57,11 @@ describe('createBaseViteConfig CSS target', () => {
     expect(config.build?.cssTarget).toEqual(CSS_TARGET)
   })
 })
+
+describe('createBaseViteConfig dependency optimizer', () => {
+  it('keeps kawapress out of the pre-bundled dependencies', async () => {
+    const config = await createBaseConfig()
+
+    expect(config.optimizeDeps?.exclude).toContain('kawapress')
+  })
+})
