@@ -12,6 +12,8 @@ export interface HtmlTemplateOptions {
   /** Page chunk JS, preloaded so hydration does not wait for a waterfall. */
   modulepreloadUrls?: string[]
   htmlAttrs?: string
+  /** Markup of `<Teleport to="body">`, written before the app root. */
+  bodyTeleports?: string
   /** Marks the document as the prerendered not-found page; see `core/not-found`. */
   notFoundDocument?: boolean
 }
@@ -51,7 +53,7 @@ export function renderHtmlTemplate(options: HtmlTemplateOptions): string {
     ${pageTableLinks}
     ${modulepreloadLinks}
   </head>
-  <body>
+  <body>${options.bodyTeleports ?? ''}
     <div id="app">${options.appHtml}</div>
     <script type="module" src="${options.clientEntryUrl}"></script>
   </body>

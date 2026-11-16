@@ -21,7 +21,7 @@ export function createRequestHandler(
     const routeUrl = withoutBase(decodeUrlPathname(url), vite.config.base) ?? '/404'
     try {
       const { render } = await serverEnv.runner.import(entryServerUrl)
-      const { html: appHtml, found, head, htmlAttrs } = await render(routeUrl)
+      const { html: appHtml, found, head, htmlAttrs, bodyTeleports } = await render(routeUrl)
       const cssUrls = collectDevCssUrls(
         serverEnv.moduleGraph.urlToModuleMap.values(),
       )
@@ -31,6 +31,7 @@ export function createRequestHandler(
         clientEntryUrl: withBase(entryClientUrl, vite.config.base),
         cssUrls: cssUrls.map(cssUrl => withBase(cssUrl, vite.config.base)),
         htmlAttrs,
+        bodyTeleports,
       })
       res.statusCode = found ? 200 : 404
       res.setHeader('Content-Type', 'text/html; charset=utf-8')

@@ -21,6 +21,7 @@ interface RenderResult {
   html: string
   head: string
   htmlAttrs: string
+  bodyTeleports: string
   outlets: string[]
 }
 
@@ -61,7 +62,7 @@ export async function prerenderPages(root: string): Promise<void> {
   const paths = [...Object.keys(pages), NOT_FOUND_ROUTE_PATH]
   const renderedOutlets = new Set<string>()
   for (const path of paths) {
-    const { html, head, htmlAttrs, outlets } = await render(path)
+    const { html, head, htmlAttrs, bodyTeleports, outlets } = await render(path)
     for (const outlet of outlets) {
       renderedOutlets.add(outlet)
     }
@@ -77,6 +78,7 @@ export async function prerenderPages(root: string): Promise<void> {
       cssUrls: assets.css.map(css => withBase(css, site.base)),
       modulepreloadUrls: assets.modulepreload.map(js => withBase(js, site.base)),
       htmlAttrs,
+      bodyTeleports,
       // Only `404.html` is served for URLs that were never rendered, so only it
       // tells the client to hydrate the route it was rendered with.
       notFoundDocument: path === NOT_FOUND_ROUTE_PATH,

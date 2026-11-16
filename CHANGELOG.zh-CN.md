@@ -9,6 +9,7 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 ### 修复
 
 - **末尾带斜杠的地址不再显示 404 页面。** 在 dev、`kawapress preview` 和站内跳转中，`/guide/` 都会打开页面 `/guide`；Markdown 里写成 `/guide/` 的链接渲染时去掉末尾斜杠。（[#54](https://github.com/kawapress/kawapress/issues/54)）
+- **传送到 `body` 的内容现在会在服务端渲染出来。** `<Teleport to="body">`（提示框、菜单、对话框等）在 dev 和构建产物里都写在 `<body>` 开头，这类页面水合时不再报不匹配，首次更新也不再抛出 `insertBefore` 错误。（[#56](https://github.com/kawapress/kawapress/issues/56)）
 
 ## [0.5.0] - 2026-11-16
 

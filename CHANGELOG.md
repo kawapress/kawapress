@@ -9,6 +9,7 @@ The 21 public packages are released together and share one version number. [ç®€ä
 ### Fixed
 
 - **A trailing slash no longer leads to the not-found page.** `/guide/` now opens the page `/guide` in dev, in `kawapress preview` and after a client navigation, and Markdown links written as `/guide/` render without the slash. ([#54](https://github.com/kawapress/kawapress/issues/54))
+- **Content teleported to `body` is now server-rendered.** `<Teleport to="body">` (tooltips, menus, dialogs) is written at the start of `<body>` in dev and in the build, so such pages hydrate without mismatches and no longer throw `insertBefore` errors on the first update. ([#56](https://github.com/kawapress/kawapress/issues/56))
 
 ## [0.5.0] - 2026-11-16
 
