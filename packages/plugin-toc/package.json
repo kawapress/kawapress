@@ -1,7 +1,7 @@
 {
   "name": "@kawapress/plugin-toc",
   "type": "module",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "[[toc]] table of contents for KawaPress pages",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",

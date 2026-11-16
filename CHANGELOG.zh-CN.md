@@ -6,6 +6,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-16
+
 ### 修复
 
 - **用 pnpm 安装的站点也能加载主题。** 之前在 pnpm 下，使用 `kawapress/nagi` 的站点构建出的页面没有主题，并报错 `rendered page did not contain [data-kawa-ssg-md-root]`。（[#46](https://github.com/kawapress/kawapress/issues/46)）
@@ -175,7 +177,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/kawapress/kawapress/releases/tag/v0.4.2
 [0.4.1]: https://github.com/kawapress/kawapress/releases/tag/v0.4.1
 [0.4.0]: https://github.com/kawapress/kawapress/releases/tag/v0.4.0
 [0.3.0]: https://github.com/kawapress/kawapress/releases/tag/v0.3.0

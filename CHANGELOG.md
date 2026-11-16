@@ -6,6 +6,8 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-16
+
 ### Fixed
 
 - **The theme loads when the site is installed with pnpm.** With pnpm, a site using `kawapress/nagi` built pages with no theme and failed with `rendered page did not contain [data-kawa-ssg-md-root]`. ([#46](https://github.com/kawapress/kawapress/issues/46))
@@ -175,7 +177,8 @@ What changes for each kind of user:
 - The CSS target is a browser that supports `light-dark()`, so theme override tokens no longer lose their colors in production builds.
 - A release no longer fails when a version is already on npm.
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/kawapress/kawapress/releases/tag/v0.4.2
 [0.4.1]: https://github.com/kawapress/kawapress/releases/tag/v0.4.1
 [0.4.0]: https://github.com/kawapress/kawapress/releases/tag/v0.4.0
 [0.3.0]: https://github.com/kawapress/kawapress/releases/tag/v0.3.0
