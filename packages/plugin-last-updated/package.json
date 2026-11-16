@@ -1,7 +1,7 @@
 {
   "name": "@kawapress/plugin-last-updated",
   "type": "module",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Last updated time and edit link for every KawaPress page",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",

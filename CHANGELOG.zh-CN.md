@@ -6,6 +6,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-16
+
 ### 新增
 
 - **nagi 支持自定义页面布局。** `layout: <名字>` 会在页面外框里渲染以该名字注册的全局组件，`layout: false` 不渲染任何 nagi 外框，与 VitePress 一致。（[#52](https://github.com/kawapress/kawapress/issues/52)）
@@ -182,7 +184,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/kawapress/kawapress/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/kawapress/kawapress/releases/tag/v0.4.2
 [0.4.1]: https://github.com/kawapress/kawapress/releases/tag/v0.4.1
 [0.4.0]: https://github.com/kawapress/kawapress/releases/tag/v0.4.0
