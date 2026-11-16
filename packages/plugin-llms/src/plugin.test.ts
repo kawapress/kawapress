@@ -1,11 +1,14 @@
 import type { IncomingHttpHeaders } from 'node:http'
-import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { access, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { get } from 'node:http'
-import { join } from 'node:path'
+import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
+import process from 'node:process'
 import { afterEach, describe, expect, it } from 'vitest'
 import { buildSite } from '../../kawapress/src/server/build'
 import { createDevServer } from '../../kawapress/src/server/dev'
 
+const require = createRequire(import.meta.url)
 const temporaryDirectories: string[] = []
 
 afterEach(async () => {
@@ -141,6 +144,35 @@ llms: false
     expect(guideHtml.match(/class="kawa-llms-actions"/g)).toHaveLength(1)
     await expect(access(join(root, 'dist/.kawapress'))).rejects.toThrow()
   })
+
+  it('renders the theme when the site can resolve @vue/server-renderer itself', async () => {
+    // A pnpm workspace often lists `@vue/server-renderer` beside `vue`. The
+    // Markdown renderer must still bundle Vue like the SSR build does, or it
+    // renders with a second copy of Vue and the theme comes out empty.
+    const root = await createTemporaryDirectory()
+    await mkdir(join(root, 'node_modules/@vue'), { recursive: true })
+    await symlink(
+      dirname(require.resolve('@vue/server-renderer/package.json', {
+        paths: [join(process.cwd(), 'packages/kawapress')],
+      })),
+      join(root, 'node_modules/@vue/server-renderer'),
+      'dir',
+    )
+    await Promise.all([
+      writeFile(join(root, 'kawapress.config.ts'), `
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({ title: 'Kawa Docs' })
+`),
+      writeFile(join(root, 'index.md'), '# Kawa Docs\n\nBody text.\n'),
+    ])
+
+    await buildSite(root)
+
+    await expect(readFile(join(root, 'dist/index.md'), 'utf8'))
+      .resolves
+      .toContain('Body text.')
+  }, 120_000)
 
   it('serves page Markdown without intercepting Vite module requests', async () => {
     const root = await createTemporaryDirectory()
