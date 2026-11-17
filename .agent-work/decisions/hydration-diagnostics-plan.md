@@ -28,3 +28,11 @@ Vite 6 起，顶层 `resolve.conditions` 只作用于客户端环境，SSR 环�
 - 一次构建汇总成一条警告，按包分组，每个包列出最多 3 个导入的两侧文件与条件链，其余以数量概括。
 - 结尾说明 Vite 6 起 `resolve.conditions` 只作用于客户端，并给出可直接写入 `vite` 选项的修复：客户端多出的条件写进 `ssr.resolve.conditions`；SSR 多出的条件写进 `resolve.conditions`；两者可以同时出现。存在条件无法解释的导入时，另外提示检查 `resolve.alias` 与插件。
 - 只警告，不让构建失败：部分包的两份构建渲染结果可能一致，KawaPress 无法判断。
+
+## 二、生产构建按需保留不匹配细节
+
+- `kawapress build --debug-hydration` 为这一次构建把 `__VUE_PROD_HYDRATION_MISMATCH_DETAILS__` 定义为 `true`，`kawapress preview` 时浏览器控制台列出不匹配的节点与两端内容。
+- 只提供 CLI 参数，不提供配置项或环境变量：它是一次性的排查手段，写进配置容易被部署出去。
+- 在站点配置与插件 `vite()` 钩子之后设置，站点 `define` 关掉它时参数仍然生效。
+- 构建开始与结束时各输出一条警告，说明这次构建带有调试代码，部署前应去掉参数重新构建。
+- 默认构建保持 Vue 的默认值 `false`；仓库 E2E 继续通过内部的 `KAWAPRESS_E2E=1` 打开同一开关。

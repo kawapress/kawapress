@@ -153,3 +153,22 @@ hydration 要求服务端 HTML 与浏览器第一次渲染得到相同的节点�
 先使用稳定的初始值，再在 `onMounted()` 中读取浏览器状态。需要在两端共同使用的数据，则应该来自相同的 pageData、站点配置或路由信息。
 
 KawaPress 的开发服务器也会真实执行 SSR。兼容性问题通常会在开发时直接出现，不必等到生产构建才发现。
+
+## 排查 hydration 不匹配 {#debug-hydration-mismatches}
+
+开发服务器会在浏览器控制台中打印每一处不匹配的节点和两端各自的内容。生产构建为了体积去掉了这些细节，只会打印一句：
+
+```text
+Hydration completed but contains mismatches.
+```
+
+只在生产构建中出现的不匹配，可以用 `--debug-hydration` 构建一次再预览。这个参数会为这次构建打开 Vue 的 `__VUE_PROD_HYDRATION_MISMATCH_DETAILS__`，控制台会重新列出不匹配的节点：
+
+```bash
+kawapress build --debug-hydration
+kawapress preview
+```
+
+它会让客户端代码变大，定位问题后请去掉参数重新构建，再部署。
+
+只在生产构建中出现、并且集中在某个依赖的组件上的不匹配，通常是两端加载了这个依赖的不同构建，例如只给客户端配置了 `resolve.conditions`，见[让两端加载同一份依赖](#load-the-same-dependency-on-both-sides)。

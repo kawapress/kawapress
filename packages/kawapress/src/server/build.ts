@@ -26,7 +26,26 @@ import { prerenderPages } from './prerender'
 /** Vite mode of a build; the mode drives `import.meta.env` and which `.env.*` files load. */
 const BUILD_MODE = 'production'
 
-export async function buildSite(root: string) {
+/**
+ * Vue's compile-time flag that keeps the detailed hydration mismatch warnings
+ * in a production build. Off by default because it adds the warning code to
+ * every visitor's download.
+ */
+const HYDRATION_MISMATCH_DETAILS_FLAG = '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__'
+
+const DEBUG_HYDRATION_NOTICE = 'KawaPress: this build keeps Vue\'s hydration mismatch details (--debug-hydration). '
+  + 'Rebuild without the flag before deploying.'
+
+export interface BuildSiteOptions {
+  /**
+   * Keep Vue's detailed hydration mismatch warnings in the production bundle,
+   * so `kawapress preview` shows which node differs. Meant for diagnosis, not
+   * for deployment.
+   */
+  debugHydration?: boolean
+}
+
+export async function buildSite(root: string, options: BuildSiteOptions = {}) {
   // Pinned before the site config loads, because loading it through Vite's
   // runnerImport() would otherwise leave NODE_ENV at "development" for the
   // client build. See ensureProductionNodeEnv().
@@ -82,6 +101,12 @@ export async function buildSite(root: string) {
   // Appended after the plugin `vite` hooks, which may replace the plugin list.
   const resolutionCheck = createResolutionCheck()
   viteConfig.plugins = [...(viteConfig.plugins ?? []), resolutionCheck.plugin]
+  if (options.debugHydration) {
+    // Set after the site config and plugin hooks, so the flag wins over a
+    // `define` that turns the details off.
+    viteConfig.define = { ...viteConfig.define, [HYDRATION_MISMATCH_DETAILS_FLAG]: 'true' }
+    consola.warn(DEBUG_HYDRATION_NOTICE)
+  }
 
   // Plugin `vite` hooks mutate the config above, so the build states its mode again
   // rather than trusting whatever they left in it.
@@ -99,4 +124,8 @@ export async function buildSite(root: string) {
   await prerenderPages(root)
 
   consola.success('KawaPress: build complete')
+  if (options.debugHydration) {
+    // Repeated so the last thing on screen says this output is not for deployment.
+    consola.warn(DEBUG_HYDRATION_NOTICE)
+  }
 }
