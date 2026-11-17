@@ -106,7 +106,7 @@ layout: home
 | --- | --- |
 | `doc` | The default document layout. |
 | `home` | A landing-page layout with `hero` and `features`. |
-| `page` | A plain-page layout without the document sidebar or page outline. |
+| `page` | A blank page layout with only the navigation bar and footer. The site styles its own content; nagi adds neither `.nagi-doc` typography nor document padding. |
 | Any other name | A custom layout, see below. |
 | `false` | No nagi frame at all, only the page itself. Useful for a page shown inside an iframe. |
 

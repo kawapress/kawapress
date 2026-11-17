@@ -6,6 +6,10 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
+### Fixed
+
+- **`layout: page` no longer applies document typography to custom pages.** nagi leaves their headings, images, rules and other markup unstyled, so application-like pages such as editors and playgrounds keep their own layout and controls.
+
 ## [0.5.1] - 2026-11-16
 
 ### Fixed
