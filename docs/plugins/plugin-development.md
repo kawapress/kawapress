@@ -437,6 +437,22 @@ const { title, layout } = reader.read(source, page.file)
 
 开发服务器把改动的文件报成绝对路径，判断它是不是页面用 `isMarkdownPage()`，换回路由路径用 `markdownFileToRoutePath()`。
 
+## 站点自己的 Vite 与运行侧配置 {#site-runtime}
+
+不需要发布成插件包的站点扩展，可以直接写在 `kawapress.config.ts` 旁边：
+
+```ts
+export default nagi({
+  vite: {
+    // 与 VitePress 的 vite 字段相同，例如 UnoCSS、别名和 server.fs。
+    plugins: [UnoCSS()],
+  },
+  runtimePlugin: './kawapress.runtime.ts',
+})
+```
+
+`runtimePlugin` 指向一个默认导出 `defineRuntimePlugin()` 的本地模块，在全部插件包的 Runtime Plugin 之后执行。原来写在 `.vitepress/theme/index.ts` 的 `enhanceApp`、全局组件、CSS 和 `app.provide()` 都可以放在这里，不需要建立本地 npm 包。可复用的扩展仍应按下文拆成插件包。
+
 ## 运行侧插件（Runtime Plugin） {#runtime-plugin}
 
 Runtime Plugin 在网站运行时工作，它的代码会被打包进入站点的客户端/SSR Vite 模块图，因此可以静态导入 `.vue` 组件、CSS 样式和常规 Vue 插件。

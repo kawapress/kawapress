@@ -51,7 +51,7 @@ export default nagi({
 })
 ```
 
-上面的文件位置是 `content/static/handbook.pdf`。`publicDir` 也可以是 `assets/public` 这样的子目录；不配置时始终使用 `public`。
+上面的文件位置是 `content/static/handbook.pdf`。`publicDir` 也可以是 `assets/public` 这样的子目录，或 `../public`、绝对路径这样位于 `srcDir` 外的目录；相对路径始终从 `srcDir` 解析。不配置时使用 `srcDir/public`。
 
 目录里的文件会直接复制到输出目录根部，文件名不会改变，也不会被当成页面。
 

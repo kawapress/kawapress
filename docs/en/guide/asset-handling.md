@@ -51,7 +51,7 @@ export default nagi({
 })
 ```
 
-This places `handbook.pdf` at `content/static/handbook.pdf`. `publicDir` can also be a nested path such as `assets/public`. Without this option, KawaPress always uses `public`.
+This places `handbook.pdf` at `content/static/handbook.pdf`. `publicDir` can also be a nested path such as `assets/public`, or a directory outside `srcDir` such as `../public` or an absolute path. Relative paths resolve from `srcDir`; without the option it is `srcDir/public`.
 
 Files from this directory are copied directly to the output root. Their names do not change, and they never become pages.
 

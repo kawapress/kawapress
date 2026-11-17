@@ -427,6 +427,22 @@ The same file with the same content reuses the previous result, so reading a who
 
 A dev server reports changed files as absolute paths: `isMarkdownPage()` tells you whether such a file is a page, and `markdownFileToRoutePath()` turns it back into a route path.
 
+## Site-level Vite and Runtime Configuration {#site-runtime}
+
+A site extension that does not need to be published as a plugin package can live next to `kawapress.config.ts`:
+
+```ts
+export default nagi({
+  vite: {
+    // The same kind of Vite configuration as VitePress's vite field.
+    plugins: [UnoCSS()],
+  },
+  runtimePlugin: './kawapress.runtime.ts',
+})
+```
+
+`runtimePlugin` points to a local module whose default export is `defineRuntimePlugin()`. It runs after all package Runtime Plugins. The old `.vitepress/theme/index.ts` `enhanceApp`, global components, CSS and `app.provide()` belong here, without creating a local npm package. Reusable extensions should still use the package layout below.
+
 ## Runtime Plugins {#runtime-plugin}
 
 A Runtime Plugin operates in the browser and SSR runtime. Its code enters the site's Vite module graph, allowing it to statically import `.vue` files, CSS, and regular Vue plugins.

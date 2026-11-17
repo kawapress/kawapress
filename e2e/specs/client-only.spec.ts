@@ -7,6 +7,7 @@ test('ClientOnly leaves browser-only markup out of the server HTML', async ({ pa
 
   await page.goto(sitePath('/client-only'))
   await expect(page.locator('.client-only-content')).toHaveText('Rendered in the browser')
+  await expect(page.locator('.site-config-probe')).toHaveText('site-vite-config')
 })
 
 test('useAppearance follows the root class and the operating system preference', async ({ page }) => {

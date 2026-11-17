@@ -1,3 +1,4 @@
+import type { UserConfig } from 'vite'
 import type { KawapressConfig } from '../api/config'
 import type { KawaPressPlugin } from '../api/plugin'
 import type { DeadLinkIgnore, ResolvedDeadLinkConfig } from '../core/dead-links'
@@ -22,6 +23,8 @@ export interface ResolvedSiteConfig {
   themeConfig?: object
   locales: Record<string, LocaleConfig>
   plugins: KawaPressPlugin[]
+  vite: UserConfig | undefined
+  runtimePlugin: string | undefined
   pluginRunner: GeneratorPluginRunner
   /** Internal link checking, or `false` when the site disabled it. */
   deadLinks: ResolvedDeadLinkConfig | false
@@ -78,6 +81,8 @@ export async function resolveSiteConfig(
     themeConfig: site.themeConfig,
     locales,
     plugins,
+    vite: userConfig.vite,
+    runtimePlugin: userConfig.runtimePlugin,
     pluginRunner,
     deadLinks,
   }
@@ -174,23 +179,10 @@ function resolveSrcExclude(srcExclude: unknown): string[] {
 }
 
 function normalizePublicDir(publicDir: string): string {
-  if (!publicDir.trim() || isAbsolute(publicDir)) {
-    throw new Error(
-      `KawaPress: publicDir must be a relative directory inside srcDir, got ${JSON.stringify(publicDir)}`,
-    )
+  if (!publicDir.trim()) {
+    throw new Error('KawaPress: publicDir must not be empty')
   }
-
-  const segments = publicDir
-    .replaceAll('\\', '/')
-    .split('/')
-    .filter(segment => Boolean(segment) && segment !== '.')
-  if (segments.length === 0 || segments.includes('..')) {
-    throw new Error(
-      `KawaPress: publicDir must be a relative directory inside srcDir, got ${JSON.stringify(publicDir)}`,
-    )
-  }
-
-  return segments.join('/')
+  return publicDir.replaceAll('\\', '/')
 }
 
 function normalizeLocales(
