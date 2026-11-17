@@ -14,6 +14,7 @@ export default nagi({
   base: process.env.KAWAPRESS_BASE,
   // Algolia takes the place of the built-in local search.
   search: false,
+  llms: false,
   runtimePlugin: './site-runtime.ts',
   vite: {
     define: {
@@ -21,6 +22,7 @@ export default nagi({
     },
   },
   themeConfig: {
+    footer: false,
     socialLinks: [
       { icon: 'github', link: 'https://github.com/kawapress/kawapress' },
       {

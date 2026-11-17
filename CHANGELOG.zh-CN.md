@@ -7,6 +7,7 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 ## [Unreleased]
 
 ### 新增
+- **nagi 可以关闭内置 llms 和页脚。** 站点自己提供对应能力或不需要它们时，使用 `llms: false` 和 `themeConfig.footer: false`。
 - **站点可以直接配置 Vite 和本地 Runtime Plugin。** `vite` 接受常规 Vite 配置，`runtimePlugin` 在插件包之后加载站点本地模块，`publicDir` 也可以指向 `srcDir` 外的目录。
 
 - **Core 提供 `ClientOnly` 和 `useAppearance()`。** `<ClientOnly>` 已全局注册，浏览器专属内容在挂载后才渲染；`useAppearance()` 提供响应式 `isDark`，跟随根元素的外观 class 或操作系统偏好。

@@ -34,6 +34,12 @@ test('layout: page leaves custom markup free of document typography', async ({ p
   await expect(page.locator('.nagi-main--page hr')).toHaveCSS('border-top-width', '0px')
 })
 
+test('a site can leave out llms actions and the nagi footer', async ({ page }) => {
+  await page.goto(sitePath('/opt-out'))
+  await expect(page.locator('.kawa-llms-actions')).toHaveCount(0)
+  await expect(page.locator('.nagi-footer')).toHaveCount(0)
+})
+
 test('pages with their own layout stay out of the automatic sidebar', async ({ page }) => {
   await page.goto(sitePath('/opt-out'))
 

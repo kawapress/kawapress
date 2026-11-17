@@ -98,6 +98,8 @@ Generator Plugin 负责生成 Markdown 文件，配套的 Runtime Plugin 会自�
 
 ## 设置站点简介 {#add-a-site-description}
 
+不需要这套功能时，在 `nagi()` 中写 `llms: false`，即可同时关闭 llms 文件和正文上方的页面操作按钮。
+
 可以通过 nagi 的 `llms.description` 为索引补充站点简介。多语言站点可以分别设置：
 
 ```ts

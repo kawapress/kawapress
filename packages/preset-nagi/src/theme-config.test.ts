@@ -20,6 +20,7 @@ describe('nagi theme translations', () => {
       notFoundHomeLabel: '返回首页',
       footerLicenseText: '基于 MIT 许可发布',
       footerPoweredByText: 'KawaPress 强力驱动',
+      footer: true,
     })
   })
 
@@ -45,7 +46,12 @@ describe('nagi theme translations', () => {
         notFoundHomeLabel: 'back to home',
         footerLicenseText: 'Released under the MIT License',
         footerPoweredByText: 'Powered by KawaPress',
+        footer: true,
         socialLinks: [{ icon: 'github', link: 'https://github.com/example/docs' }],
       })
+  })
+
+  it('allows a site to omit the footer', () => {
+    expect(resolveNagiThemeConfig({ footer: false }).footer).toBe(false)
   })
 })

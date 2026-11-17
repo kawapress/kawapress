@@ -98,6 +98,8 @@ The Generator Plugin creates the Markdown files. Its matching Runtime Plugin aut
 
 ## Add a Site Description {#add-a-site-description}
 
+Set `llms: false` in `nagi()` to leave out both the llms files and the page actions above the document.
+
 Use `llms.description` in the nagi configuration to add a site description. A multilingual site can provide one value per locale:
 
 ```ts
