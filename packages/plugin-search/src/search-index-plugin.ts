@@ -1,10 +1,9 @@
 import type { MarkdownItContainerOptions } from '@mdit/plugin-container'
-import type { PageFrontmatter, PageRewrites } from 'kawapress'
+import type { PageFrontmatter } from 'kawapress'
 import type { MarkdownPageScope } from 'kawapress/generator'
 import type { MarkdownExit, Token } from 'markdown-exit'
 import type { Plugin } from 'vite'
 import type { SearchDocument } from './search'
-import { resolve } from 'node:path'
 import { installToc } from '@kawapress/plugin-toc'
 import { frontmatterPlugin } from '@mdit-vue/plugin-frontmatter'
 import { alert as alertPlugin } from '@mdit/plugin-alert'
@@ -47,11 +46,8 @@ export interface SearchCalloutOptions {
 }
 
 interface SearchIndexPluginOptions {
-  srcDir: string
-  /** `srcExclude` of the site config: Markdown files that are not pages. */
-  srcExclude?: readonly string[]
-  /** `rewrites` of the site config, which moves pages to other routes. */
-  rewrites?: PageRewrites | undefined
+  /** The site's pages, from `resolveMarkdownPageScope()`. */
+  scope: MarkdownPageScope
   locales: string[]
   localeLanguages?: Record<string, string | undefined>
   callouts?: SearchCalloutOptions
@@ -156,11 +152,7 @@ export function searchIndexPlugin(
   options: SearchIndexPluginOptions,
 ): Plugin {
   const localeIndexes = [...new Set(['root', ...options.locales])]
-  let scope: MarkdownPageScope = {
-    sourceRoot: resolve(options.srcDir),
-    exclude: options.srcExclude,
-    rewrites: options.rewrites,
-  }
+  const { scope } = options
   let indexVersion = 0
   let cachedIndexes: Promise<Record<string, string>> | undefined
   const resolvedIndexModules = new Set<string>()
@@ -181,14 +173,6 @@ export function searchIndexPlugin(
 
   return {
     name: 'kawapress:search-index',
-    configResolved(config) {
-      scope = {
-        sourceRoot: resolve(config.root, options.srcDir),
-        publicDir: config.publicDir ? resolve(config.publicDir) : undefined,
-        exclude: options.srcExclude,
-        rewrites: options.rewrites,
-      }
-    },
     resolveId(id) {
       if (id === SEARCH_INDEX_MODULE_ID) {
         return RESOLVED_MODULE_ID

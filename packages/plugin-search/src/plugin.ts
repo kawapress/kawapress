@@ -1,29 +1,30 @@
-import type { KawaPressPlugin, SiteConfig } from 'kawapress'
+import type { KawaPressPlugin, ResolvedSiteConfig } from 'kawapress'
 import type { SearchCalloutOptions } from './search-index-plugin'
 import { definePlugin } from 'kawapress'
+import { resolveMarkdownPageScope } from 'kawapress/generator'
 import { searchIndexPlugin } from './search-index-plugin'
 
 export type SearchPluginOptions = SearchCalloutOptions
 
 export function searchPlugin(options: SearchPluginOptions = {}): KawaPressPlugin {
-  let siteConfig: SiteConfig | undefined
+  let site: ResolvedSiteConfig | undefined
 
   return definePlugin({
     name: '@kawapress/plugin-search',
     setup(api) {
-      api.config((config) => {
-        siteConfig = config
+      api.configResolved((resolved) => {
+        site = resolved
       })
       api.vite((config) => {
+        if (!site)
+          throw new Error('KawaPress Search: the site config is not resolved yet.')
         config.plugins ??= []
         config.plugins.push(searchIndexPlugin({
-          srcDir: siteConfig?.srcDir ?? '.',
-          srcExclude: siteConfig?.srcExclude,
-          rewrites: siteConfig?.rewrites,
-          locales: Object.keys(siteConfig?.locales ?? { root: {} }),
+          scope: resolveMarkdownPageScope(site),
+          locales: Object.keys(site.locales),
           localeLanguages: Object.fromEntries(
-            Object.entries(siteConfig?.locales ?? {}).map(([locale, config]) => (
-              [locale, config.lang]
+            Object.entries(site.locales).map(([locale, localeConfig]) => (
+              [locale, localeConfig.lang]
             )),
           ),
           callouts: options,

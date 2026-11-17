@@ -1,6 +1,6 @@
-import type { GeneratorPluginAPI } from 'kawapress'
 import type { MarkdownExit } from 'markdown-exit'
 import type { ShikiPluginOptions } from './index'
+import { setupGeneratorPlugins } from 'kawapress/generator'
 import { createMarkdownExit } from 'markdown-exit'
 import { describe, expect, it } from 'vitest'
 import { shikiPlugin } from './index'
@@ -140,22 +140,8 @@ echo "ready" # [!code warning]
 async function createMarkdown(
   options: ShikiPluginOptions = { theme: 'github-light' },
 ): Promise<MarkdownExit> {
-  let markdownHandler: Parameters<GeneratorPluginAPI['markdown']>[0] | undefined
-  await shikiPlugin(options).setup({
-    config() {},
-    markdown(handler) {
-      markdownHandler = handler
-    },
-    pageData() {},
-    pageArtifact() {},
-    vite() {},
-    buildArtifacts() {},
-  })
-  if (!markdownHandler) {
-    throw new Error('Expected Shiki to register a Markdown handler.')
-  }
-
+  const host = await setupGeneratorPlugins({ plugins: [shikiPlugin(options)] })
   const markdown = createMarkdownExit({ html: true })
-  await markdownHandler(markdown)
+  await host.runMarkdown(markdown)
   return markdown
 }

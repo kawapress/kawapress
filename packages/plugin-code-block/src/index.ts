@@ -75,13 +75,6 @@ const DEFAULT_LANGUAGE_LABELS: Record<string, string> = {
   yml: 'YAML',
 }
 
-const DEFAULT_LOCALES: Record<string, LocaleConfig> = {
-  root: {
-    label: 'English',
-    lang: 'en',
-  },
-}
-
 const ATTACHED_LINE_NUMBER_DIRECTIVES_RE
   = /^([\w-]+)((?::(?:no-)?line-numbers(?:=\d+)?)+)(?=\s|$)/
 const LINE_NUMBER_DIRECTIVE_RE = /^:(no-)?line-numbers(?:=(\d+))?$/
@@ -92,13 +85,13 @@ const STANDALONE_LINE_NUMBER_DIRECTIVE_RE
 export function codeBlockPlugin(
   options: CodeBlockPluginOptions = {},
 ): KawaPressPlugin {
-  let locales = DEFAULT_LOCALES
+  let locales: Readonly<Record<string, LocaleConfig>> = { root: { label: 'English', lang: 'en' } }
 
   return definePlugin({
     name: '@kawapress/plugin-code-block',
     setup(api) {
-      api.config((config) => {
-        locales = config.locales ?? DEFAULT_LOCALES
+      api.configResolved((config) => {
+        locales = config.locales
       })
       api.markdown((markdown) => {
         installCodeBlocks(markdown, {

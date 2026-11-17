@@ -1,7 +1,6 @@
-import type { PageBuildArtifact } from 'kawapress'
+import type { PageBuildArtifact, ResolvedSiteConfig } from 'kawapress'
 import type { MarkdownExit } from 'markdown-exit'
 import type { DevEnvironment, Plugin } from 'vite'
-import type { LlmsSiteContext } from './artifacts'
 import type { LlmsPluginOptions } from './types'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
@@ -37,7 +36,7 @@ const SSG_MD_ROOT_COMPONENT_PATH = normalizePath(fileURLToPath(
 export interface LlmsVitePluginOptions {
   getMarkdown: () => MarkdownExit | undefined
   getPages: () => readonly PageBuildArtifact[]
-  site: LlmsSiteContext
+  getSite: () => ResolvedSiteConfig
   pluginOptions: LlmsPluginOptions
 }
 
@@ -147,7 +146,7 @@ async function serveDevArtifact(
   )
   const artifacts = await createLlmsArtifacts(
     rendered,
-    options.site,
+    options.getSite(),
     options.pluginOptions,
   )
   const content = artifacts.get(path)

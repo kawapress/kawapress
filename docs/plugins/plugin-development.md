@@ -16,6 +16,7 @@ description: 按扩展位置编写 KawaPress 插件，使用生成侧与运行�
 | 想做的事 | 扩展位置 |
 | --- | --- |
 | 修改站点配置 | Generator Plugin 的 `config()` |
+| 读取最终的站点配置 | Generator Plugin 的 `configResolved()` |
 | 扩展 Markdown 语法 | Generator Plugin 的 `markdown()` |
 | 修改每个页面的数据 | Generator Plugin 的 `pageData()` |
 | 观察每个页面的构建结果 | Generator Plugin 的 `pageArtifact()` |
@@ -123,7 +124,7 @@ export default defineConfig({
 
 ### 生成侧 API 总览 {#generator-api}
 
-生成侧提供六个方法，均在 `definePlugin` 的 `setup(api)` 中调用。同一个插件内可以按需调用一个或多个方法；多个插件按在 `plugins` 数组中的顺序串行执行。
+生成侧提供七个方法，均在 `definePlugin` 的 `setup(api)` 中调用。同一个插件内可以按需调用一个或多个方法；多个插件按在 `plugins` 数组中的顺序串行执行。
 
 一个典型的生成侧插件完整骨架如下：
 
@@ -135,22 +136,25 @@ export default function myGeneratorPlugin() {
   return definePlugin({
     name: '@acme/kawapress-plugin-notes',
     setup(api) {
-      // 1. 修改或读取站点配置
+      // 1. 修改站点配置
       api.config((config) => { /* ... */ })
 
-      // 2. 扩展 Markdown 解析器
+      // 2. 读取解析完成的站点配置
+      api.configResolved((site) => { /* ... */ })
+
+      // 3. 扩展 Markdown 解析器
       api.markdown((markdown) => { /* ... */ })
 
-      // 3. 增强页面元数据
+      // 4. 增强页面元数据
       api.pageData((pageData, { file, sourcePath }) => { /* ... */ })
 
-      // 4. 监听每个页面的产物
+      // 5. 监听每个页面的产物
       api.pageArtifact((pageArtifact) => { /* ... */ })
 
-      // 5. 注入 Vite 插件或选项
+      // 6. 注入 Vite 插件或选项
       api.vite((vite) => { /* ... */ })
 
-      // 6. 整站构建完成后生成额外静态文件
+      // 7. 整站构建完成后生成额外静态文件
       api.buildArtifacts(async (context) => { /* ... */ })
     },
   })
@@ -161,7 +165,7 @@ export default function myGeneratorPlugin() {
 
 ### `api.config()` {#config}
 
-`config()` 在站点配置归一化后调用。handler 接收真实的站点配置对象，可以直接读取或修改配置。
+`config()` 在站点配置归一化之前调用。handler 接收用户写的原始配置对象，可以直接修改它；这时默认值还没有补上，比如没写 `locales` 时 `config.locales` 是 `undefined`。
 
 ```ts
 // 在 setup(api) 中：
@@ -170,7 +174,24 @@ api.config((config) => {
 })
 ```
 
-需要知道语言、部署路径或源码目录的插件，通常在这里记下配置，留给后面的方法使用。
+### `api.configResolved()` {#config-resolved}
+
+全部插件的 `config()` 执行完之后，KawaPress 补上默认值、检查并归一化配置，然后把最终结果交给 `configResolved()`。它在 `markdown()` 和 `vite()` 之前执行。只需要读取配置的插件都应该用它，不要在插件里再写一遍 KawaPress 的默认规则：
+
+```ts
+// 在 setup(api) 中：
+let site: ResolvedSiteConfig | undefined
+
+api.configResolved((resolved) => {
+  site = resolved
+  // resolved.root     站点根目录的绝对路径
+  // resolved.base     总是以 / 开头和结尾，例如 '/docs/'
+  // resolved.locales  没写 locales 的站点也有一个英文的 root
+  // resolved.srcDir   相对 root 的源码目录，默认 '.'
+})
+```
+
+这个对象是只读的。需要改配置时用 `config()`。
 
 ### `api.markdown()` {#markdown}
 
@@ -371,8 +392,8 @@ const LABELS: Record<string, string> = {
 
 let localeKeys = ['root']
 
-api.config((config) => {
-  localeKeys = Object.keys(config.locales ?? { root: {} })
+api.configResolved((site) => {
+  localeKeys = Object.keys(site.locales)
 })
 
 api.markdown((markdown) => {
@@ -393,30 +414,14 @@ api.markdown((markdown) => {
 想自己做导航、索引或搜索数据，先要知道站点有哪些页面。`kawapress/generator` 的 `listMarkdownPages()` 使用的规则和 KawaPress 自己完全一样：跳过以 `.` 开头的目录以及 `dist`、`node_modules`，排除 `publicDir`，按名字排序。
 
 ```ts
-import { resolve } from 'node:path'
-import { listMarkdownPages } from 'kawapress/generator'
+import { listMarkdownPages, resolveMarkdownPageScope } from 'kawapress/generator'
 
-let srcDir = '.'
-
-api.config((config) => {
-  srcDir = config.srcDir ?? '.'
-})
-
-api.vite((config) => {
-  config.plugins ??= []
-  config.plugins.push({
-    name: 'your-plugin:pages',
-    async configResolved(resolved) {
-      // sourceRoot 是页面所在的目录；publicDir 里放的是原样复制的资源，不算页面
-      const pages = await listMarkdownPages({
-        sourceRoot: resolve(resolved.root, srcDir),
-        publicDir: resolved.publicDir,
-      })
-      // 每项形如
-      // { file: '/site/src/guide/intro.md', sourcePath: '/guide/intro.md', pagePath: '/guide/intro.md', routePath: '/guide/intro' }
-      console.log(pages.map(page => page.routePath))
-    },
-  })
+api.configResolved(async (site) => {
+  // 与 KawaPress 自己列页面时用的范围相同：源码目录、publicDir、srcExclude 和 rewrites
+  const pages = await listMarkdownPages(resolveMarkdownPageScope(site))
+  // 每项形如
+  // { file: '/site/src/guide/intro.md', sourcePath: '/guide/intro.md', pagePath: '/guide/intro.md', routePath: '/guide/intro' }
+  console.log(pages.map(page => page.routePath))
 })
 ```
 
@@ -619,6 +624,33 @@ export default defineRuntimePlugin({
 Runtime Plugin 会为每个 Vue App 执行一次。服务端渲染时，每次渲染都会创建新的 App；浏览器中则在启动时创建一次。因此，不要在模块顶层保存只属于某次渲染的状态。
 
 另外，Runtime Plugin 同时在服务端和浏览器中运行。访问 `window`、`document` 等浏览器对象前，请先阅读 [SSR 兼容性](/guide/ssr-compatibility)。
+
+## 测试插件 {#testing-plugins}
+
+测试生成侧插件时，不需要自己伪造 `api` 对象。`kawapress/generator` 的 `setupGeneratorPlugins()` 按 `kawapress build` 的方式加载插件：执行 `setup()`、`config()` 和 `configResolved()`，配置用的是 KawaPress 自己的默认值和检查规则。它返回解析好的 `site`，以及执行其余钩子的方法：
+
+```ts
+import { setupGeneratorPlugins } from 'kawapress/generator'
+import { MarkdownExit } from 'markdown-exit'
+import { expect, it } from 'vitest'
+import notesPlugin from '../src'
+
+it('renders a localized note title', async () => {
+  const host = await setupGeneratorPlugins({
+    locales: {
+      root: { label: 'English', lang: 'en' },
+      zh: { label: '简体中文', lang: 'zh-CN' },
+    },
+    plugins: [notesPlugin()],
+  })
+  const markdown = new MarkdownExit()
+  await host.runMarkdown(markdown)
+
+  expect(markdown.render('::: note\n内容\n:::', { path: '/zh/guide' })).toContain('说明')
+})
+```
+
+`host` 还提供 `runPageData()`、`runVite()` 等方法，插件 API 增加新钩子时测试也不用跟着改。
 
 ## 发布前检查 {#publish-checklist}
 

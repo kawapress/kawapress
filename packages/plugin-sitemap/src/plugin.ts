@@ -1,6 +1,5 @@
 import type { LocaleConfig } from 'kawapress'
 import type { SitemapPluginOptions } from './types'
-import { resolve } from 'node:path'
 import process from 'node:process'
 import { consola } from 'consola'
 import { definePlugin } from 'kawapress'
@@ -14,17 +13,15 @@ const MAX_SITEMAP_URLS = 50000
 export function sitemapPlugin(options: SitemapPluginOptions = {}) {
   let root = process.cwd()
   let base = '/'
-  let locales: Record<string, LocaleConfig> | undefined
+  let locales: Readonly<Record<string, LocaleConfig>> | undefined
 
   return definePlugin({
     name: '@kawapress/plugin-sitemap',
     setup(api) {
-      api.config((config) => {
-        base = config.base ?? '/'
+      api.configResolved((config) => {
+        root = config.root
+        base = config.base
         locales = config.locales
-      })
-      api.vite((config) => {
-        root = config.root ? resolve(config.root) : process.cwd()
       })
       api.buildArtifacts(async ({ pages, emitFile }) => {
         // 未设置 hostname 时保持关闭：不输出日志，也不生成文件

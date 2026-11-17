@@ -4,7 +4,7 @@ import type { App } from 'vue'
 import type { PageData } from '../core/extension-points'
 import type { OutletItemInput, OutletName } from '../core/outlet'
 import type { Router } from '../core/router'
-import type { SiteConfig } from '../core/site'
+import type { ResolvedSiteConfig, SiteConfig } from '../core/site'
 
 export type MaybePromise<T> = T | Promise<T>
 
@@ -48,7 +48,13 @@ export type PageDataHandler = (
 ) => MaybePromise<void>
 
 export interface GeneratorPluginAPI {
+  /** Changes the site config. Values are raw here: defaults are not applied yet. */
   config: (handler: GeneratorPluginHandler<SiteConfig>) => void
+  /**
+   * Reads the final site config once every `config()` hook ran, with defaults
+   * applied and values normalized. Runs before `markdown()` and `vite()`.
+   */
+  configResolved: (handler: GeneratorPluginHandler<ResolvedSiteConfig>) => void
   markdown: (handler: GeneratorPluginHandler<MarkdownExit>) => void
   pageData: (handler: PageDataHandler) => void
   pageArtifact: (

@@ -9,6 +9,7 @@ import { guideSidebars, pluginSidebars } from './sidebar'
 
 export default nagi({
   title: 'KawaPress',
+  description: '由 Vite 和 Vue 驱动的静态站点生成器。',
   base: process.env.KAWAPRESS_BASE,
   plugins: [
     imageZoomPlugin(),
@@ -53,6 +54,7 @@ export default nagi({
     en: {
       label: 'English',
       lang: 'en',
+      description: 'A Vite & Vue powered static site generator.',
       themeConfig: {
         nav: [
           { text: 'Guide', link: '/en/guide/what-is-kawapress', activeMatch: '/en/guide' },

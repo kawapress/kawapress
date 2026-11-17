@@ -1,10 +1,4 @@
-import type {
-  GeneratorPluginAPI,
-  GeneratorPluginHandler,
-  PageData,
-  PageDataContext,
-  PageDataHandler,
-} from 'kawapress'
+import type { PageData } from 'kawapress'
 import type { UserConfig } from 'vite'
 import type { LastUpdatedPluginOptions } from './index'
 import { execFileSync } from 'node:child_process'
@@ -13,6 +7,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { consola } from 'consola'
+import { setupGeneratorPlugins } from 'kawapress/generator'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { lastUpdatedPlugin } from './index'
 
@@ -95,50 +90,15 @@ describe('last updated plugin', () => {
   })
 
   it('adds the runtime options module to the Vite config', async () => {
-    const handlers = await createHandlers()
+    const host = await setupGeneratorPlugins({ plugins: [lastUpdatedPlugin()] })
     const config: UserConfig = {}
 
-    await handlers.vite(config)
+    await host.runVite(config)
 
     expect(config.plugins).toHaveLength(1)
     expect(config.plugins?.[0]).toMatchObject({ name: 'kawapress:last-updated-options' })
   })
 })
-
-interface PluginHandlers {
-  pageData: (pageData: PageData, context: PageDataContext) => Promise<void>
-  vite: (config: UserConfig) => Promise<void>
-}
-
-async function createHandlers(
-  options: LastUpdatedPluginOptions = {},
-): Promise<PluginHandlers> {
-  let pageDataHandler: PageDataHandler | undefined
-  let viteHandler: GeneratorPluginHandler<UserConfig> | undefined
-
-  const api: GeneratorPluginAPI = {
-    config() {},
-    markdown() {},
-    pageData(handler) {
-      pageDataHandler = handler
-    },
-    pageArtifact() {},
-    vite(handler) {
-      viteHandler = handler
-    },
-    buildArtifacts() {},
-  }
-  await lastUpdatedPlugin(options).setup(api)
-
-  return {
-    async pageData(pageData, context) {
-      await pageDataHandler?.(pageData, context)
-    },
-    async vite(config) {
-      await viteHandler?.(config)
-    },
-  }
-}
 
 async function readPage(
   root: string,
@@ -146,8 +106,7 @@ async function readPage(
   options: LastUpdatedPluginOptions = {},
   sourceFile = `${path.slice(1)}.md`,
 ): Promise<PageData> {
-  const handlers = await createHandlers(options)
-  await handlers.vite({ root })
+  const host = await setupGeneratorPlugins({ plugins: [lastUpdatedPlugin(options)] }, { root })
 
   const pageData: PageData = {
     path,
@@ -155,7 +114,7 @@ async function readPage(
     frontmatter: {},
     headers: [],
   }
-  await handlers.pageData(pageData, {
+  await host.runPageData(pageData, {
     file: join(root, sourceFile),
     sourcePath: `/${sourceFile}`,
   })

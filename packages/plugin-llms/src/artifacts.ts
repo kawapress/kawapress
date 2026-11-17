@@ -1,6 +1,6 @@
-import type { LocaleConfig } from 'kawapress'
+import type { LocaleConfig, ResolvedSiteConfig } from 'kawapress'
 import type { LlmsPage, LlmsPluginOptions } from './types'
-import { resolveLocaleIndex } from 'kawapress'
+import { resolveLocaleIndex, withBase } from 'kawapress'
 import { normalizeMarkdown } from './ssg/html-to-markdown'
 
 export interface RenderedPage {
@@ -10,11 +10,8 @@ export interface RenderedPage {
   markdown: string
 }
 
-export interface LlmsSiteContext {
-  base: string
-  title: string
-  locales: Record<string, LocaleConfig>
-}
+/** The parts of the resolved site config that llms artifacts read. */
+export type LlmsSiteContext = Pick<ResolvedSiteConfig, 'base' | 'title' | 'description' | 'locales'>
 
 export async function createLlmsArtifacts(
   renderedPages: readonly RenderedPage[],
@@ -38,7 +35,8 @@ export async function createLlmsArtifacts(
       .filter(page => page.locale === locale)
       .sort(comparePages)
     const title = localeConfig.title ?? site.title
-    const description = resolveDescription(options.description, locale)
+    // The same summary as the description meta of the locale's pages.
+    const description = localeConfig.description ?? site.description
     const publicPages = pages.map<LlmsPage>(page => ({
       routePath: page.routePath,
       sourcePath: page.sourcePath,
@@ -175,7 +173,7 @@ function comparePages(left: EnrichedPage, right: EnrichedPage): number {
 }
 
 function localeEntries(
-  locales: Record<string, LocaleConfig>,
+  locales: Readonly<Record<string, LocaleConfig>>,
 ): [string, LocaleConfig][] {
   return Object.entries(locales).sort(([left], [right]) => {
     if (left === 'root') {
@@ -203,16 +201,4 @@ function routeToMarkdownPath(routePath: string, locale: string): string {
 
 function localeOutputPath(locale: string, file: string): string {
   return locale === 'root' ? file : `${locale}/${file}`
-}
-
-function resolveDescription(
-  description: LlmsPluginOptions['description'],
-  locale: string,
-): string | undefined {
-  return typeof description === 'string' ? description : description?.[locale]
-}
-
-function withBase(path: string, base: string): string {
-  const prefix = base === '/' ? '' : base.replace(/\/$/, '')
-  return `${prefix}${path}`
 }

@@ -5,7 +5,7 @@
 ## 一、形态
 
 - 独立逻辑插件 `@kawapress/plugin-sitemap`，仅包含生成侧能力，不包含运行侧。
-- 通过 `api.config` 读取 `base`、`locales`，通过 `api.vite` 读取项目根目录，通过 `api.buildArtifacts` 获取 `pages` 并调用 `emitFile('sitemap.xml', ...)` 写出文件。不修改 Core，不依赖 Vite 内部实现。
+- 通过 `api.configResolved` 读取已归一化的 `root`、`base`、`locales`，通过 `api.buildArtifacts` 获取 `pages` 并调用 `emitFile('sitemap.xml', ...)` 写出文件。不修改 Core，不依赖 Vite 内部实现。
 - nagi Preset 默认组合该插件，但插件默认关闭。`nagi({ sitemap })` 只有传入 `hostname` 才会生成文件。
 
 ## 二、选项

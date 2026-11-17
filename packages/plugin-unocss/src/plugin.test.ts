@@ -1,5 +1,5 @@
-import type { GeneratorPluginAPI, GeneratorPluginHandler } from 'kawapress'
 import type { UserConfig } from 'vite'
+import { setupGeneratorPlugins } from 'kawapress/generator'
 import { createGenerator } from 'unocss'
 import { describe, expect, it } from 'vitest'
 import { createUnoCSSConfig, unocssPlugin } from './plugin'
@@ -48,25 +48,10 @@ describe('unocssPlugin', () => {
   })
 
   it('installs the UnoCSS Vite plugins through the public KawaPress hook', async () => {
-    let viteHandler: GeneratorPluginHandler<UserConfig> | undefined
-    const api: GeneratorPluginAPI = {
-      config() {},
-      markdown() {},
-      pageData() {},
-      pageArtifact() {},
-      vite(handler) {
-        viteHandler = handler
-      },
-      buildArtifacts() {},
-    }
-
-    await unocssPlugin().setup(api)
-    if (!viteHandler) {
-      throw new Error('Expected unocssPlugin to register a Vite handler')
-    }
+    const host = await setupGeneratorPlugins({ plugins: [unocssPlugin()] })
 
     const config: UserConfig = {}
-    await viteHandler(config)
+    await host.runVite(config)
 
     expect(config.plugins?.map(plugin => plugin && 'name' in plugin && plugin.name))
       .toContain('unocss:api')

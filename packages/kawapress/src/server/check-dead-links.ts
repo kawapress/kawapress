@@ -1,6 +1,6 @@
 import type { MarkdownPageLoader } from '../compiler/page-loader'
 import type { DeadLink, ResolvedDeadLinkConfig } from '../core/dead-links'
-import type { ResolvedSiteConfig } from '../generator/config'
+import type { GeneratorSiteConfig } from '../generator/config'
 import { readdir } from 'node:fs/promises'
 import { join, relative, resolve, sep } from 'node:path'
 import { consola } from 'consola'
@@ -8,7 +8,7 @@ import { findDeadLinks, formatDeadLink } from '../core/dead-links'
 
 export interface CheckDeadLinksOptions {
   root: string
-  siteConfig: ResolvedSiteConfig
+  siteConfig: GeneratorSiteConfig
   pageLoader: MarkdownPageLoader
 }
 

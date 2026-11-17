@@ -100,17 +100,16 @@ Generator Plugin 负责生成 Markdown 文件，配套的 Runtime Plugin 会自�
 
 不需要这套功能时，在 `nagi()` 中写 `llms: false`，即可同时关闭 llms 文件和正文上方的页面操作按钮。
 
-可以通过 nagi 的 `llms.description` 为索引补充站点简介。多语言站点可以分别设置：
+`llms.txt` 开头的站点简介就是站点配置里的 `description`，和页面的 description meta 是同一句话。多语言站点给每种语言写自己的 `description`：
 
 ```ts
 import { nagi } from 'kawapress/nagi'
 
 export default nagi({
-  llms: {
-    description: {
-      root: 'KawaPress 中文文档。',
-      en: 'KawaPress English documentation.',
-    },
+  description: 'KawaPress 中文文档。',
+  locales: {
+    root: { label: '简体中文', lang: 'zh-CN' },
+    en: { label: 'English', lang: 'en', description: 'KawaPress English documentation.' },
   },
 })
 ```

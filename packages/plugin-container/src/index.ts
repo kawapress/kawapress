@@ -50,23 +50,16 @@ const CHINESE_LABELS: ContainerLabels = {
   details: '详细信息',
 }
 
-const DEFAULT_LOCALES: Record<string, LocaleConfig> = {
-  root: {
-    label: 'English',
-    lang: 'en',
-  },
-}
-
 export function containerPlugin(
   options: ContainerPluginOptions = {},
 ): KawaPressPlugin {
-  let locales = DEFAULT_LOCALES
+  let locales: Readonly<Record<string, LocaleConfig>> = { root: { label: 'English', lang: 'en' } }
 
   return definePlugin({
     name: '@kawapress/plugin-container',
     setup(api) {
-      api.config((config) => {
-        locales = config.locales ?? DEFAULT_LOCALES
+      api.configResolved((config) => {
+        locales = config.locales
       })
       api.markdown((markdown) => {
         installContainers(markdown, {

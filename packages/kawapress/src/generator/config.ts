@@ -2,27 +2,16 @@ import type { UserConfig } from 'vite'
 import type { KawapressConfig } from '../api/config'
 import type { KawaPressPlugin } from '../api/plugin'
 import type { DeadLinkIgnore, ResolvedDeadLinkConfig } from '../core/dead-links'
-import type { HeadConfig } from '../core/head'
-import type { LocaleConfig, PageRewrites, SiteConfig } from '../core/site'
+import type { LocaleConfig, PageRewrites, ResolvedSiteConfig, SiteConfig } from '../core/site'
 import type { GeneratorPluginRunner } from '../plugin/generator-runner'
-import { isAbsolute } from 'node:path'
+import { isAbsolute, resolve } from 'node:path'
+import process from 'node:process'
 import { normalizeBase } from '../core/base'
 import { isPlainObject, resolveHeadConfig } from '../core/head'
 import { createGeneratorPluginRunner } from '../plugin/generator-runner'
 
-export interface ResolvedSiteConfig {
-  title: string
-  description: string | undefined
-  base: string
-  srcDir: string
-  /** Glob patterns, relative to `srcDir`, of Markdown files that are not pages. */
-  srcExclude: string[]
-  /** `rewrites` of the site config; leaves every page at its file path when unset. */
-  rewrites: PageRewrites | undefined
-  publicDir: string
-  head: HeadConfig[]
-  themeConfig?: object
-  locales: Record<string, LocaleConfig>
+/** The resolved site config plus what only the generator itself uses. */
+export interface GeneratorSiteConfig extends ResolvedSiteConfig {
   plugins: KawaPressPlugin[]
   vite: UserConfig | undefined
   runtimePlugin: string | undefined
@@ -38,9 +27,15 @@ const DEFAULT_LOCALES: Record<string, LocaleConfig> = {
   },
 }
 
+export interface ResolveSiteConfigOptions {
+  /** Absolute path of the site root. */
+  root?: string
+}
+
 export async function resolveSiteConfig(
   userConfig: KawapressConfig,
-): Promise<ResolvedSiteConfig> {
+  options: ResolveSiteConfigOptions = {},
+): Promise<GeneratorSiteConfig> {
   const plugins = userConfig.plugins ?? []
   const pluginRunner = await createGeneratorPluginRunner(plugins)
   const site: SiteConfig = {
@@ -73,17 +68,23 @@ export async function resolveSiteConfig(
   const locales = normalizeLocales(site.locales ?? DEFAULT_LOCALES)
   const deadLinks = resolveDeadLinks(userConfig.deadLinks)
 
-  return {
+  const resolved: ResolvedSiteConfig = Object.freeze({
+    root: resolve(options.root ?? process.cwd()),
     title: site.title ?? 'KawaPress',
-    description,
+    ...(description === undefined ? {} : { description }),
     base: normalizeBase(site.base),
     srcDir,
     srcExclude,
     rewrites,
     publicDir,
     head,
-    themeConfig: site.themeConfig,
+    themeConfig: site.themeConfig ?? {},
     locales,
+  })
+  await pluginRunner.runConfigResolved(resolved)
+
+  return {
+    ...resolved,
     plugins,
     vite: userConfig.vite,
     runtimePlugin: userConfig.runtimePlugin,

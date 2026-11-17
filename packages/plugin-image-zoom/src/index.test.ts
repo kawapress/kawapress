@@ -1,6 +1,6 @@
-import type { GeneratorPluginAPI, SiteConfig } from 'kawapress'
 import type { MarkdownExit } from 'markdown-exit'
 import type { Plugin, UserConfig } from 'vite'
+import { setupGeneratorPlugins } from 'kawapress/generator'
 import { createMarkdownExit } from 'markdown-exit'
 import { describe, expect, it } from 'vitest'
 import { imageZoomPlugin, installImageZoom } from './index'
@@ -93,11 +93,10 @@ describe('image zoom markdown rule', () => {
       labels: { dialog: 'Enlarged image' },
       localeLabels: { en: { zoom: 'Open {alt} larger' } },
     })
-    const handlers = await registerPlugin(plugin.setup)
-    await handlers.config({ locales: LOCALES })
+    const host = await setupGeneratorPlugins({ locales: LOCALES, plugins: [plugin] })
 
     const markdown = createMarkdownExit({ html: true })
-    await handlers.markdown(markdown)
+    await host.runMarkdown(markdown)
 
     expect({
       chinese: markdown.render('![架构图](/diagram.png)', { path: '/guide/diagram' }),
@@ -114,11 +113,10 @@ describe('image zoom markdown rule', () => {
 
   it('hands the runtime options to the browser as JSON', async () => {
     const plugin = imageZoomPlugin({ localeLabels: { en: { dialog: 'Zoomed' } } })
-    const handlers = await registerPlugin(plugin.setup)
-    await handlers.config({ locales: LOCALES })
+    const host = await setupGeneratorPlugins({ locales: LOCALES, plugins: [plugin] })
 
     const config: UserConfig = {}
-    await handlers.vite(config)
+    await host.runVite(config)
     const optionsPlugin = config.plugins?.at(-1) as Plugin
     const module = await loadVirtualModule(optionsPlugin)
 
@@ -134,40 +132,6 @@ function createEnv(
   frontmatter: Record<string, unknown>,
 ): Parameters<MarkdownExit['render']>[1] {
   return { frontmatter, path: '/guide/diagram' }
-}
-
-type Setup = (api: GeneratorPluginAPI) => void | Promise<void>
-
-interface PluginHandlers {
-  config: (config: SiteConfig) => void | Promise<void>
-  markdown: (markdown: MarkdownExit) => void | Promise<void>
-  vite: (config: UserConfig) => void | Promise<void>
-}
-
-async function registerPlugin(setup: Setup): Promise<PluginHandlers> {
-  let config: PluginHandlers['config'] | undefined
-  let markdown: PluginHandlers['markdown'] | undefined
-  let vite: PluginHandlers['vite'] | undefined
-
-  await setup({
-    config(handler) {
-      config = handler
-    },
-    markdown(handler) {
-      markdown = handler
-    },
-    pageData() {},
-    pageArtifact() {},
-    vite(handler) {
-      vite = handler
-    },
-    buildArtifacts() {},
-  })
-
-  if (!config || !markdown || !vite) {
-    throw new Error('Expected the image zoom plugin to register config, markdown, and vite handlers.')
-  }
-  return { config, markdown, vite }
 }
 
 type VirtualModuleHook = (id: string) => unknown

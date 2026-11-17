@@ -34,6 +34,7 @@ export { useMarkdownItPlugin } from './compiler/markdown-it-compat'
 export type { MarkdownItPluginHost } from './compiler/markdown-it-compat'
 export { addPageComponent } from './compiler/page-components'
 export type { PageComponent, PageComponentEnv } from './compiler/page-components'
+export { withBase, withoutBase } from './core/base'
 export { findDeadLinks, findPageDeadLinks, formatDeadLink } from './core/dead-links'
 export type {
   DeadLink,
@@ -69,6 +70,7 @@ export type {
   LocaleLink,
   PageHeader,
   PageRewrites,
+  ResolvedSiteConfig,
   ResolvedSiteData,
   SiteConfig,
   SiteData,

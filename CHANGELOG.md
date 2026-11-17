@@ -10,10 +10,13 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 - **Sites and locales can set a default `description`.** Pages without a frontmatter `description` use the current locale's `description`, then the site's.
 - **Sites can replace a plugin a preset includes.** A plugin in `plugins` with the same name as a preset plugin takes its place, and registering two plugins with one name is an error.
+- **Generator plugins can read the resolved site config.** `api.configResolved()` runs after every `config()` hook with KawaPress's defaults applied and values normalized, so plugins no longer repeat them. Official plugins use it.
+- **Plugin authors get KawaPress's own tools.** `kawapress/generator` adds `setupGeneratorPlugins()`, which sets plugins up the way a build does for tests and tools, and `resolveMarkdownPageScope()`, the page scope KawaPress lists its own pages with. `withBase()` is also exported from `kawapress`.
 - **`shikiPlugin()` accepts `languages`.** Grammar registrations load after the default languages, as in the standalone Markdown renderer.
 
 ### Changed
 
+- **llms.txt takes its site summary from `description`.** The summary at the top of `llms.txt` is the current locale's `description`, then the site's. The `llms.description` option is removed; a config that still sets it fails with a message that points to the new place.
 - **`shikiPlugin()` renders the light and dark GitHub themes by default**, like the standalone renderer and nagi. Output follows the page `color-scheme`; pass `theme` for a single theme.
 
 ### Fixed

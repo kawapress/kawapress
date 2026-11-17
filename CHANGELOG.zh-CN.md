@@ -10,10 +10,13 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 - **站点和语言可以设置默认 `description`。** 没在 frontmatter 写 `description` 的页面，先使用当前语言的 `description`，再使用全站的。
 - **站点可以替换 Preset 内置的插件。** `plugins` 中与 Preset 内置插件同名的插件会顶替它；同一个名字注册两次会报错。
+- **生成侧插件可以读取解析完成的站点配置。** `api.configResolved()` 在全部 `config()` 之后执行，默认值已经补上、配置已经归一化，插件不必再自己重复一遍。官方插件都已改用它。
+- **插件作者可以使用 KawaPress 自己的工具。** `kawapress/generator` 新增 `setupGeneratorPlugins()`，按构建流程加载插件，供测试和工具使用；以及 `resolveMarkdownPageScope()`，返回 KawaPress 自己列页面时使用的范围。`withBase()` 也从 `kawapress` 导出。
 - **`shikiPlugin()` 支持 `languages`。** 额外的 grammar 注册在默认语言之后加载，与独立 Markdown 渲染器一致。
 
 ### 变更
 
+- **llms.txt 的站点简介改用 `description`。** `llms.txt` 开头的简介取当前语言的 `description`，再取全站的。`llms.description` 选项已移除；仍然设置它的配置会报错，并指出新的写法。
 - **`shikiPlugin()` 默认输出明暗两套 GitHub 主题**，与独立渲染器和 nagi 一致。高亮颜色跟随页面的 `color-scheme`；需要单一主题时传 `theme`。
 
 ### 修复

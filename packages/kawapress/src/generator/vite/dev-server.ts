@@ -4,7 +4,7 @@ import type {
   RunnableDevEnvironment,
   ViteDevServer,
 } from 'vite'
-import type { ResolvedSiteConfig } from '../config'
+import type { GeneratorSiteConfig } from '../config'
 import { createServer, isRunnableDevEnvironment } from 'vite'
 import { createBaseViteConfig } from './config'
 import { entryServerPath } from './entries'
@@ -21,7 +21,7 @@ export interface CreateViteServerOptions {
 
 export async function createViteServer(
   root: string,
-  siteConfig: ResolvedSiteConfig,
+  siteConfig: GeneratorSiteConfig,
   options: CreateViteServerOptions = {},
 ): Promise<KawapressViteServer> {
   const viteConfig: InlineConfig = {

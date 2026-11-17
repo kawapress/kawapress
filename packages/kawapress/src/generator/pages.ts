@@ -1,7 +1,7 @@
 /// <reference path="../types/picomatch.d.ts" />
 
 import type { Dirent } from 'node:fs'
-import type { PageRewrites } from '../core/site'
+import type { PageRewrites, ResolvedSiteConfig } from '../core/site'
 import { readdir } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 import picomatch from 'picomatch'
@@ -43,6 +43,20 @@ export interface MarkdownPageScope {
   exclude?: readonly string[] | undefined
   /** `rewrites` of the site config, which moves pages to other routes. */
   rewrites?: PageRewrites | undefined
+}
+
+/**
+ * The pages of a resolved site config: the scope KawaPress itself uses to list
+ * pages, with absolute source and public folders.
+ */
+export function resolveMarkdownPageScope(site: ResolvedSiteConfig): MarkdownPageScope {
+  const sourceRoot = resolve(site.root, site.srcDir)
+  return {
+    sourceRoot,
+    publicDir: resolve(sourceRoot, site.publicDir),
+    exclude: site.srcExclude,
+    rewrites: site.rewrites,
+  }
 }
 
 /**
