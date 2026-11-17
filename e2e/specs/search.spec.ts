@@ -23,6 +23,16 @@ test('Control+K opens the search and the keyboard selects a result', async ({ pa
   await expect(page.locator('article h1')).toBeVisible()
 })
 
+test('the mobile navigation keeps a search button', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto(sitePath('/'))
+
+  const button = page.locator('.nagi-nav__controls--desktop .kawa-search-button')
+  await expect(button).toBeVisible()
+  await button.click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+})
+
 test('"/" opens the search and Escape closes it', async ({ page }) => {
   await page.goto(sitePath('/'))
 

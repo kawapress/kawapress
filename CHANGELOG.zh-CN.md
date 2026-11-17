@@ -6,6 +6,10 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+### 修复
+
+- **移动端保留搜索入口。** nagi 在导航栏继续显示搜索按钮，只把语言、明暗和社交链接收进移动端菜单。
+
 ### 新增
 - **nagi 可以关闭内置 llms 和页脚。** 站点自己提供对应能力或不需要它们时，使用 `llms: false` 和 `themeConfig.footer: false`。
 - **站点可以直接配置 Vite 和本地 Runtime Plugin。** `vite` 接受常规 Vite 配置，`runtimePlugin` 在插件包之后加载站点本地模块，`publicDir` 也可以指向 `srcDir` 外的目录。

@@ -349,6 +349,13 @@
   }
 
   .nagi-nav__controls--desktop {
+    display: flex;
+  }
+
+  /* Keep search available in the bar; the other controls live in the menu. */
+  .nagi-nav__controls--desktop > .nagi-language-menu,
+  .nagi-nav__controls--desktop > .nagi-appearance-switch,
+  .nagi-nav__controls--desktop > .nagi-social-links {
     display: none;
   }
 

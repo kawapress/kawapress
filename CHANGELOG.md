@@ -6,6 +6,10 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
+### Fixed
+
+- **Search remains available on mobile.** nagi keeps the search button in the navigation bar while moving language, appearance and social controls into the mobile menu.
+
 ### Added
 - **nagi can omit built-in llms and the footer.** Use `llms: false` and `themeConfig.footer: false` when a site provides its own behavior or does not want them.
 - **Sites can configure Vite and a local Runtime Plugin directly.** `vite` accepts regular Vite configuration, `runtimePlugin` loads a site-local module after package plugins, and `publicDir` may point outside `srcDir`.
