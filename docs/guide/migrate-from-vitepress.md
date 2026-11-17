@@ -250,6 +250,7 @@ VitePress 的 `useData()`、模板全局变量 `$frontmatter` 在 KawaPress 中�
 | `useData().page`、`useData().frontmatter`、`$frontmatter` | `const page = usePageData()`（读取 `page.value?.title`、`page.value?.frontmatter`、`page.value?.headers`） |
 | `useData().site`、`useData().lang`、`useData().dir`、`useData().localeIndex` | `const site = useSite()`（读取 `site.value.title`、`site.value.base`、`site.value.lang`、`site.value.dir`、`site.value.localeIndex`） |
 | `useData().theme` | `const themeConfig = useThemeConfig()` |
+| `useData().isDark` | `const { isDark } = useAppearance()` |
 | `useRoute()`、`useRouter()` | `useRoute()`、`useRouter()`（同名导出自 `kawapress/client`） |
 
 ```vue

@@ -5,6 +5,7 @@ import type { Router } from '../core/router'
 import { runtimePlugins } from 'virtual:kawapress-runtime-plugins'
 import { createSSRApp } from 'vue'
 import { createRuntimePluginRunner } from '../plugin/runtime-runner'
+import ClientOnly from './components/ClientOnly'
 import KawaOutlet from './components/KawaOutlet.vue'
 import Root from './components/Root.vue'
 import { createOutletRenderStore, outletRegistryKey, outletRenderStoreKey } from './outlet'
@@ -43,6 +44,7 @@ export async function createKawapressApp(
   const pluginRunner = await createRuntimePluginRunner(runtimePlugins)
   app.provide(outletRegistryKey, pluginRunner.outlets)
   app.provide(outletRenderStoreKey, createOutletRenderStore())
+  app.component('ClientOnly', ClientOnly)
   app.component('KawaOutlet', KawaOutlet)
   await pluginRunner.runVueApp(app)
   await pluginRunner.runRouter(router)

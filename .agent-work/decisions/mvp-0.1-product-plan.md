@@ -329,6 +329,8 @@ KawaPress 0.1 约定以下必备全局组件名：
 - `Layout`
 - `NotFound`
 
+Core 另外全局注册无视觉表现的 `ClientOnly`：服务端与浏览器首次渲染都输出空节点，挂载后才渲染默认插槽；`kawapress/client` 同时导出它。`useAppearance()` 是 Core 的组合式函数，返回响应式 `isDark`，跟随根元素 `dark` / `light` class，两者都没有时跟随系统偏好，不要求组件依赖 nagi。
+
 nagi Runtime Plugin 使用真实 SFC 对象注册它们：
 
 ```ts
