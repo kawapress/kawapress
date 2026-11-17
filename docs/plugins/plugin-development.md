@@ -453,6 +453,23 @@ export default nagi({
 
 `runtimePlugin` 指向一个默认导出 `defineRuntimePlugin()` 的本地模块，在全部插件包的 Runtime Plugin 之后执行。原来写在 `.vitepress/theme/index.ts` 的 `enhanceApp`、全局组件、CSS 和 `app.provide()` 都可以放在这里，不需要建立本地 npm 包。可复用的扩展仍应按下文拆成插件包。
 
+
+## 构建时渲染 Markdown 与代码片段 {#markdown-renderer}
+
+组件库的 demo 源码加载器、示例索引等构建工具，可以在不创建页面的情况下渲染 Markdown。需要代码高亮时，使用 Shiki 插件提供的 `createMarkdownRenderer()`：
+
+```ts
+import { createMarkdownRenderer } from '@kawapress/plugin-shiki'
+import { vueLanguage } from './vueLanguage'
+
+const markdown = await createMarkdownRenderer({
+  languages: vueLanguage,
+})
+const html = await markdown.renderAsync('```vue\n<Button />\n```')
+```
+
+它输出与文档页相同的 Shiki 双主题 HTML，`languages` 接受额外的 Shiki grammar 注册；也可以用 `langs` 指定语言列表。Core 的 `kawapress` 包另提供不带高亮的 `createMarkdownRenderer({ highlight })`，方便接入其它高亮器。这个渲染器只渲染传入的 Markdown，不执行站点插件或生成页面。
+
 ## 运行侧插件（Runtime Plugin） {#runtime-plugin}
 
 Runtime Plugin 在网站运行时工作，它的代码会被打包进入站点的客户端/SSR Vite 模块图，因此可以静态导入 `.vue` 组件、CSS 样式和常规 Vue 插件。

@@ -520,7 +520,7 @@ shikiPlugin({ twoslash: { /* TwoslashOptions */ } })
 
 ### 7.3 Code Group
 
-通用代码 Tab 能力由独立逻辑插件包 `@kawapress/plugin-code-group` 提供，不写死在 Core 或 nagi 组件中。默认入口在 Markdown 管线解析 VitePress 风格的 `::: code-group` 容器与代码围栏后的 `[标签]`，生成结构稳定的 `KawaCodeGroup` 组件槽位；`./runtime-plugin` 注册真实 Vue 组件，负责 Tab 选择、方向键、Home、End、ARIA 关系与 SSR/client 稳定 ID。容器只接受 fenced code block，其他正文直接给出可执行的编译错误。
+Core 公开独立 `createMarkdownRenderer({ highlight })`，只渲染传入的 Markdown，不执行站点插件或创建页面；`@kawapress/plugin-shiki` 提供同名高亮渲染器，复用文档页的 Shiki 输出并支持 `languages` 自定义 grammar，供构建时 demo 加载器替代 VitePress。通用代码 Tab 能力由独立逻辑插件包 `@kawapress/plugin-code-group` 提供，不写死在 Core 或 nagi 组件中。默认入口在 Markdown 管线解析 VitePress 风格的 `::: code-group` 容器与代码围栏后的 `[标签]`，生成结构稳定的 `KawaCodeGroup` 组件槽位；`./runtime-plugin` 注册真实 Vue 组件，负责 Tab 选择、方向键、Home、End、ARIA 关系与 SSR/client 稳定 ID。容器只接受 fenced code block，其他正文直接给出可执行的编译错误。
 
 插件负责结构、状态、`.kawa-code-group*` 稳定 class，以及放在 `kawa.plugin` 层、只读公共 Token 的完整默认外观；主题只在 `kawa.theme` 层微调。Tab 栏纵向严格裁切，不出现原生滚动条或越界滚动；Tab 过多时仍可横向滑动，但隐藏原生滚动条并阻止滚动越界传递。nagi Preset 默认组合该插件，官方《快速开始》使用它展示 npm、pnpm 与 Yarn 命令，不能把三个高频包管理器命令堆成连续普通代码块。
 

@@ -12,6 +12,8 @@ export type {
   DataLoaderGlobOptions,
   DataLoaderOptions,
 } from './api/data'
+export { createMarkdownRenderer } from './api/markdown-renderer'
+export type { MarkdownRendererOptions } from './api/markdown-renderer'
 export { definePlugin, defineRuntimePlugin } from './api/plugin'
 export type {
   BuildArtifactsContext,

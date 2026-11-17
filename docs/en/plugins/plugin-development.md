@@ -443,6 +443,23 @@ export default nagi({
 
 `runtimePlugin` points to a local module whose default export is `defineRuntimePlugin()`. It runs after all package Runtime Plugins. The old `.vitepress/theme/index.ts` `enhanceApp`, global components, CSS and `app.provide()` belong here, without creating a local npm package. Reusable extensions should still use the package layout below.
 
+
+## Rendering Markdown and Code Snippets at Build Time {#markdown-renderer}
+
+Build tools such as demo source loaders and example indexes can render Markdown without creating a page. Use the Shiki plugin's `createMarkdownRenderer()` when code highlighting is needed:
+
+```ts
+import { createMarkdownRenderer } from '@kawapress/plugin-shiki'
+import { vueLanguage } from './vueLanguage'
+
+const markdown = await createMarkdownRenderer({
+  languages: vueLanguage,
+})
+const html = await markdown.renderAsync('```vue\n<Button />\n```')
+```
+
+It produces the same dual-theme Shiki HTML as documentation pages. `languages` accepts additional Shiki grammar registrations, while `langs` selects the language list. Core also exports `createMarkdownRenderer({ highlight })` from `kawapress` for other highlighters. This renderer only renders the supplied Markdown; it does not run site plugins or create a page.
+
 ## Runtime Plugins {#runtime-plugin}
 
 A Runtime Plugin operates in the browser and SSR runtime. Its code enters the site's Vite module graph, allowing it to statically import `.vue` files, CSS, and regular Vue plugins.
