@@ -6,23 +6,19 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
-### 修复
-
-- **空白页面布局撑满滚动视口。** `layout: page` 不再把需要满屏的应用内容压缩成自身内容的高度。
-
-### 修复
-
-- **移动端保留搜索入口。** nagi 在导航栏继续显示搜索按钮，只把语言、明暗和社交链接收进移动端菜单。
+## [0.6.0] - 2026-11-16
 
 ### 新增
-- **nagi 可以关闭内置 llms 和页脚。** 站点自己提供对应能力或不需要它们时，使用 `llms: false` 和 `themeConfig.footer: false`。
-- **站点可以直接配置 Vite 和本地 Runtime Plugin。** `vite` 接受常规 Vite 配置，`runtimePlugin` 在插件包之后加载站点本地模块，`publicDir` 也可以指向 `srcDir` 外的目录。
 
 - **Core 提供 `ClientOnly` 和 `useAppearance()`。** `<ClientOnly>` 已全局注册，浏览器专属内容在挂载后才渲染；`useAppearance()` 提供响应式 `isDark`，跟随根元素的外观 class 或操作系统偏好。
+- **站点可以直接配置 Vite 和本地 Runtime Plugin。** `vite` 接受常规 Vite 配置，`runtimePlugin` 在插件包之后加载站点本地模块，`publicDir` 也可以指向 `srcDir` 外的目录。
+- **nagi 可以关闭内置 llms 和页脚。** 站点自己提供对应能力或不需要它们时，使用 `llms: false` 和 `themeConfig.footer: false`。
 
 ### 修复
 
 - **`layout: page` 不再把文档排版样式套到自定义页面上。** 标题、图片、分隔线等标记保持站点自己的样式，编辑器、演练场这类应用页面不会再出现多余的间距和边框。
+- **空白页面布局撑满滚动视口。** `layout: page` 不再把需要满屏的应用内容压缩成自身内容的高度。
+- **移动端保留搜索入口。** nagi 在导航栏继续显示搜索按钮，只把语言、明暗和社交链接收进移动端菜单。
 
 ## [0.5.1] - 2026-11-16
 
@@ -209,7 +205,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/kawapress/kawapress/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/kawapress/kawapress/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/kawapress/kawapress/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/kawapress/kawapress/releases/tag/v0.4.2

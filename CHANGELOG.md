@@ -6,23 +6,19 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
-### Fixed
-
-- **Blank page layouts fill their scroll viewport.** `layout: page` no longer collapses full-height application content to its intrinsic height.
-
-### Fixed
-
-- **Search remains available on mobile.** nagi keeps the search button in the navigation bar while moving language, appearance and social controls into the mobile menu.
+## [0.6.0] - 2026-11-16
 
 ### Added
-- **nagi can omit built-in llms and the footer.** Use `llms: false` and `themeConfig.footer: false` when a site provides its own behavior or does not want them.
-- **Sites can configure Vite and a local Runtime Plugin directly.** `vite` accepts regular Vite configuration, `runtimePlugin` loads a site-local module after package plugins, and `publicDir` may point outside `srcDir`.
 
 - **Core provides `ClientOnly` and `useAppearance()`.** `<ClientOnly>` is registered globally and defers browser-only content until after mounting. `useAppearance()` exposes a reactive `isDark` that follows the root appearance class or the operating system preference.
+- **Sites can configure Vite and a local Runtime Plugin directly.** `vite` accepts regular Vite configuration, `runtimePlugin` loads a site-local module after package plugins, and `publicDir` may point outside `srcDir`.
+- **nagi can omit built-in llms and the footer.** Use `llms: false` and `themeConfig.footer: false` when a site provides its own behavior or does not want them.
 
 ### Fixed
 
 - **`layout: page` no longer applies document typography to custom pages.** nagi leaves their headings, images, rules and other markup unstyled, so application-like pages such as editors and playgrounds keep their own layout and controls.
+- **Blank page layouts fill their scroll viewport.** `layout: page` no longer collapses full-height application content to its intrinsic height.
+- **Search remains available on mobile.** nagi keeps the search button in the navigation bar while moving language, appearance and social controls into the mobile menu.
 
 ## [0.5.1] - 2026-11-16
 
@@ -209,7 +205,8 @@ What changes for each kind of user:
 - The CSS target is a browser that supports `light-dark()`, so theme override tokens no longer lose their colors in production builds.
 - A release no longer fails when a version is already on npm.
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/kawapress/kawapress/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/kawapress/kawapress/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/kawapress/kawapress/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/kawapress/kawapress/releases/tag/v0.4.2
