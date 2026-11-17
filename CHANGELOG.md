@@ -8,6 +8,10 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ### Fixed
 
+- **Blank page layouts fill their scroll viewport.** `layout: page` no longer collapses full-height application content to its intrinsic height.
+
+### Fixed
+
 - **Search remains available on mobile.** nagi keeps the search button in the navigation bar while moving language, appearance and social controls into the mobile menu.
 
 ### Added

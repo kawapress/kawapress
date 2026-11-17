@@ -27,6 +27,11 @@ test('layout: page leaves custom markup free of document typography', async ({ p
 
   await expect(page.locator('.nagi.nagi--page')).toBeVisible()
   await expect(page.locator('.nagi-doc')).toHaveCount(0)
+  const heights = await page.evaluate(() => ({
+    main: document.querySelector('.nagi-main--page')!.getBoundingClientRect().height,
+    scroll: document.querySelector('.nagi-page-scroll')!.getBoundingClientRect().height,
+  }))
+  expect(heights.main).toBe(heights.scroll)
   const image = page.locator('.nagi-main--page img')
   await expect(image).toHaveCSS('margin-top', '0px')
   await expect(image).toHaveCSS('margin-bottom', '0px')
