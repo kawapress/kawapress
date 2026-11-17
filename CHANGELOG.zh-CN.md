@@ -6,6 +6,10 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+### 变更
+
+- **nagi 展开目录栏的按钮改用 Clarity 的树状视图图标。**
+
 ## [0.8.1] - 2026-11-18
 
 ### 修复

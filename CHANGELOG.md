@@ -6,6 +6,10 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
+### Changed
+
+- **nagi's outline expand button uses the Clarity tree-view icon.**
+
 ## [0.8.1] - 2026-11-18
 
 ### Fixed
