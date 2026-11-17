@@ -114,6 +114,33 @@ export default defineRuntimePlugin({
 
 Use this pattern only for browser behavior that does not change the initial HTML. If a plugin changes the component tree, use the client-only component boundary from the previous section to keep server and browser output aligned.
 
+## Load the Same Dependency on Both Sides {#load-the-same-dependency-on-both-sides}
+
+The server and the browser must run the same component code. A common trap is export conditions configured for the client only: since Vite 6, the top-level `resolve.conditions` applies to the browser build, while the server build reads `ssr.resolve.conditions`. With the config below the browser bundles a component library's `src/` while the server still bundles its prebuilt `dist/`, and any difference between the two causes hydration mismatches:
+
+```ts
+import { defineConfig } from 'kawapress'
+
+export default defineConfig({
+  vite: {
+    resolve: { conditions: ['source', 'module', 'browser', 'development|production'] },
+  },
+})
+```
+
+Give the server the same condition:
+
+```ts
+export default defineConfig({
+  vite: {
+    resolve: { conditions: ['source', 'module', 'browser', 'development|production'] },
+    ssr: { resolve: { conditions: ['source'] } },
+  },
+})
+```
+
+`kawapress build` checks the dependencies both sides bundle. When one import reaches different export conditions on the two sides, the build warns, lists the file each side loaded, and names the conditions to add to `ssr.resolve.conditions`. A browser build that a package ships on purpose through the `browser` condition does not trigger the warning.
+
 ## Keep the First Render Stable {#keep-the-first-render-stable}
 
 Hydration requires the server HTML and the browser's first render to produce the same node structure and text. Avoid using these values directly during the first render:

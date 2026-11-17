@@ -6,6 +6,10 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
+### Added
+
+- **`kawapress build` warns when the client and SSR load a package from different files.** Since Vite 6 the top-level `resolve.conditions` reaches the client only, so a site that adds a condition such as `source` there renders a workspace library's `dist/` on the server and hydrates it with its `src/` in the browser. The warning lists the files each side loaded and the conditions to add to `ssr.resolve.conditions`; a browser build a package ships on purpose through the `browser` condition is not reported.
+
 ### Changed
 
 - **nagi's outline expand button uses the Clarity tree-view icon.**

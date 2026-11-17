@@ -11,6 +11,7 @@ import {
 } from '../generator/vite/config'
 import { entryClientPath, entryServerPath, SERVER_ENTRY_FILE, SERVER_OUT_DIR } from '../generator/vite/entries'
 import { createPageInputs } from '../generator/vite/page-inputs'
+import { createResolutionCheck, formatResolutionWarning } from '../generator/vite/plugins/resolution-check'
 import {
   createBuildArtifactEmitter,
   createBuildArtifactImporter,
@@ -78,11 +79,18 @@ export async function buildSite(root: string) {
     },
   }
   await siteConfig.pluginRunner.runVite(viteConfig)
+  // Appended after the plugin `vite` hooks, which may replace the plugin list.
+  const resolutionCheck = createResolutionCheck()
+  viteConfig.plugins = [...(viteConfig.plugins ?? []), resolutionCheck.plugin]
 
   // Plugin `vite` hooks mutate the config above, so the build states its mode again
   // rather than trusting whatever they left in it.
   const builder = await createBuilder({ ...viteConfig, mode: BUILD_MODE })
   await builder.buildApp()
+  const resolutionWarning = formatResolutionWarning(resolutionCheck.findMismatches())
+  if (resolutionWarning) {
+    consola.warn(resolutionWarning)
+  }
   await checkDeadLinks({ root, siteConfig, pageLoader })
   await siteConfig.pluginRunner.runBuildArtifacts({
     emitFile: createBuildArtifactEmitter(root),

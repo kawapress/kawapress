@@ -6,6 +6,10 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+### 新增
+
+- **客户端与 SSR 从不同文件加载同一个包时，`kawapress build` 会给出警告。** 自 Vite 6 起顶层 `resolve.conditions` 只作用于客户端，站点只在那里加上 `source` 一类条件时，服务端渲染的是工作区组件库的 `dist/`，浏览器却用 `src/` 去 hydration。警告会列出两端各自加载的文件，以及应写进 `ssr.resolve.conditions` 的条件；包通过 `browser` 条件有意提供的浏览器构建不会被报告。
+
 ### 变更
 
 - **nagi 展开目录栏的按钮改用 Clarity 的树状视图图标。**
