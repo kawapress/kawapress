@@ -1,3 +1,6 @@
+/// <reference path="./types/global-components.d.ts" />
+/// <reference path="./types/virtual-modules.d.ts" />
+
 export { withBase, withoutBase } from '../core/base'
 export { resolveLocaleIndex } from '../core/locale'
 export { OUTLET_NAMES } from '../core/outlet'

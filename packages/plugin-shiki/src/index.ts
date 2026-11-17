@@ -220,11 +220,19 @@ function createRenderedLineCountTransformer(): ShikiTransformer {
   }
 }
 
+/** Shiki versions expose different metadata types for the same twoslash flag. */
+function hasTwoslashMeta(meta: unknown): boolean {
+  return typeof meta === 'object'
+    && meta !== null
+    && 'twoslash' in meta
+    && Boolean((meta as { twoslash?: unknown }).twoslash)
+}
+
 function createVPreTransformer(): ShikiTransformer {
   return {
     name: V_PRE_TRANSFORMER_NAME,
     pre(node) {
-      if (!this.meta.twoslash) {
+      if (!hasTwoslashMeta(this.meta)) {
         node.properties['v-pre'] = ''
       }
     },
@@ -247,7 +255,7 @@ function createTwoslashTransformer(
     ...transformer,
     name: 'kawapress:twoslash',
     postprocess(html) {
-      if (this.meta.twoslash) {
+      if (hasTwoslashMeta(this.meta)) {
         return html.replaceAll('{', '&#123;')
       }
       return html
