@@ -1,3 +1,5 @@
+/// <reference path="../types/picomatch.d.ts" />
+
 import type { Dirent } from 'node:fs'
 import type { PageRewrites } from '../core/site'
 import { readdir } from 'node:fs/promises'
