@@ -6,22 +6,44 @@ The 21 public packages are released together and share one version number. [简�
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-18
+
+### Breaking changes
+
+- **`llms.description` is removed.** The summary at the top of `llms.txt` now comes from the site and locale `description`, the same text as the page description meta. *Site authors:* move the text; a config that still sets `llms.description` fails to load with a message that names the new place.
+
+  ```diff
+   export default nagi({
+  +  description: 'KawaPress documentation.',
+     locales: {
+       root: { label: 'English', lang: 'en' },
+  -    zh: { label: '简体中文', lang: 'zh-CN' },
+  +    zh: { label: '简体中文', lang: 'zh-CN', description: 'KawaPress 中文文档。' },
+     },
+  -  llms: { description: { root: 'KawaPress documentation.', zh: 'KawaPress 中文文档。' } },
+   })
+  ```
+
+- **A plugin with the same name as a preset plugin replaces it, and two plugins with one name are an error.** Before, both ran. *Site authors:* if you added a plugin a preset already includes, it now takes the preset's place; drop it from `plugins` if you meant the preset's own. *Plugin authors:* give every plugin a unique `name`.
+- **`shikiPlugin()` renders the light and dark GitHub themes by default**, like the standalone renderer and nagi. *Site authors* who use `shikiPlugin()` without nagi and without `theme` or `themes` get dual-theme markup that follows the page `color-scheme`; pass `theme: 'github-light'` to keep one theme.
+
 ### Added
 
 - **Sites and locales can set a default `description`.** Pages without a frontmatter `description` use the current locale's `description`, then the site's.
-- **Sites can replace a plugin a preset includes.** A plugin in `plugins` with the same name as a preset plugin takes its place, and registering two plugins with one name is an error.
-- **Generator plugins can read the resolved site config.** `api.configResolved()` runs after every `config()` hook with KawaPress's defaults applied and values normalized, so plugins no longer repeat them. Official plugins use it.
-- **Plugin authors get KawaPress's own tools.** `kawapress/generator` adds `setupGeneratorPlugins()`, which sets plugins up the way a build does for tests and tools, and `resolveMarkdownPageScope()`, the page scope KawaPress lists its own pages with. `withBase()` is also exported from `kawapress`.
+- **Sites can replace a plugin a preset includes** by putting a plugin with the same name in `plugins`. It runs where the preset's plugin ran.
 - **`shikiPlugin()` accepts `languages`.** Grammar registrations load after the default languages, as in the standalone Markdown renderer.
-
-### Changed
-
-- **llms.txt takes its site summary from `description`.** The summary at the top of `llms.txt` is the current locale's `description`, then the site's. The `llms.description` option is removed; a config that still sets it fails with a message that points to the new place.
-- **`shikiPlugin()` renders the light and dark GitHub themes by default**, like the standalone renderer and nagi. Output follows the page `color-scheme`; pass `theme` for a single theme.
+- **Generator plugins can read the resolved site config.** `api.configResolved()` runs after every `config()` hook with KawaPress's defaults applied and values normalized, so plugins no longer repeat them. Official plugins use it.
+- **Plugin authors get KawaPress's own tools.** `kawapress/generator` adds `setupGeneratorPlugins()`, which sets plugins up the way a build does for tests and tools, and `resolveMarkdownPageScope()`, the page scope KawaPress lists its own pages with. `withBase()` and `withoutBase()` are also exported from `kawapress`.
 
 ### Fixed
 
 - **A favicon declared in `head` replaces nagi's logo favicon.** When the site, locale or page `head` has a `rel="icon"` link, nagi no longer adds a second icon generated from `themeConfig.logo`.
+
+### Migration
+
+1. Move `llms.description` to `description` on the site config and on each locale.
+2. Remove any plugin from `plugins` that duplicates one your preset already includes, unless you mean to replace it.
+3. If you use `shikiPlugin()` directly without a theme and want one theme, pass `theme`.
 
 ## [0.7.1] - 2026-11-16
 
@@ -234,7 +256,8 @@ What changes for each kind of user:
 - The CSS target is a browser that supports `light-dark()`, so theme override tokens no longer lose their colors in production builds.
 - A release no longer fails when a version is already on npm.
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/kawapress/kawapress/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/kawapress/kawapress/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/kawapress/kawapress/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/kawapress/kawapress/compare/v0.5.1...v0.6.0
