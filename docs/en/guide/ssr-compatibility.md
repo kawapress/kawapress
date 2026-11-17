@@ -62,32 +62,35 @@ Keep the import dynamic inside the branch. Static imports always run when the mo
 
 ## Render a Component Only on the Client {#render-a-component-only-on-the-client}
 
-If a component requires the DOM while rendering, wait until the page mounts before displaying it. Combine this boundary with `defineAsyncComponent()` when the component also accesses browser APIs during import:
+Wrap a component that needs the DOM while rendering in Core's globally registered `<ClientOnly>`. The server and the browser's first render both produce an empty node; the component appears after mounting, without a hydration mismatch:
 
 ```vue
 <script setup lang="ts">
-import {
-  defineAsyncComponent,
-  onMounted,
-  shallowRef,
-} from 'vue'
+import { defineAsyncComponent } from 'vue'
 
-const mounted = shallowRef(false)
 const ClientWidget = defineAsyncComponent(
   () => import('./ClientWidget.vue'),
 )
-
-onMounted(() => {
-  mounted.value = true
-})
 </script>
 
 <template>
-  <ClientWidget v-if="mounted" />
+  <ClientOnly>
+    <ClientWidget />
+  </ClientOnly>
 </template>
 ```
 
-`mounted` is `false` for both the server render and the browser's first render. The component loads and appears only after hydration.
+`ClientOnly` can also be imported from `kawapress/client` for use in a regular Vue component.
+
+Use `useAppearance()` when a component needs to follow the light or dark appearance:
+
+```ts
+import { useAppearance } from 'kawapress/client'
+
+const { isDark } = useAppearance()
+```
+
+It follows the `dark` / `light` class on `<html>`, or the operating system preference when neither class is present. `isDark` updates when the theme toggles that class.
 
 ## Use a Browser Plugin from a Runtime Plugin {#use-a-browser-plugin-from-a-runtime-plugin}
 

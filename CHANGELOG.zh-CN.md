@@ -6,6 +6,10 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+### 新增
+
+- **Core 提供 `ClientOnly` 和 `useAppearance()`。** `<ClientOnly>` 已全局注册，浏览器专属内容在挂载后才渲染；`useAppearance()` 提供响应式 `isDark`，跟随根元素的外观 class 或操作系统偏好。
+
 ### 修复
 
 - **`layout: page` 不再把文档排版样式套到自定义页面上。** 标题、图片、分隔线等标记保持站点自己的样式，编辑器、演练场这类应用页面不会再出现多余的间距和边框。

@@ -250,6 +250,7 @@ VitePress's `useData()` and template globals such as `$frontmatter` are replaced
 | `useData().page`, `useData().frontmatter`, `$frontmatter` | `const page = usePageData()` (`page.value?.title`, `page.value?.frontmatter`, `page.value?.headers`) |
 | `useData().site`, `useData().lang`, `useData().dir`, `useData().localeIndex` | `const site = useSite()` (`site.value.title`, `site.value.base`, `site.value.lang`, `site.value.dir`, `site.value.localeIndex`) |
 | `useData().theme` | `const themeConfig = useThemeConfig()` |
+| `useData().isDark` | `const { isDark } = useAppearance()` |
 | `useRoute()`, `useRouter()` | `useRoute()`, `useRouter()` (exported from `kawapress/client`) |
 
 ```vue

@@ -62,32 +62,35 @@ if (!import.meta.env.SSR) {
 
 ## 只在客户端渲染组件 {#render-a-component-only-on-the-client}
 
-如果组件的渲染过程依赖 DOM，可以等页面挂载后再显示它。配合 `defineAsyncComponent()`，还能推迟加载一个在导入时访问浏览器 API 的组件：
+如果组件的渲染过程依赖 DOM，用 Core 全局注册的 `<ClientOnly>` 包住它。服务端和浏览器第一次渲染都只输出空节点，组件在挂载后才显示，因此不会造成 hydration 不匹配：
 
 ```vue
 <script setup lang="ts">
-import {
-  defineAsyncComponent,
-  onMounted,
-  shallowRef,
-} from 'vue'
+import { defineAsyncComponent } from 'vue'
 
-const mounted = shallowRef(false)
 const ClientWidget = defineAsyncComponent(
   () => import('./ClientWidget.vue'),
 )
-
-onMounted(() => {
-  mounted.value = true
-})
 </script>
 
 <template>
-  <ClientWidget v-if="mounted" />
+  <ClientOnly>
+    <ClientWidget />
+  </ClientOnly>
 </template>
 ```
 
-服务端和浏览器第一次渲染时，`mounted` 都是 `false`。组件只会在 hydration 完成后加载和显示。
+配合 `defineAsyncComponent()`，还能推迟加载一个在导入时访问浏览器 API 的组件。也可以从 `kawapress/client` 导入 `ClientOnly`，在普通 Vue 组件里使用。
+
+组件需要根据明暗外观调整内容时，使用 `useAppearance()`：
+
+```ts
+import { useAppearance } from 'kawapress/client'
+
+const { isDark } = useAppearance()
+```
+
+它跟随 `<html>` 上的 `dark` / `light` class；两者都没有时跟随操作系统偏好。主题切换 class 后，`isDark` 会自动更新。
 
 ## 在 Runtime Plugin 中使用浏览器插件 {#use-a-browser-plugin-from-a-runtime-plugin}
 
