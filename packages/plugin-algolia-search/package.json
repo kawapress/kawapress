@@ -1,7 +1,7 @@
 {
   "name": "@kawapress/plugin-algolia-search",
   "type": "module",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Algolia DocSearch for KawaPress sites",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",

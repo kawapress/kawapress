@@ -1,7 +1,7 @@
 {
   "name": "@kawapress/plugin-emoji",
   "type": "module",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Emoji shortcodes such as :tada: for KawaPress",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",

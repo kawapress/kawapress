@@ -1,7 +1,7 @@
 {
   "name": "@kawapress/plugin-badge",
   "type": "module",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Inline badges for KawaPress headings and text",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",
