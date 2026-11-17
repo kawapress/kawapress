@@ -6,6 +6,14 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-16
+
+## [0.7.1] - 2026-11-16
+
+### Fixed
+
+- **Published client and Shiki types are safe for consumers.** Virtual modules and `ClientOnly` are declared, the generator includes its `picomatch` declaration, and twoslash metadata is read across Shiki versions.
+
 ## [0.7.0] - 2026-11-16
 
 ## [0.6.0] - 2026-11-16
@@ -208,7 +216,8 @@ What changes for each kind of user:
 - The CSS target is a browser that supports `light-dark()`, so theme override tokens no longer lose their colors in production builds.
 - A release no longer fails when a version is already on npm.
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/kawapress/kawapress/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/kawapress/kawapress/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/kawapress/kawapress/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/kawapress/kawapress/compare/v0.5.0...v0.5.1

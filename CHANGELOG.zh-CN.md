@@ -6,6 +6,14 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-16
+
+## [0.7.1] - 2026-11-16
+
+### 修复
+
+- **发布包的客户类型检查可以正常通过。** 补齐虚拟模块和 `ClientOnly` 声明、生成器的 `picomatch` 声明，并兼容不同 Shiki 版本的 twoslash 元数据。
+
 ## [0.7.0] - 2026-11-16
 
 ## [0.6.0] - 2026-11-16
@@ -208,7 +216,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/kawapress/kawapress/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/kawapress/kawapress/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/kawapress/kawapress/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/kawapress/kawapress/compare/v0.5.0...v0.5.1
