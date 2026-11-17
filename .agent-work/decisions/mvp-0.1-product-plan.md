@@ -298,6 +298,7 @@ Preset 规则：
 - Preset 内部组合一组原子插件。
 - 用户配置覆盖 Preset 默认配置。
 - 用户 `plugins` 追加在 Preset 内置插件之后，因此可以覆盖默认行为。
+- 插件以 `name` 为身份。用户 `plugins` 中与 Preset 内置插件同名的项在原位置替换它，不合并原有选项；其余用户插件追加在后。最终插件列表中出现重名时，配置加载报错。Preset 自带的选项快捷键（如 nagi 的 `codeBlock`、`sitemap`、`llms`、`search: false`）只是配置默认插件的便捷写法，通用扩展方式是按名替换，不再为单个插件新增 Preset 选项。
 - Preset 自己不直接参与插件生命周期；需要生成侧或运行侧能力时，包含对应的逻辑插件。
 - `definePreset()` 统一处理配置覆盖与插件追加，Preset 作者不手写合并逻辑。
 - `defineConfig()` 始终是无需 Preset 的底层配置入口。

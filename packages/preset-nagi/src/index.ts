@@ -65,13 +65,7 @@ export function nagi(userConfig: NagiConfig = {}): NagiConfig {
       ...(search === false
         ? []
         : [searchPlugin({ containers: true, githubAlerts: true, toc: true })]),
-      shikiPlugin({
-        twoslash: true,
-        themes: {
-          light: 'github-light',
-          dark: 'github-dark',
-        },
-      }),
+      shikiPlugin({ twoslash: true }),
       ...(llms === false ? [] : [llmsPlugin(llms)]),
       sitemapPlugin(sitemap),
     ],

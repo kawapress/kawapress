@@ -47,9 +47,34 @@ export function definePreset(presetConfig: KawapressConfig): KawapressPreset {
   return (userConfig = {}) => ({
     ...presetConfig,
     ...userConfig,
-    plugins: [
-      ...(presetConfig.plugins ?? []),
-      ...(userConfig.plugins ?? []),
-    ],
+    plugins: mergePresetPlugins(
+      presetConfig.plugins ?? [],
+      userConfig.plugins ?? [],
+    ),
   })
+}
+
+/**
+ * A user plugin with the same `name` as a preset plugin takes its place, so it
+ * runs where the preset put it; every other user plugin runs after the preset's.
+ */
+function mergePresetPlugins(
+  presetPlugins: readonly KawaPressPlugin[],
+  userPlugins: readonly KawaPressPlugin[],
+): KawaPressPlugin[] {
+  const presetNames = new Set(presetPlugins.map(plugin => plugin.name))
+  const replacements = new Map<string, KawaPressPlugin>()
+  const appended: KawaPressPlugin[] = []
+  for (const plugin of userPlugins) {
+    // A second plugin of the same name stays in the list, so the plugin runner
+    // reports the duplicate instead of one of them silently disappearing.
+    if (presetNames.has(plugin.name) && !replacements.has(plugin.name))
+      replacements.set(plugin.name, plugin)
+    else
+      appended.push(plugin)
+  }
+  return [
+    ...presetPlugins.map(plugin => replacements.get(plugin.name) ?? plugin),
+    ...appended,
+  ]
 }

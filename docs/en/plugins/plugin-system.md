@@ -130,6 +130,26 @@ export default nagi({
 
 Preset Plugins are added first, followed by the entries in `plugins`. Array order is execution order. A later Plugin sees changes made earlier and can deliberately replace them.
 
+## Replace a Preset Plugin {#replace-a-preset-plugin}
+
+To change a Plugin the Preset already includes, put a Plugin with the same name in `plugins`. It takes the place of the Preset's Plugin and runs at the same position. The name is the `name` of the plugin object; official Plugins use their package name. This configuration replaces nagi's code highlighting with one that loads a custom grammar:
+
+```ts
+import { shikiPlugin } from '@kawapress/plugin-shiki'
+import { nagi } from 'kawapress/nagi'
+import { vueLanguage } from './vue-language'
+
+export default nagi({
+  plugins: [
+    shikiPlugin({ languages: vueLanguage }),
+  ],
+})
+```
+
+Only the options you pass apply after the replacement; the options the Preset gave that Plugin are not merged in. The only extra option nagi gives code highlighting is `twoslash: true`; add it when you use Twoslash. The light and dark GitHub themes are the Plugin's own default and need no repeating.
+
+A name may appear only once. Two Plugins with the same name would run the same feature twice, so KawaPress reports an error when it loads the config.
+
 KawaPress does not use numeric priorities or guess plugin dependencies behind the scenes. The order shown in configuration is the order in which features are combined.
 
 A completely different interface can skip Presets and start with `defineConfig()`:

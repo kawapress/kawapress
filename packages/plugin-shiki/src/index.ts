@@ -24,7 +24,13 @@ export type TwoslashOptions = Omit<
 >
 
 interface ShikiPluginBaseOptions {
+  /** Grammars to load, replacing the default list. */
   langs?: (string | LanguageRegistration)[]
+  /**
+   * Grammar registrations loaded after `langs`, as with VitePress's `languages`
+   * option. A registration with the name of a loaded grammar replaces it.
+   */
+  languages?: LanguageRegistration[]
   transformers?: ShikiTransformer[]
   twoslash?: boolean | TwoslashOptions
 }
@@ -46,6 +52,8 @@ const V_PRE_TRANSFORMER_NAME = 'kawapress:v-pre'
 const RUNTIME_DEPENDENCIES = ['floating-vue']
 const TWOSLASH_MENU_COMPONENT = 'KawaTwoslashMenu'
 const TWOSLASH_MENU_MODULE = resolveTwoslashMenuModule()
+/** Light and dark output switch with the page `color-scheme` through `light-dark()`. */
+const DEFAULT_THEMES: ShikiThemePair = { light: 'github-light', dark: 'github-dark' }
 const TWOSLASH_LANGS = ['ts', 'tsx', 'js', 'jsx', 'json', 'vue']
 const PRELOADED_LANGS = [
   'bash',
@@ -64,8 +72,7 @@ const PRELOADED_LANGS = [
 ]
 
 export function shikiPlugin(options: ShikiPluginOptions = {}): KawaPressPlugin {
-  const theme = options.theme ?? 'github-light'
-  const themes = options.themes
+  const { theme, themes } = resolveThemes(options)
   const transformers = createTransformers(options)
 
   return definePlugin({
@@ -74,7 +81,7 @@ export function shikiPlugin(options: ShikiPluginOptions = {}): KawaPressPlugin {
       api.markdown(async (markdown) => {
         const highlighter = await createHighlighter({
           themes: themes ? Object.values(themes) : [theme],
-          langs: options.langs ?? PRELOADED_LANGS,
+          langs: resolveLanguages(options),
         })
         markdown.options.highlight = (str, lang, attrs, env) =>
           highlightCode(highlighter, str, lang, attrs, env, {
@@ -91,9 +98,18 @@ export function shikiPlugin(options: ShikiPluginOptions = {}): KawaPressPlugin {
 
 export default shikiPlugin
 
-export type ShikiMarkdownRendererOptions = ShikiPluginOptions & {
-  /** Additional grammar registrations, as used by VitePress's `languages` option. */
-  languages?: LanguageRegistration[]
+export type ShikiMarkdownRendererOptions = ShikiPluginOptions
+
+/** One theme when `theme` is set, otherwise the given or default light/dark pair. */
+function resolveThemes(options: ShikiPluginOptions): { theme: string, themes?: ShikiThemePair } {
+  if (options.theme)
+    return { theme: options.theme }
+  const themes = options.themes ?? DEFAULT_THEMES
+  return { theme: themes.light, themes }
+}
+
+function resolveLanguages(options: ShikiPluginOptions): (string | LanguageRegistration)[] {
+  return [...(options.langs ?? PRELOADED_LANGS), ...(options.languages ?? [])]
 }
 
 /**
@@ -103,13 +119,10 @@ export type ShikiMarkdownRendererOptions = ShikiPluginOptions & {
 export async function createMarkdownRenderer(
   options: ShikiMarkdownRendererOptions = {},
 ) {
-  const themes = options.themes ?? (options.theme
-    ? undefined
-    : { light: 'github-light', dark: 'github-dark' })
-  const theme = options.theme ?? 'github-light'
+  const { theme, themes } = resolveThemes(options)
   const highlighter = await createHighlighter({
     themes: themes ? Object.values(themes) : [theme],
-    langs: [...(options.langs ?? PRELOADED_LANGS), ...(options.languages ?? [])],
+    langs: resolveLanguages(options),
   })
   const transformers = createTransformers(options)
   return createCoreMarkdownRenderer({
