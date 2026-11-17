@@ -79,6 +79,42 @@ export default nagi({
     }
   })
 
+  it('uses the logo favicon only until a head declares its own icon', async () => {
+    const root = await mkdtemp(join(process.cwd(), 'docs/.kawapress-frontmatter-'))
+
+    try {
+      await mkdir(join(root, 'zh'))
+      await Promise.all([
+        writeFile(join(root, 'kawapress.config.ts'), `
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  title: 'KawaPress',
+  locales: {
+    root: { label: 'English', lang: 'en' },
+    zh: { label: '简体中文', lang: 'zh-CN', head: [['link', { rel: 'icon', href: '/zh.svg' }]] },
+  },
+  themeConfig: { logo: '/logo.svg' },
+})
+`),
+        writeFile(join(root, 'index.md'), '---\nlayout: page\n---\n'),
+        writeFile(join(root, 'own.md'), '---\nlayout: page\nhead: [[link, { rel: icon, href: /own.svg }]]\n---\n'),
+        writeFile(join(root, 'zh/index.md'), '---\nlayout: page\n---\n'),
+      ])
+
+      await buildSite(root)
+
+      const icons = async (file: string): Promise<string[]> =>
+        (await readFile(join(root, 'dist', file), 'utf8')).match(/<link[^>]*rel="icon"[^>]*>/g) ?? []
+      expect(await icons('index.html')).toEqual(['<link id="nagi-favicon" rel="icon" href="/logo.svg">'])
+      expect(await icons('own.html')).toEqual(['<link rel="icon" href="/own.svg">'])
+      expect(await icons('zh.html')).toEqual(['<link rel="icon" href="/zh.svg">'])
+    }
+    finally {
+      await rm(root, { force: true, recursive: true })
+    }
+  })
+
   it('applies Nagi page presentation controls to the rendered layout', async () => {
     const root = await mkdtemp(join(process.cwd(), 'docs/.kawapress-frontmatter-'))
 

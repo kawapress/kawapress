@@ -10,6 +10,10 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 - **站点和语言可以设置默认 `description`。** 没在 frontmatter 写 `description` 的页面，先使用当前语言的 `description`，再使用全站的。
 
+### 修复
+
+- **`head` 中声明的站点图标会替换 nagi 的 logo 图标。** 站点、语言或页面的 `head` 写了 `rel="icon"` 链接时，nagi 不再根据 `themeConfig.logo` 再生成一条。
+
 ## [0.7.1] - 2026-11-16
 
 ### 修复

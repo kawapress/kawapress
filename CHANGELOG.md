@@ -10,6 +10,10 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 - **Sites and locales can set a default `description`.** Pages without a frontmatter `description` use the current locale's `description`, then the site's.
 
+### Fixed
+
+- **A favicon declared in `head` replaces nagi's logo favicon.** When the site, locale or page `head` has a `rel="icon"` link, nagi no longer adds a second icon generated from `themeConfig.logo`.
+
 ## [0.7.1] - 2026-11-16
 
 ### Fixed

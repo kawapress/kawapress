@@ -170,7 +170,7 @@ export default defineConfig({
 
 | VitePress `themeConfig` | 状态 | nagi 写法 |
 | --- | --- | --- |
-| `logo` | 相同 | `themeConfig.logo`（支持字符串、`{ src, alt }` 或 `{ light, dark, alt }`，默认同时作为站点 favicon） |
+| `logo` | 相同 | `themeConfig.logo`（支持字符串、`{ src, alt }` 或 `{ light, dark, alt }`，默认同时作为站点 favicon；`head` 中声明了 `rel="icon"` 时以它为准） |
 | `nav` | 改名 / 形态不同 | `themeConfig.nav`：数组项为 `{ text, link, activeMatch? }`。`activeMatch` 是路径前缀字符串（如 `'/guide'`），不是正则；不支持下拉分组 `items` |
 | `sidebar` | 相同 | `themeConfig.sidebar`：支持数组、按路径前缀分区的对象、`{ base, items }` 以及分组的 `collapsed: true \| false`。未命中前缀时自动读取目录与 `_meta.json` |
 | `socialLinks` | 相同 | `themeConfig.socialLinks`：`[{ icon, link, ariaLabel? }]`，`icon` 支持 Simple Icons 名称或 `{ svg }`，可按语言覆盖 |

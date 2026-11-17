@@ -197,6 +197,8 @@ export default nagi({
 
 A single page can add tags of its own in frontmatter. See [Frontmatter](/en/guide/frontmatter#page-head).
 
+nagi uses `themeConfig.logo` as the site icon by default. To use a different image, add an icon link to `head`, such as `['link', { rel: 'icon', href: '/favicon.svg' }]`; once the site, a language or a page declares an icon, nagi stops generating its own.
+
 ## Use UnoCSS Utilities {#use-unocss-utilities}
 
 nagi enables [UnoCSS](https://unocss.dev/) with `presetWind4`, `presetIcons`, and `presetWebFonts`. Wind4 utilities work directly in Markdown HTML:
