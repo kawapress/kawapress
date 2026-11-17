@@ -99,6 +99,9 @@ catalogs:
     '@shikijs/twoslash':
       specifier: ^4.4.3
       version: 4.4.3
+    '@types/markdown-it-emoji':
+      specifier: ^3.0.1
+      version: 3.0.1
     gray-matter:
       specifier: ^4.0.3
       version: 4.0.3
@@ -513,6 +516,9 @@ importers:
 
   packages/plugin-emoji:
     dependencies:
+      '@types/markdown-it-emoji':
+        specifier: catalog:markdown
+        version: 3.0.1
       kawapress:
         specifier: workspace:^
         version: link:../kawapress
@@ -2164,6 +2170,9 @@ packages:
 
   '@types/linkify-it@5.0.0':
     resolution: {integrity: sha512-sVDA58zAw4eWAffKOaQH5/5j3XeayukzDk+ewSsnv3p4yJEZHCCzMDiZM8e0OUrRvmpGZ85jf4yDHkHsgBNr9Q==}
+
+  '@types/markdown-it-emoji@3.0.1':
+    resolution: {integrity: sha512-cz1j8R35XivBqq9mwnsrP2fsz2yicLhB8+PDtuVkKOExwEdsVBNI+ROL3sbhtR5occRZ66vT0QnwFZCqdjf3pA==}
 
   '@types/markdown-it@14.2.0':
     resolution: {integrity: sha512-NoQ2yGlLWj4wpxMs+TYmRKk3thDrQ97agr7sFqfLsAlvoS8SNQuTrlObhFqG9iugdTtgOE9jpJ6FNM4ZGsa5xQ==}
@@ -6157,6 +6166,10 @@ snapshots:
   '@types/katex@0.16.8': {}
 
   '@types/linkify-it@5.0.0': {}
+
+  '@types/markdown-it-emoji@3.0.1':
+    dependencies:
+      '@types/markdown-it': 14.2.0
 
   '@types/markdown-it@14.2.0':
     dependencies:
