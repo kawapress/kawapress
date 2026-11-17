@@ -1,7 +1,7 @@
 import type { Plugin } from 'vite'
 import { readFile, realpath } from 'node:fs/promises'
 import { findPackageJSON } from 'node:module'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import { parseJson } from '../../../core/json'
@@ -11,6 +11,8 @@ const RESOLVED_ID = `\0${RUNTIME_PLUGINS_MODULE_ID}`
 
 export interface VirtualRuntimePluginsOptions {
   pluginNames: string[]
+  /** Site-local module, resolved from the Vite root and run after packages. */
+  siteRuntimePlugin?: string
 }
 
 interface PluginPackage {
@@ -64,6 +66,12 @@ export function virtualRuntimePluginsPlugin(
         const binding = `runtimePlugin${index}`
         imports.push(`import ${binding} from ${JSON.stringify(resolved.id)}`)
         bindings.push(binding)
+      }
+
+      if (options.siteRuntimePlugin) {
+        const id = resolve(root, options.siteRuntimePlugin)
+        imports.push(`import siteRuntimePlugin from ${JSON.stringify(id)}`)
+        bindings.push('siteRuntimePlugin')
       }
 
       return [

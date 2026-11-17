@@ -9,3 +9,5 @@ comments: false
 </ClientOnly>
 
 <AppearanceProbe />
+
+<SiteConfigProbe />

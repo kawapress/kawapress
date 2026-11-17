@@ -5,6 +5,7 @@ import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import vue from '@vitejs/plugin-vue'
+import { mergeConfig } from 'vite'
 import { createMarkdownPageLoader } from '../../compiler/page-loader'
 import { createDataLoaderContext } from '../data/context'
 import { runtimeDependencySpecifiers } from '../runtime-dependencies'
@@ -57,7 +58,7 @@ export function createBaseViteConfig(
   options: CreateBaseViteConfigOptions = {},
 ): InlineConfig {
   const pageLoader = options.pageLoader ?? createSitePageLoader(root, siteConfig)
-  return {
+  const config: InlineConfig = {
     root,
     base: siteConfig.base,
     publicDir: resolve(root, siteConfig.srcDir, siteConfig.publicDir),
@@ -97,6 +98,7 @@ export function createBaseViteConfig(
     },
     plugins: createBasePlugins(root, siteConfig, pageLoader),
   }
+  return mergeConfig(config, siteConfig.vite ?? {})
 }
 
 /**
@@ -168,6 +170,7 @@ function createBasePlugins(
     }),
     virtualRuntimePluginsPlugin({
       pluginNames: siteConfig.plugins.map(plugin => plugin.name),
+      siteRuntimePlugin: siteConfig.runtimePlugin,
     }),
     virtualPagesPlugin({
       srcDir: siteConfig.srcDir,
