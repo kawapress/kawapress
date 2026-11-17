@@ -6,6 +6,10 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
+### Fixed
+
+- **`@kawapress/plugin-emoji` type-checks in sites.** It depends on `@types/markdown-it-emoji` itself, so a site that type-checks its `nagi()` config no longer fails on `markdown-it-emoji`.
+
 ## [0.8.0] - 2026-11-18
 
 ### Breaking changes

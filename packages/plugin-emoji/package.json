@@ -36,6 +36,7 @@
     "kawapress": "workspace:^"
   },
   "dependencies": {
+    "@types/markdown-it-emoji": "catalog:markdown",
     "markdown-it-emoji": "catalog:markdown"
   },
   "devDependencies": {

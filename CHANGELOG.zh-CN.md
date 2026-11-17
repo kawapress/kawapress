@@ -6,6 +6,10 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+### 修复
+
+- **站点做类型检查时 `@kawapress/plugin-emoji` 不再报错。** 它自己依赖 `@types/markdown-it-emoji`，站点对 `nagi()` 配置做类型检查时不会再因为 `markdown-it-emoji` 失败。
+
 ## [0.8.0] - 2026-11-18
 
 ### 破坏性变更
