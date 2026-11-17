@@ -12,6 +12,7 @@ import { createGeneratorPluginRunner } from '../plugin/generator-runner'
 
 export interface ResolvedSiteConfig {
   title: string
+  description: string | undefined
   base: string
   srcDir: string
   /** Glob patterns, relative to `srcDir`, of Markdown files that are not pages. */
@@ -44,6 +45,7 @@ export async function resolveSiteConfig(
   const pluginRunner = await createGeneratorPluginRunner(plugins)
   const site: SiteConfig = {
     title: userConfig.title,
+    description: userConfig.description,
     base: userConfig.base,
     srcDir: userConfig.srcDir,
     srcExclude: userConfig.srcExclude,
@@ -63,6 +65,7 @@ export async function resolveSiteConfig(
   const srcExclude = resolveSrcExclude(site.srcExclude)
   const rewrites = resolveRewrites(site.rewrites)
   const publicDir = normalizePublicDir(site.publicDir ?? 'public')
+  const description = resolveDescription(site.description, 'description')
   const head = resolveHeadConfig(site.head, {
     owner: 'the site config',
     path: 'head',
@@ -72,6 +75,7 @@ export async function resolveSiteConfig(
 
   return {
     title: site.title ?? 'KawaPress',
+    description,
     base: normalizeBase(site.base),
     srcDir,
     srcExclude,
@@ -185,12 +189,28 @@ function normalizePublicDir(publicDir: string): string {
   return publicDir.replaceAll('\\', '/')
 }
 
+function resolveDescription(
+  description: unknown,
+  path: string,
+): string | undefined {
+  if (description === undefined) {
+    return undefined
+  }
+  if (typeof description !== 'string') {
+    throw new TypeError(
+      `KawaPress: ${path} must be a string, got ${JSON.stringify(description)} in kawapress.config.ts.`,
+    )
+  }
+  return description
+}
+
 function normalizeLocales(
   locales: Record<string, LocaleConfig>,
 ): Record<string, LocaleConfig> {
   const normalized: Record<string, LocaleConfig> = {}
   for (const [localeIndex, locale] of Object.entries(locales)) {
     validateLocale(localeIndex, locale)
+    resolveDescription(locale.description, `locales.${localeIndex}.description`)
     const head = resolveHeadConfig(locale.head, {
       owner: `locale ${JSON.stringify(localeIndex)} in the site config`,
       path: `locales.${localeIndex}.head`,

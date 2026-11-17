@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { useHead } from '@unhead/vue'
+import { computed } from 'vue'
 import { headConfigToUnheadInput } from '../../core/head'
 import { resolveDocumentTitle } from '../../core/page-metadata'
 import { usePageData, useSite } from '../composables'
 
 const site = useSite()
 const page = usePageData()
+// A page description wins; pages without one use the locale or site description.
+const description = computed(() => page.value?.description ?? site.value.description)
 
 // Registered first so that user head tags can replace the generated description.
 useHead(() => ({
@@ -17,11 +20,11 @@ useHead(() => ({
     page.value ?? { title: '' },
     site.value.title,
   ),
-  meta: page.value?.description
+  meta: description.value
     ? [{
         key: 'description',
         name: 'description',
-        content: page.value.description,
+        content: description.value,
       }]
     : [],
 }))

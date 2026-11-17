@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { buildSite } from './build'
@@ -32,6 +32,47 @@ layout: page
       expect(page).toContain(
         '<meta name="description" content="A short page description.">',
       )
+    }
+    finally {
+      await rm(root, { force: true, recursive: true })
+    }
+  })
+
+  it('falls back to the locale and site description for pages without one', async () => {
+    const root = await mkdtemp(join(process.cwd(), 'docs/.kawapress-frontmatter-'))
+
+    try {
+      await mkdir(join(root, 'zh'))
+      await Promise.all([
+        writeFile(join(root, 'kawapress.config.ts'), `
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  title: 'KawaPress',
+  description: 'Site description.',
+  locales: {
+    root: { label: 'English', lang: 'en' },
+    zh: { label: '简体中文', lang: 'zh-CN', description: '站点描述。' },
+  },
+})
+`),
+        writeFile(join(root, 'index.md'), '---\nlayout: page\n---\n'),
+        writeFile(join(root, 'own.md'), '---\nlayout: page\ndescription: Own description.\n---\n'),
+        writeFile(join(root, 'zh/index.md'), '---\nlayout: page\n---\n'),
+      ])
+
+      await buildSite(root)
+
+      const [site, own, zh] = await Promise.all([
+        readFile(join(root, 'dist/index.html'), 'utf8'),
+        readFile(join(root, 'dist/own.html'), 'utf8'),
+        readFile(join(root, 'dist/zh.html'), 'utf8'),
+      ])
+      for (const page of [site, own, zh])
+        expect(page.match(/<meta name="description"/g)).toHaveLength(1)
+      expect(site).toContain('<meta name="description" content="Site description.">')
+      expect(own).toContain('<meta name="description" content="Own description.">')
+      expect(zh).toContain('<meta name="description" content="站点描述。">')
     }
     finally {
       await rm(root, { force: true, recursive: true })

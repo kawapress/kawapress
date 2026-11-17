@@ -73,6 +73,20 @@ titleTemplate: '%s · KawaPress 指南'
 
 上面的浏览器标签标题是“配置站点 · KawaPress 指南”。页面标题也会用于站内搜索。
 
+没写 `description` 的页面会使用站点配置里的 `description`；多语言站点中，当前语言自己的 `description` 优先于全站的：
+
+```ts
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  description: '用 Vue 写文档的静态站点生成器。',
+  locales: {
+    root: { label: '简体中文', lang: 'zh-CN' },
+    en: { label: 'English', lang: 'en', description: 'A Vue-powered static site generator.' },
+  },
+})
+```
+
 `title` 没写时，页面标题取第一个一级标题的文字，并去掉 Markdown 格式和行内 HTML 标签：`**加粗**`、`[链接](/guide)` 和 `<kbd>Ctrl</kbd>` 只留下里面的文字，`<Badge text="beta" />` 不留文字，行内代码去掉反引号；公式和表情短代码会按源码原样保留。所以标题 `# Energy $E=mc^2$ <Badge text="beta" />` 的页面标题是 `Energy $E=mc^2$`。
 
 ## 页面 head {#page-head}

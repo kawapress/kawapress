@@ -137,7 +137,7 @@ This table maps top-level VitePress `defineConfig()` options to KawaPress:
 | VitePress option | Status | KawaPress equivalent |
 | --- | --- | --- |
 | `title` | Same | `title` (supported at the top level and on `locales.<key>.title`) |
-| `description` | Renamed / different shape | Not a top-level site option; set `description` in each page's frontmatter, or add `['meta', { name: 'description', content: '...' }]` to site or locale `head` |
+| `description` | Same | `description` (supported at the top level and on `locales.<key>.description`; a page's frontmatter `description` wins) |
 | `lang`, `dir` | Renamed / different shape | Set on `locales.root` (and each locale entry), e.g. `locales: { root: { label: 'English', lang: 'en', dir: 'ltr' } }` |
 | `titleTemplate` | Renamed / different shape | Set `titleTemplate` (`'%s · My Site'` or `false`) in page frontmatter |
 | `base` | Same | `base` |

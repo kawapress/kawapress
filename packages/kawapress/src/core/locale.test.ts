@@ -103,6 +103,21 @@ describe('locale routing', () => {
     })
   })
 
+  it('prefers the locale description over the site description', () => {
+    const described: SiteData = {
+      ...site,
+      description: 'Site description',
+      locales: {
+        ...site.locales,
+        zh: { ...site.locales.zh, description: '站点描述' },
+      },
+    }
+
+    expect(resolveSiteDataByPath(described, '/zh/guide').description).toBe('站点描述')
+    expect(resolveSiteDataByPath(described, '/guide').description).toBe('Site description')
+    expect(resolveSiteDataByPath(site, '/guide')).not.toHaveProperty('description')
+  })
+
   it('keeps the relative page, query, and hash when changing locale', () => {
     expect(resolveLocaleLink(site, '/', 'zh')).toBe('/kawapress/zh')
     expect(resolveLocaleLink(site, '/zh', 'root')).toBe('/kawapress/')
