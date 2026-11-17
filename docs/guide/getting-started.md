@@ -199,6 +199,8 @@ export default nagi({
 
 单个页面还可以在 frontmatter 里补充自己的标签，写法见 [Frontmatter](/guide/frontmatter#page-head)。
 
+nagi 默认把 `themeConfig.logo` 当作站点图标。想用另一张图片时，在 `head` 里写一条图标链接，例如 `['link', { rel: 'icon', href: '/favicon.svg' }]`；站点、语言或页面任何一层写了图标，nagi 就不再生成自己的。
+
 ## 使用 UnoCSS 工具类 {#use-unocss-utilities}
 
 nagi 默认启用 [UnoCSS](https://unocss.dev/)，并准备好 `presetWind4`、`presetIcons` 与 `presetWebFonts`。你可以直接在 Markdown 的 HTML 中使用 Wind4 工具类：

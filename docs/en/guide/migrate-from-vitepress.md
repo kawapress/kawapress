@@ -170,7 +170,7 @@ This table maps VitePress default theme options to nagi:
 
 | VitePress `themeConfig` | Status | nagi equivalent |
 | --- | --- | --- |
-| `logo` | Same | `themeConfig.logo` (accepts a path string, `{ src, alt }`, or `{ light, dark, alt }`, and is also used as the site favicon) |
+| `logo` | Same | `themeConfig.logo` (accepts a path string, `{ src, alt }`, or `{ light, dark, alt }`, and is also used as the site favicon unless `head` declares a `rel="icon"` link) |
 | `nav` | Renamed / different shape | `themeConfig.nav`: items are `{ text, link, activeMatch? }`. `activeMatch` is a route prefix string (such as `'/guide'`), not a regex; dropdown menus (`items`) are not supported |
 | `sidebar` | Same | `themeConfig.sidebar`: supports an array, a path-prefix object, `{ base, items }`, and `collapsed: true \| false` on groups. Falls back to automatic sidebars from directories and `_meta.json` |
 | `socialLinks` | Same | `themeConfig.socialLinks`: `[{ icon, link, ariaLabel? }]`, where `icon` is a Simple Icons name or `{ svg }`; can be overridden per locale |

@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import type { Link } from '@unhead/vue'
-import type { NagiHomeImage, NagiImageSource, NagiThemeableImage } from '../home'
 import { useHead } from '@unhead/vue'
-import { RouterView, usePageData, useSite, withBase } from 'kawapress/client'
+import { RouterView, usePageData, useSite } from 'kawapress/client'
 import { computed, getCurrentInstance, nextTick, provide, shallowRef, useTemplateRef, watch } from 'vue'
 import { createAppearanceInitializerScript } from '../appearance'
 import { nagiDocScrollKey } from '../composables/docScroll'
 import { useNagiThemeConfig } from '../composables/useNagiThemeConfig'
 import { resolveCustomLayout } from '../custom-layout'
+import { resolveFaviconLinks } from '../favicon'
 import { resolveNagiPageOptions } from '../frontmatter'
 import { getOutlineHeaders } from '../outline'
 import { sidebarWidthInitializerScript } from '../sidebar-width'
@@ -60,7 +59,11 @@ function returnToTop(): void {
 }
 
 useHead(() => ({
-  link: resolveFaviconLinks(theme.value.logo, site.value.base),
+  link: resolveFaviconLinks(theme.value.logo, site.value.base, [
+    site.value.head,
+    site.value.localeHead,
+    page.value?.head ?? [],
+  ]),
   script: [{
     id: 'nagi-initial-appearance',
     textContent: createAppearanceInitializerScript(
@@ -73,41 +76,6 @@ useHead(() => ({
       }]
     : [])],
 }))
-
-function resolveFaviconLinks(
-  image: NagiHomeImage | undefined,
-  base: string,
-): Link[] {
-  if (!image) {
-    return []
-  }
-  if (isThemeableImage(image)) {
-    return [{
-      id: 'nagi-favicon-light',
-      rel: 'icon',
-      href: withBase(resolveImageSrc(image.light), base),
-      media: '(prefers-color-scheme: light)',
-    }, {
-      id: 'nagi-favicon-dark',
-      rel: 'icon',
-      href: withBase(resolveImageSrc(image.dark), base),
-      media: '(prefers-color-scheme: dark)',
-    }]
-  }
-  return [{
-    id: 'nagi-favicon',
-    rel: 'icon',
-    href: withBase(resolveImageSrc(image), base),
-  }]
-}
-
-function isThemeableImage(image: NagiHomeImage): image is NagiThemeableImage {
-  return typeof image === 'object' && 'light' in image && 'dark' in image
-}
-
-function resolveImageSrc(image: string | NagiImageSource): string {
-  return typeof image === 'string' ? image : image.src
-}
 </script>
 
 <template>
