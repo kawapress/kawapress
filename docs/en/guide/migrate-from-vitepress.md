@@ -161,7 +161,7 @@ This table maps top-level VitePress `defineConfig()` options to KawaPress:
 | `transformPageData`, `transformHead`, `buildEnd` | Renamed / different shape | Use `api.pageData()`, `api.pageArtifact()`, and `api.buildArtifacts()` in a Generator Plugin |
 | `postRender`, `transformHtml` | Not available | No full-page HTML string post-processing hook |
 | `outDir`, `assetsDir`, `cacheDir` | Not available | Build output is always written to `dist/`, with assets under `dist/assets/` |
-| `appearance` | Renamed / different shape | Set `themeConfig.appearance` to `'auto'` (default, follows the system), `'light'`, or `'dark'`. It only sets the look before a reader switches; the switch always stays |
+| `appearance` | Renamed / different shape | Set `themeConfig.appearance` to `'auto'` (default, follows the system), `'light'`, or `'dark'`. It only sets the look before a reader switches; the switch always stays. The reader's choice is stored in `localStorage['kawapress:appearance']`, the counterpart of VitePress's `vitepress-theme-appearance` |
 | `mpa`, `metaChunk`, `buildConcurrency`, `shouldPreload`, `scrollOffset`, `useWebFonts`, `contentProps`, `vue`, `extends`, `router.prefetchLinks` | Not available | Not provided by KawaPress |
 
 ## Default Theme `themeConfig` Mapping {#theme-config}

@@ -161,7 +161,7 @@ export default defineConfig({
 | `transformPageData`、`transformHead`、`buildEnd` | 改名 / 形态不同 | 在 Generator Plugin 中分别使用 `api.pageData()`、`api.pageArtifact()` 和 `api.buildArtifacts()` |
 | `postRender`、`transformHtml` | 暂不支持 | 无整页 HTML 字符串后处理钩子 |
 | `outDir`、`assetsDir`、`cacheDir` | 暂不支持 | 构建产物固定输出到 `dist/`，静态资源位于 `dist/assets/` |
-| `appearance` | 改名 / 形态不同 | 写在 `themeConfig.appearance`：`'auto'`（默认，跟随系统）、`'light'` 或 `'dark'`。它只决定读者还没手动切换时的样子，切换按钮始终保留 |
+| `appearance` | 改名 / 形态不同 | 写在 `themeConfig.appearance`：`'auto'`（默认，跟随系统）、`'light'` 或 `'dark'`。它只决定读者还没手动切换时的样子，切换按钮始终保留。读者的选择存在 `localStorage['kawapress:appearance']`，对应 VitePress 的 `vitepress-theme-appearance` |
 | `mpa`、`metaChunk`、`buildConcurrency`、`shouldPreload`、`scrollOffset`、`useWebFonts`、`contentProps`、`vue`、`extends`、`router.prefetchLinks` | 暂不支持 | KawaPress 不提供这些底层选项 |
 
 ## 默认主题 `themeConfig` 对照表 {#theme-config}
