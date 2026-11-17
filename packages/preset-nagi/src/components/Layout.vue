@@ -186,9 +186,7 @@ function resolveImageSrc(image: string | NagiImageSource): string {
       </main>
       <component :is="customLayout" v-else-if="customLayout" />
       <main v-else class="nagi-main nagi-main--page">
-        <div class="nagi-main__content nagi-doc">
-          <RouterView />
-        </div>
+        <RouterView />
       </main>
       <Footer v-if="pageOptions.footer" />
     </OsScroll>
