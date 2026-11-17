@@ -1,3 +1,4 @@
+import type { UserConfig } from 'vite'
 import type { DeadLinkConfig } from '../core/dead-links'
 import type { ThemeConfig } from '../core/extension-points'
 import type { HeadConfig } from '../core/head'
@@ -23,6 +24,10 @@ export interface KawapressConfig {
   themeConfig?: Partial<ThemeConfig>
   locales?: Record<string, LocaleConfig>
   plugins?: KawaPressPlugin[]
+  /** Extra Vite configuration, merged before plugin `vite()` hooks run. */
+  vite?: UserConfig
+  /** A site-local Runtime Plugin module, relative to the site root. */
+  runtimePlugin?: string
   /** Internal link checking. Defaults to `{ level: 'error' }`; `false` disables it. */
   deadLinks?: false | DeadLinkConfig
 }

@@ -39,8 +39,8 @@ async function createPnpmSite(): Promise<string> {
   return site
 }
 
-async function loadRuntimePlugins(site: string, pluginNames: string[]): Promise<string> {
-  const plugin = virtualRuntimePluginsPlugin({ pluginNames }) as Required<Pick<Plugin, 'configResolved' | 'load'>>
+async function loadRuntimePlugins(site: string, pluginNames: string[], siteRuntimePlugin?: string): Promise<string> {
+  const plugin = virtualRuntimePluginsPlugin({ pluginNames, siteRuntimePlugin }) as Required<Pick<Plugin, 'configResolved' | 'load'>>
   const configResolved = plugin.configResolved as (config: { root: string }) => void
   configResolved({ root: site })
   const load = plugin.load as (this: unknown, id: string) => Promise<string>
@@ -57,6 +57,15 @@ describe('virtualRuntimePluginsPlugin', () => {
     const source = await loadRuntimePlugins(site, ['acme-preset'])
 
     expect(source).toContain('resolved:acme-preset/runtime-plugin')
+  })
+
+  it('appends the site-local runtime plugin after package plugins', async () => {
+    const site = await createPnpmSite()
+
+    const source = await loadRuntimePlugins(site, ['acme-preset'], './site-runtime.ts')
+
+    expect(source).toContain(`import siteRuntimePlugin from ${JSON.stringify(join(site, 'site-runtime.ts'))}`)
+    expect(source).toContain('runtimePlugins = [runtimePlugin0, siteRuntimePlugin]')
   })
 
   it('skips a plugin package nobody can reach', async () => {

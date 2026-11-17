@@ -9,22 +9,29 @@ describe('resolveSiteConfig', () => {
     expect(config.publicDir).toBe('public')
   })
 
-  it('normalizes a configured public directory inside srcDir', async () => {
-    const config = await resolveSiteConfig({
-      publicDir: './site-assets/',
-    })
-
-    expect(config.publicDir).toBe('site-assets')
+  it('keeps public directories inside or outside srcDir', async () => {
+    expect((await resolveSiteConfig({ publicDir: './site-assets/' })).publicDir)
+      .toBe('./site-assets/')
+    expect((await resolveSiteConfig({ publicDir: '../public' })).publicDir)
+      .toBe('../public')
+    expect((await resolveSiteConfig({ publicDir: '/tmp/site-public' })).publicDir)
+      .toBe('/tmp/site-public')
   })
 
-  it.each(['', '.', '../site-assets', '/site-assets'])(
-    'rejects an invalid public directory: %s',
-    async (publicDir) => {
-      await expect(resolveSiteConfig({ publicDir })).rejects.toThrow(
-        'publicDir must be a relative directory inside srcDir',
-      )
-    },
-  )
+  it('rejects an empty public directory', async () => {
+    await expect(resolveSiteConfig({ publicDir: '' })).rejects.toThrow(
+      'publicDir must not be empty',
+    )
+  })
+
+  it('keeps site Vite and runtime plugin configuration', async () => {
+    const config = await resolveSiteConfig({
+      vite: { server: { fs: { strict: false } } },
+      runtimePlugin: './site-runtime.ts',
+    })
+    expect(config.vite?.server?.fs?.strict).toBe(false)
+    expect(config.runtimePlugin).toBe('./site-runtime.ts')
+  })
 })
 
 describe('srcExclude', () => {
