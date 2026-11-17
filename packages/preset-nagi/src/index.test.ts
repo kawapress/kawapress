@@ -19,6 +19,12 @@ describe('nagi preset', () => {
     expect(config.title).toBe('Docs')
   })
 
+  it('leaves llms out with llms: false', () => {
+    const config = nagi({ llms: false })
+    expect(pluginNames(config)).not.toContain('@kawapress/plugin-llms')
+    expect(config).not.toHaveProperty('llms')
+  })
+
   it('keeps the plugins of the site after its own', () => {
     const site = { name: 'site-plugin', setup() {} }
     expect(pluginNames(nagi({ search: false, plugins: [site] })).at(-1)).toBe('site-plugin')

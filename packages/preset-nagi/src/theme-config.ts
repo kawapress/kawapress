@@ -39,6 +39,8 @@ declare module 'kawapress' {
     notFoundHomeLabel?: string
     footerLicenseText?: string
     footerPoweredByText?: string
+    /** Set to `false` to omit the footer on home and page layouts. */
+    footer?: boolean
     logo?: NagiHomeImage
     /**
      * Appearance before the reader picks one: `auto` (default) follows the
@@ -67,7 +69,8 @@ export interface ResolvedNagiThemeConfig extends Required<Pick<ThemeConfig, | 's
   | 'notFoundMessage'
   | 'notFoundHomeLabel'
   | 'footerLicenseText'
-  | 'footerPoweredByText'>>, Pick<ThemeConfig, 'logo' | 'appearance' | 'socialLinks' | 'nav' | 'sidebar'> {}
+  | 'footerPoweredByText'
+  | 'footer'>>, Pick<ThemeConfig, 'logo' | 'appearance' | 'socialLinks' | 'nav' | 'sidebar'> {}
 
 const EN_THEME_CONFIG: ResolvedNagiThemeConfig = {
   sidebarMenuLabel: 'Menu',
@@ -86,6 +89,7 @@ const EN_THEME_CONFIG: ResolvedNagiThemeConfig = {
   notFoundHomeLabel: 'back to home',
   footerLicenseText: 'Released under the MIT License',
   footerPoweredByText: 'Powered by KawaPress',
+  footer: true,
 }
 
 const ZH_THEME_CONFIG: ResolvedNagiThemeConfig = {
@@ -105,6 +109,7 @@ const ZH_THEME_CONFIG: ResolvedNagiThemeConfig = {
   notFoundHomeLabel: '返回首页',
   footerLicenseText: '基于 MIT 许可发布',
   footerPoweredByText: 'KawaPress 强力驱动',
+  footer: true,
 }
 
 export function resolveNagiThemeConfig(
@@ -132,6 +137,7 @@ export function resolveNagiThemeConfig(
     notFoundHomeLabel: config.notFoundHomeLabel ?? defaults.notFoundHomeLabel,
     footerLicenseText: config.footerLicenseText ?? defaults.footerLicenseText,
     footerPoweredByText: config.footerPoweredByText ?? defaults.footerPoweredByText,
+    footer: config.footer ?? defaults.footer,
   }
   if (config.logo !== undefined) {
     resolved.logo = config.logo

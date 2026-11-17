@@ -188,7 +188,7 @@ function resolveImageSrc(image: string | NagiImageSource): string {
       <main v-else class="nagi-main nagi-main--page">
         <RouterView />
       </main>
-      <Footer v-if="pageOptions.footer" />
+      <Footer v-if="theme.footer && pageOptions.footer" />
     </OsScroll>
   </div>
 </template>

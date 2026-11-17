@@ -19,7 +19,8 @@ import { nagiThemePlugin } from './theme-plugin'
 
 export type NagiConfig = KawapressConfig & {
   codeBlock?: CodeBlockPluginOptions
-  llms?: LlmsPluginOptions
+  /** `false` leaves out the built-in llms artifacts and page actions. */
+  llms?: LlmsPluginOptions | false
   /**
    * `false` leaves out the built-in local search, for a site that brings its
    * own, such as `@kawapress/plugin-algolia-search`.
@@ -71,7 +72,7 @@ export function nagi(userConfig: NagiConfig = {}): NagiConfig {
           dark: 'github-dark',
         },
       }),
-      llmsPlugin(llms),
+      ...(llms === false ? [] : [llmsPlugin(llms)]),
       sitemapPlugin(sitemap),
     ],
   })

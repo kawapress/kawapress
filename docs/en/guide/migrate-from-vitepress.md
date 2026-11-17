@@ -180,7 +180,7 @@ This table maps VitePress default theme options to nagi:
 | `outlineTitle` / `outline.label` | Renamed / different shape | `themeConfig.outlineLabel` (plus `outlineCollapseLabel` and `outlineExpandLabel`) |
 | `editLink`, `lastUpdated` / `lastUpdatedText` | Renamed / different shape | Provided by `@kawapress/plugin-last-updated` (`editLink.pattern`, `lastUpdated.formatOptions`, `labels`). See [Last Updated](/en/plugins/last-updated) |
 | `docFooter` (`prev` / `next`) | Renamed / different shape | Button labels are `themeConfig.previousPageLabel` and `themeConfig.nextPageLabel`; per-page frontmatter overrides for prev/next links are not supported |
-| `footer` (`message` / `copyright`) | Renamed / different shape | `themeConfig.footerLicenseText` and `themeConfig.footerPoweredByText` (shown on `home` and `page` layouts; `doc` pages do not render a footer) |
+| `footer` (`message` / `copyright`) | Renamed / different shape | `themeConfig.footerLicenseText` and `themeConfig.footerPoweredByText`; set `themeConfig.footer: false` to omit nagi’s default footer (shown on `home` and `page`; `doc` pages have no footer) |
 | `sidebarMenuLabel`, `returnToTopLabel`, `langMenuLabel` | Same | Same field names, with built-in English and Chinese defaults |
 | `darkModeSwitchLabel`, `lightModeSwitchTitle`, `darkModeSwitchTitle` | Renamed / different shape | Combined into `themeConfig.appearanceLabel` |
 | `notFound` (`title`, `linkText`, `quote`, `code`) | Renamed / different shape | `themeConfig.notFoundMessage` and `themeConfig.notFoundHomeLabel` (`quote` and `code` are not available) |

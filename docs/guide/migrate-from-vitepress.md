@@ -180,7 +180,7 @@ export default defineConfig({
 | `outlineTitle` / `outline.label` | 改名 / 形态不同 | `themeConfig.outlineLabel`（另有 `outlineCollapseLabel` 与 `outlineExpandLabel`） |
 | `editLink`、`lastUpdated` / `lastUpdatedText` | 改名 / 形态不同 | 由独立插件 `@kawapress/plugin-last-updated` 提供，配置 `editLink.pattern`、`lastUpdated.formatOptions` 与 `labels`。详见[最后更新时间](/plugins/last-updated) |
 | `docFooter`（`prev` / `next`） | 改名 / 形态不同 | 按钮文字用 `themeConfig.previousPageLabel` 与 `themeConfig.nextPageLabel`；不支持在单页 frontmatter 中覆盖上一篇/下一篇链接 |
-| `footer`（`message` / `copyright`） | 改名 / 形态不同 | `themeConfig.footerLicenseText` 与 `themeConfig.footerPoweredByText`（在 `home` 和 `page` 布局底部显示，`doc` 页面不显示页脚） |
+| `footer`（`message` / `copyright`） | 改名 / 形态不同 | `themeConfig.footerLicenseText` 与 `themeConfig.footerPoweredByText`；未配置页脚时写 `themeConfig.footer: false` 关闭 nagi 默认页脚（在 `home` 和 `page` 布局底部显示，`doc` 页面不显示页脚） |
 | `sidebarMenuLabel`、`returnToTopLabel`、`langMenuLabel` | 相同 | 字段名相同，nagi 已内置中英文默认文案 |
 | `darkModeSwitchLabel`、`lightModeSwitchTitle`、`darkModeSwitchTitle` | 改名 / 形态不同 | 合并为 `themeConfig.appearanceLabel` |
 | `notFound`（`title`、`linkText`、`quote`、`code`） | 改名 / 形态不同 | `themeConfig.notFoundMessage` 与 `themeConfig.notFoundHomeLabel`（不含 `quote` 和 `code`） |
