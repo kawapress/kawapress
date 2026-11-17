@@ -130,6 +130,26 @@ export default nagi({
 
 Preset 内置的 Plugin 会先加入，你在 `plugins` 中填写的内容随后加入。数组顺序就是执行顺序：后面的 Plugin 能看到前面已经完成的修改，也可以有意覆盖它们。
 
+## 替换 Preset 内置的插件 {#replace-a-preset-plugin}
+
+想改变 Preset 已经包含的某个插件，就在 `plugins` 里放一个同名的插件。它会顶替 Preset 里的那一个，并留在原来的位置上执行。插件名就是插件对象的 `name`，官方插件使用包名。下面把 nagi 的代码高亮换成加载了自定义 grammar 的版本：
+
+```ts
+import { shikiPlugin } from '@kawapress/plugin-shiki'
+import { nagi } from 'kawapress/nagi'
+import { vueLanguage } from './vue-language'
+
+export default nagi({
+  plugins: [
+    shikiPlugin({ languages: vueLanguage }),
+  ],
+})
+```
+
+替换后只有你传入的选项生效，Preset 原来给这个插件的选项不会合并进来。nagi 给代码高亮的唯一额外选项是 `twoslash: true`；用到 Twoslash 时把它一起写上。明暗两套 GitHub 主题是插件自己的默认值，不需要重复。
+
+同一个名字只能出现一次。两个同名插件同时生效会让同一项能力执行两遍，KawaPress 在加载配置时直接报错。
+
 KawaPress 不使用数字优先级，也不在背后猜测插件依赖。配置文件展示的顺序，就是能力实际组合的顺序。
 
 如果要设计完全不同的界面，可以不使用 Preset，直接从 `defineConfig()` 开始：

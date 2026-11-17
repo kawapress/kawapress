@@ -9,6 +9,12 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 ### 新增
 
 - **站点和语言可以设置默认 `description`。** 没在 frontmatter 写 `description` 的页面，先使用当前语言的 `description`，再使用全站的。
+- **站点可以替换 Preset 内置的插件。** `plugins` 中与 Preset 内置插件同名的插件会顶替它；同一个名字注册两次会报错。
+- **`shikiPlugin()` 支持 `languages`。** 额外的 grammar 注册在默认语言之后加载，与独立 Markdown 渲染器一致。
+
+### 变更
+
+- **`shikiPlugin()` 默认输出明暗两套 GitHub 主题**，与独立渲染器和 nagi 一致。高亮颜色跟随页面的 `color-scheme`；需要单一主题时传 `theme`。
 
 ### 修复
 

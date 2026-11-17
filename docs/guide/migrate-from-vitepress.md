@@ -152,7 +152,7 @@ export default defineConfig({
 | `lastUpdated` | 改名 / 形态不同 | 安装 `@kawapress/plugin-last-updated`，加入 `plugins: [lastUpdatedPlugin()]` |
 | `sitemap` | 相同 | 在 `nagi({ sitemap: { hostname: 'https://...' } })` 中配置，或使用 `@kawapress/plugin-sitemap` |
 | `markdown.lineNumbers` | 改名 / 形态不同 | `nagi({ codeBlock: { lineNumbers: true } })`（或 `@kawapress/plugin-code-block`） |
-| `markdown.theme`、`markdown.codeTransformers`、`markdown.languages` | 改名 / 形态不同 | 通过 `@kawapress/plugin-shiki` 的 `shikiPlugin({ themes, transformers, langs, twoslash })` 配置 |
+| `markdown.theme`、`markdown.codeTransformers`、`markdown.languages` | 改名 / 形态不同 | 通过 `@kawapress/plugin-shiki` 的 `shikiPlugin({ themes, transformers, langs, languages, twoslash })` 配置；使用 nagi 时放进 `plugins` 替换内置的代码高亮，见[替换 Preset 内置的插件](/plugins/plugin-system#replace-a-preset-plugin) |
 | `markdown.math` | 改名 / 形态不同 | 安装 `@kawapress/plugin-mathjax`，加入 `plugins: [mathjaxPlugin()]` |
 | `markdown.toc` | 改名 / 形态不同 | nagi 默认内置 `@kawapress/plugin-toc`；需要修改标题级别时在 `plugins` 中传入 `tocPlugin({ level: [2, 3, 4] })` |
 | `markdown.gfmAlerts`、`markdown.container`、`markdown.emoji` | 改名 / 形态不同 | nagi 默认内置 `@kawapress/plugin-github-alerts`、`@kawapress/plugin-container` 和 `@kawapress/plugin-emoji` |

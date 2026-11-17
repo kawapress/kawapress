@@ -50,6 +50,7 @@ export async function createGeneratorPluginRunner(
     'buildArtifacts',
   )
   const pageArtifacts = new Map<string, PageBuildArtifact>()
+  assertUniquePluginNames(plugins)
 
   const getPageArtifacts = (): readonly PageBuildArtifact[] => (
     [...pageArtifacts.values()].sort((left, right) => (
@@ -88,5 +89,22 @@ export async function createGeneratorPluginRunner(
       ...context,
     }),
     getPageArtifacts,
+  }
+}
+
+/**
+ * A name identifies a plugin: presets replace plugins by name and the runtime
+ * loads `<name>/runtime`. Two plugins with one name would run twice.
+ */
+function assertUniquePluginNames(plugins: readonly KawaPressPlugin[]): void {
+  const seen = new Set<string>()
+  for (const plugin of plugins) {
+    if (seen.has(plugin.name)) {
+      throw new Error(
+        `KawaPress: plugin ${JSON.stringify(plugin.name)} is registered more than once. `
+        + 'To change a plugin a preset already includes, pass one plugin with the same name in `plugins`; it replaces the preset\'s.',
+      )
+    }
+    seen.add(plugin.name)
   }
 }

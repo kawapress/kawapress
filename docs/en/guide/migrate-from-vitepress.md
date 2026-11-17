@@ -152,7 +152,7 @@ This table maps top-level VitePress `defineConfig()` options to KawaPress:
 | `lastUpdated` | Renamed / different shape | Install `@kawapress/plugin-last-updated` and add `lastUpdatedPlugin()` to `plugins` |
 | `sitemap` | Same | Pass `sitemap: { hostname: 'https://...' }` to `nagi()`, or use `@kawapress/plugin-sitemap` |
 | `markdown.lineNumbers` | Renamed / different shape | `nagi({ codeBlock: { lineNumbers: true } })` (or `@kawapress/plugin-code-block`) |
-| `markdown.theme`, `markdown.codeTransformers`, `markdown.languages` | Renamed / different shape | Configure through `shikiPlugin({ themes, transformers, langs, twoslash })` from `@kawapress/plugin-shiki` |
+| `markdown.theme`, `markdown.codeTransformers`, `markdown.languages` | Renamed / different shape | Configure through `shikiPlugin({ themes, transformers, langs, languages, twoslash })` from `@kawapress/plugin-shiki`; with nagi, put it in `plugins` to replace the built-in highlighting, see [Replace a Preset Plugin](/en/plugins/plugin-system#replace-a-preset-plugin) |
 | `markdown.math` | Renamed / different shape | Install `@kawapress/plugin-mathjax` and add `mathjaxPlugin()` to `plugins` |
 | `markdown.toc` | Renamed / different shape | Included in `nagi()` by default (`@kawapress/plugin-toc`); pass `tocPlugin({ level: [2, 3, 4] })` in `plugins` to customize heading levels |
 | `markdown.gfmAlerts`, `markdown.container`, `markdown.emoji` | Renamed / different shape | Included in `nagi()` by default (`@kawapress/plugin-github-alerts`, `@kawapress/plugin-container`, `@kawapress/plugin-emoji`) |

@@ -9,6 +9,12 @@ The 21 public packages are released together and share one version number. [ç®€ä
 ### Added
 
 - **Sites and locales can set a default `description`.** Pages without a frontmatter `description` use the current locale's `description`, then the site's.
+- **Sites can replace a plugin a preset includes.** A plugin in `plugins` with the same name as a preset plugin takes its place, and registering two plugins with one name is an error.
+- **`shikiPlugin()` accepts `languages`.** Grammar registrations load after the default languages, as in the standalone Markdown renderer.
+
+### Changed
+
+- **`shikiPlugin()` renders the light and dark GitHub themes by default**, like the standalone renderer and nagi. Output follows the page `color-scheme`; pass `theme` for a single theme.
 
 ### Fixed
 

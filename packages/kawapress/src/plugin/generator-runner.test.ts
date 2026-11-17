@@ -157,6 +157,14 @@ describe('createGeneratorPluginRunner', () => {
     expect(built).toEqual([['/a.md:A', '/b.md:B2']])
   })
 
+  it('rejects two plugins with the same name', async () => {
+    const plugin = { name: 'twice', setup: () => {} }
+
+    await expect(createGeneratorPluginRunner([plugin, { ...plugin }]))
+      .rejects
+      .toThrow('plugin "twice" is registered more than once')
+  })
+
   it('reports the plugin and capability when a handler fails', async () => {
     const cause = new Error('broken markdown')
     const runner = await createGeneratorPluginRunner([
