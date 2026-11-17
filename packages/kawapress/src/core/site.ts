@@ -10,6 +10,8 @@ export interface LocaleConfig {
   dir?: LocaleDirection
   link?: string
   title?: string
+  /** Description of pages in this locale that set none in frontmatter. */
+  description?: string
   head?: HeadConfig[]
   themeConfig?: Partial<ThemeConfig>
 }
@@ -25,6 +27,8 @@ export type PageRewrites
 
 export interface SiteConfig {
   title?: string
+  /** Description of pages that set none in frontmatter or locale config. */
+  description?: string
   base?: string
   srcDir?: string
   /** Glob patterns, relative to `srcDir`, of Markdown files that are not pages. */
@@ -39,6 +43,7 @@ export interface SiteConfig {
 /** Raw site data exposed to the client via virtual module. */
 export interface SiteData {
   title: string
+  description?: string
   base: string
   head: HeadConfig[]
   themeConfig?: Partial<ThemeConfig>
@@ -48,6 +53,8 @@ export interface SiteData {
 /** Site data resolved for the current route and locale. */
 export interface ResolvedSiteData {
   title: string
+  /** Description of the current locale, falling back to the site description. */
+  description?: string
   base: string
   themeConfig: Partial<ThemeConfig>
   localeIndex: string

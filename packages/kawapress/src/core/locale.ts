@@ -45,9 +45,11 @@ export function resolveSiteDataByPath(
     ...(site.themeConfig ?? {}),
     ...(locale?.themeConfig ?? {}),
   }
+  const description = locale?.description ?? site.description
 
   return {
     title: locale?.title ?? site.title,
+    ...(description === undefined ? {} : { description }),
     base: site.base,
     themeConfig,
     localeIndex,

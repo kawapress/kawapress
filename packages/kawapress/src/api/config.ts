@@ -7,6 +7,11 @@ import type { KawaPressPlugin } from './plugin'
 
 export interface KawapressConfig {
   title?: string
+  /**
+   * `<meta name="description">` of pages that set no `description` in
+   * frontmatter. A locale's own `description` takes precedence.
+   */
+  description?: string
   base?: string
   srcDir?: string
   /**

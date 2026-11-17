@@ -180,6 +180,11 @@ function createBasePlugins(
     }),
     virtualSitePlugin({
       title: siteConfig.title,
+      ...(
+        siteConfig.description === undefined
+          ? {}
+          : { description: siteConfig.description }
+      ),
       base: siteConfig.base,
       head: siteConfig.head,
       locales: siteConfig.locales,

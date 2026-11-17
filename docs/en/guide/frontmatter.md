@@ -73,6 +73,20 @@ titleTemplate: '%s · KawaPress Guide'
 
 The browser-tab title for this page is “Configure your site · KawaPress Guide”. The page title is also used by site search.
 
+Pages without `description` use the `description` from the site config. On a multilingual site, the current language's own `description` comes before the site-wide one:
+
+```ts
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  description: 'A Vue-powered static site generator.',
+  locales: {
+    root: { label: 'English', lang: 'en' },
+    zh: { label: '简体中文', lang: 'zh-CN', description: '用 Vue 写文档的静态站点生成器。' },
+  },
+})
+```
+
 Without `title`, the page title is the text of the first H1 with its Markdown formatting and inline HTML tags removed: `**bold**`, `[links](/guide)`, and `<kbd>Ctrl</kbd>` keep only the words inside them, `<Badge text="beta" />` leaves nothing, and inline code loses its backticks. Formulas and emoji shortcodes stay as written: the heading `# Energy $E=mc^2$ <Badge text="beta" />` gives the page title `Energy $E=mc^2$`.
 
 ## Page Head {#page-head}

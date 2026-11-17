@@ -71,6 +71,28 @@ describe('rewrites', () => {
   })
 })
 
+describe('description', () => {
+  it('keeps site and locale descriptions', async () => {
+    const config = await resolveSiteConfig({
+      description: 'Site',
+      locales: { root: { label: 'English' }, zh: { label: '简体中文', description: '站点' } },
+    })
+
+    expect(config.description).toBe('Site')
+    expect(config.locales.zh.description).toBe('站点')
+    expect((await resolveSiteConfig({})).description).toBeUndefined()
+  })
+
+  it('rejects a description that is not a string', async () => {
+    await expect(resolveSiteConfig({ description: 1 as unknown as string }))
+      .rejects
+      .toThrow('description must be a string, got 1')
+    await expect(resolveSiteConfig({
+      locales: { root: { label: 'English', description: false as unknown as string } },
+    })).rejects.toThrow('locales.root.description must be a string, got false')
+  })
+})
+
 describe('head config', () => {
   it('defaults to no head tags', async () => {
     const config = await resolveSiteConfig({})

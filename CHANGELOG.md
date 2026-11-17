@@ -6,7 +6,9 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
-## [0.7.1] - 2026-11-16
+### Added
+
+- **Sites and locales can set a default `description`.** Pages without a frontmatter `description` use the current locale's `description`, then the site's.
 
 ## [0.7.1] - 2026-11-16
 
@@ -16,10 +18,13 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [0.7.0] - 2026-11-16
 
+### Added
+
+- **Standalone Markdown renderers are public APIs.** Core accepts a custom highlighter, and `@kawapress/plugin-shiki` provides dual-theme rendering with custom grammar registrations for build-time demo loaders.
+
 ## [0.6.0] - 2026-11-16
 
 ### Added
-- **Standalone Markdown renderers are public APIs.** Core accepts a custom highlighter, and `@kawapress/plugin-shiki` provides dual-theme rendering with custom grammar registrations for build-time demo loaders.
 
 - **Core provides `ClientOnly` and `useAppearance()`.** `<ClientOnly>` is registered globally and defers browser-only content until after mounting. `useAppearance()` exposes a reactive `isDark` that follows the root appearance class or the operating system preference.
 - **Sites can configure Vite and a local Runtime Plugin directly.** `vite` accepts regular Vite configuration, `runtimePlugin` loads a site-local module after package plugins, and `publicDir` may point outside `srcDir`.

@@ -137,7 +137,7 @@ export default defineConfig({
 | VitePress 选项 | 状态 | KawaPress 写法 |
 | --- | --- | --- |
 | `title` | 相同 | `title`（支持顶层与 `locales.<key>.title`） |
-| `description` | 改名 / 形态不同 | 不设在站点顶层；在每页 frontmatter 写 `description`，或在站点/语言的 `head` 中加 `['meta', { name: 'description', content: '...' }]` |
+| `description` | 相同 | `description`（支持顶层与 `locales.<key>.description`，页面 frontmatter 的 `description` 优先） |
 | `lang`、`dir` | 改名 / 形态不同 | 写在 `locales.root`（及各语言条目）上，例如 `locales: { root: { label: '简体中文', lang: 'zh-CN', dir: 'ltr' } }` |
 | `titleTemplate` | 改名 / 形态不同 | 在页面 frontmatter 中写 `titleTemplate`（支持 `%s` 或 `false`） |
 | `base` | 相同 | `base` |
