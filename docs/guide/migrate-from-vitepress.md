@@ -300,6 +300,10 @@ export default defineRuntimePlugin({
 
 如果在 Loader 里读取了全局站点配置，把 `globalThis.VITEPRESS_CONFIG` 改为 `globalThis.KAWAPRESS_CONFIG`。还要注意 KawaPress 要求 Loader 返回值必须是严格可序列化的标准 JSON（不能直接返回 `Date`、`Map`、`Set` 或 `undefined` 属性）。详见[构建时数据加载](/guide/data-loading)。
 
+### `createMarkdownRenderer()` {#create-markdown-renderer}
+
+构建时如果只是用 VitePress 的 `createMarkdownRenderer()` 渲染 demo 源码，把导入改为 `@kawapress/plugin-shiki` 的同名函数即可。`languages` 等 Shiki grammar 配置继续有效，返回的渲染器同样支持 `renderAsync()`。详见[构建时渲染 Markdown](/plugins/plugin-development#markdown-renderer)。
+
 ### `withBase()` {#with-base}
 
 `withBase()` 从 `kawapress/client` 导入，第二个参数需要传入当前站点的 `base`：

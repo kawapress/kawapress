@@ -9,6 +9,7 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 ## [0.6.0] - 2026-11-16
 
 ### 新增
+- **公开独立的 Markdown 渲染器。** Core 支持自定义高亮器，`@kawapress/plugin-shiki` 为构建时 demo 加载器提供双主题高亮和自定义 grammar 注册。
 
 - **Core 提供 `ClientOnly` 和 `useAppearance()`。** `<ClientOnly>` 已全局注册，浏览器专属内容在挂载后才渲染；`useAppearance()` 提供响应式 `isDark`，跟随根元素的外观 class 或操作系统偏好。
 - **站点可以直接配置 Vite 和本地 Runtime Plugin。** `vite` 接受常规 Vite 配置，`runtimePlugin` 在插件包之后加载站点本地模块，`publicDir` 也可以指向 `srcDir` 外的目录。

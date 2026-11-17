@@ -300,6 +300,10 @@ Data loaders (`*.data.ts` and `*.data.js`) work the same way as in VitePress. Ch
 
 If a loader reads the global site configuration, replace `globalThis.VITEPRESS_CONFIG` with `globalThis.KAWAPRESS_CONFIG`. Also note that KawaPress requires loader return values to be strictly JSON-serializable (`Date`, `Map`, `Set`, and `undefined` properties fail the build with a clear error). See [Build-Time Data Loading](/en/guide/data-loading).
 
+### `createMarkdownRenderer()` {#create-markdown-renderer}
+
+If you use VitePress's `createMarkdownRenderer()` only to render demo sources at build time, import the same-named function from `@kawapress/plugin-shiki` instead. Shiki grammar options such as `languages` keep working, and the renderer supports `renderAsync()`. See [Rendering Markdown at build time](/plugins/plugin-development#markdown-renderer).
+
 ### `withBase()` {#with-base}
 
 Import `withBase()` from `kawapress/client` and pass `site.base` as the second argument:

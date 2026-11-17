@@ -2,7 +2,7 @@ import type {
   TransformerTwoslashOptions,
 } from '@shikijs/twoslash'
 import type { KawaPressPlugin, PageComponentEnv } from 'kawapress'
-import type { ShikiTransformer } from 'shiki'
+import type { LanguageRegistration, ShikiTransformer } from 'shiki'
 import { createRequire } from 'node:module'
 import {
   transformerMetaHighlight,
@@ -12,7 +12,7 @@ import {
   transformerNotationHighlight,
 } from '@shikijs/transformers'
 import { createTransformerFactory } from '@shikijs/twoslash'
-import { addPageComponent, definePlugin } from 'kawapress'
+import { addPageComponent, createMarkdownRenderer as createCoreMarkdownRenderer, definePlugin } from 'kawapress'
 import { useRuntimeDependencies } from 'kawapress/generator'
 import { createHighlighter } from 'shiki'
 import { createTwoslasher } from 'twoslash-vue'
@@ -24,7 +24,7 @@ export type TwoslashOptions = Omit<
 >
 
 interface ShikiPluginBaseOptions {
-  langs?: string[]
+  langs?: (string | LanguageRegistration)[]
   transformers?: ShikiTransformer[]
   twoslash?: boolean | TwoslashOptions
 }
@@ -90,6 +90,40 @@ export function shikiPlugin(options: ShikiPluginOptions = {}): KawaPressPlugin {
 }
 
 export default shikiPlugin
+
+export type ShikiMarkdownRendererOptions = ShikiPluginOptions & {
+  /** Additional grammar registrations, as used by VitePress's `languages` option. */
+  languages?: LanguageRegistration[]
+}
+
+/**
+ * Creates a standalone Markdown renderer with the same Shiki output as pages.
+ * Build-time demo and snippet loaders can use this instead of VitePress.
+ */
+export async function createMarkdownRenderer(
+  options: ShikiMarkdownRendererOptions = {},
+) {
+  const themes = options.themes ?? (options.theme
+    ? undefined
+    : { light: 'github-light', dark: 'github-dark' })
+  const theme = options.theme ?? 'github-light'
+  const highlighter = await createHighlighter({
+    themes: themes ? Object.values(themes) : [theme],
+    langs: [...(options.langs ?? PRELOADED_LANGS), ...(options.languages ?? [])],
+  })
+  const transformers = createTransformers(options)
+  return createCoreMarkdownRenderer({
+    highlight: (str, lang, attrs, env) => highlightCode(
+      highlighter,
+      str,
+      lang,
+      attrs,
+      env as PageComponentEnv,
+      { theme, themes },
+      transformers,
+    ),
+  })
+}
 
 type Highlighter = Awaited<ReturnType<typeof createHighlighter>>
 
