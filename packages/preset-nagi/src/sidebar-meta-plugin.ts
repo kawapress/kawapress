@@ -1,10 +1,11 @@
-import type { LocaleConfig, PageRewrites } from 'kawapress'
+import type { LocaleConfig } from 'kawapress'
+import type { MarkdownPageScope } from 'kawapress/generator'
 import type { Dirent } from 'node:fs'
 import type { HmrContext, ModuleNode, Plugin, ViteDevServer } from 'vite'
 import type { SidebarMeta, SidebarMetaEntry, SidebarMetaItem, SidebarPages } from './sidebar'
 import type { SidebarPageReader, SidebarPageScope } from './sidebar-pages'
 import { readdir, readFile } from 'node:fs/promises'
-import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { basename, dirname, isAbsolute, join, relative, sep } from 'node:path'
 import { parseJson, stringifyJson } from 'kawapress'
 import { isMarkdownPage, markdownFileToRoutePath } from 'kawapress/generator'
 import { createSidebarPageReader } from './sidebar-pages'
@@ -15,23 +16,19 @@ const META_FILE_NAME = '_meta.json'
 const IGNORED_DIRECTORIES = new Set(['dist', 'node_modules'])
 
 export interface NagiSidebarMetaPluginOptions {
-  /** `srcDir` of the site config, relative to the site root. */
-  srcDir: string
-  /** `srcExclude` of the site config: Markdown files that are not pages. */
-  srcExclude?: readonly string[] | undefined
-  /** `rewrites` of the site config, which moves pages to other routes. */
-  rewrites?: PageRewrites | undefined
+  /** The site's pages, from `resolveMarkdownPageScope()`. */
+  scope: MarkdownPageScope
   /** `themeConfig` of the site config; only `sidebar` is read. */
   themeConfig?: object | undefined
   /** `locales` of the site config, which can each declare their own sidebar. */
-  locales?: Record<string, LocaleConfig> | undefined
+  locales?: Readonly<Record<string, LocaleConfig>> | undefined
 }
 
 export function nagiSidebarMetaPlugin(options: NagiSidebarMetaPluginOptions): Plugin {
-  let scope: SidebarPageScope = {
-    sourceRoot: resolve(options.srcDir),
-    exclude: options.srcExclude,
-    rewrites: options.rewrites,
+  const scope: SidebarPageScope = {
+    ...options.scope,
+    themeConfig: options.themeConfig,
+    locales: options.locales,
   }
   /**
    * Page list of the module as the browser last received it, so editing a page
@@ -54,17 +51,6 @@ export function nagiSidebarMetaPlugin(options: NagiSidebarMetaPluginOptions): Pl
 
   return {
     name: 'kawapress:nagi-sidebar-meta',
-    configResolved(config) {
-      scope = {
-        sourceRoot: resolve(config.root, options.srcDir),
-        publicDir: config.publicDir ? resolve(config.publicDir) : undefined,
-        exclude: options.srcExclude,
-        rewrites: options.rewrites,
-        themeConfig: options.themeConfig,
-        locales: options.locales,
-      }
-      pages = undefined
-    },
     resolveId(id) {
       if (id === SIDEBAR_META_MODULE_ID) {
         return RESOLVED_ID

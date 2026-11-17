@@ -7,6 +7,7 @@ import process from 'node:process'
 import { afterEach, describe, expect, it } from 'vitest'
 import { buildSite } from '../../kawapress/src/server/build'
 import { createDevServer } from '../../kawapress/src/server/dev'
+import { llmsPlugin } from './plugin'
 
 const require = createRequire(import.meta.url)
 const temporaryDirectories: string[] = []
@@ -27,15 +28,12 @@ import { nagi } from 'kawapress/nagi'
 
 export default nagi({
   title: 'Kawa Docs',
+  description: 'KawaPress 中文文档。',
   locales: {
     root: { label: '简体中文', lang: 'zh-CN' },
-    en: { label: 'English', lang: 'en' },
+    en: { label: 'English', lang: 'en', description: 'KawaPress English documentation.' },
   },
   llms: {
-    description: {
-      root: 'KawaPress 中文文档。',
-      en: 'KawaPress English documentation.',
-    },
     llmsTxt({ defaultContent, locale }) {
       return defaultContent + '\\n<!-- locale: ' + locale + ' -->'
     },
@@ -143,6 +141,11 @@ llms: false
     expect(guideHtml).toContain('复制页面 Markdown')
     expect(guideHtml.match(/class="kawa-llms-actions"/g)).toHaveLength(1)
     await expect(access(join(root, 'dist/.kawapress'))).rejects.toThrow()
+  })
+
+  it('points a removed description option to the site and locale config', () => {
+    expect(() => llmsPlugin({ description: 'Docs' } as never))
+      .toThrow('`llms.description` was removed. Set `description` on the site config')
   })
 
   it('renders the theme when the site can resolve @vue/server-renderer itself', async () => {

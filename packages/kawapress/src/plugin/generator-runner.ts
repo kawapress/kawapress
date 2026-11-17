@@ -8,7 +8,7 @@ import type {
   PageDataContext,
 } from '../api/plugin'
 import type { PageData } from '../core/extension-points'
-import type { SiteConfig } from '../core/site'
+import type { ResolvedSiteConfig, SiteConfig } from '../core/site'
 import { assertPageDataSerializable } from '../core/site'
 import {
   createPluginHandlerRegistry,
@@ -17,6 +17,7 @@ import {
 
 export interface GeneratorPluginRunner {
   runConfig: (config: SiteConfig) => Promise<void>
+  runConfigResolved: (config: ResolvedSiteConfig) => Promise<void>
   runMarkdown: (markdown: MarkdownExit) => Promise<void>
   runPageData: (
     pageData: PageData,
@@ -36,6 +37,7 @@ export async function createGeneratorPluginRunner(
   plugins: KawaPressPlugin[],
 ): Promise<GeneratorPluginRunner> {
   const configHandlers = createPluginHandlerRegistry<SiteConfig>('generator', 'config')
+  const configResolvedHandlers = createPluginHandlerRegistry<ResolvedSiteConfig>('generator', 'configResolved')
   const markdownHandlers = createPluginHandlerRegistry<MarkdownExit>('generator', 'markdown')
   const pageDataHandlers = createPluginHandlerRegistry<PageData, Readonly<PageDataContext>>('generator', 'pageData', {
     afterEachHandle: assertPageDataSerializable,
@@ -61,6 +63,7 @@ export async function createGeneratorPluginRunner(
   for (const plugin of plugins) {
     const api: GeneratorPluginAPI = {
       config: handler => configHandlers.add(plugin.name, handler),
+      configResolved: handler => configResolvedHandlers.add(plugin.name, handler),
       markdown: handler => markdownHandlers.add(plugin.name, handler),
       pageData: handler => pageDataHandlers.add(plugin.name, handler),
       pageArtifact: handler => pageArtifactHandlers.add(plugin.name, handler),
@@ -77,6 +80,7 @@ export async function createGeneratorPluginRunner(
 
   return {
     runConfig: configHandlers.run,
+    runConfigResolved: configResolvedHandlers.run,
     runMarkdown: markdownHandlers.run,
     runPageData: pageDataHandlers.run,
     async runPageArtifact(artifact) {

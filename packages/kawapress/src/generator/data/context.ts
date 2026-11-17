@@ -1,7 +1,7 @@
 import type { DataLoaderConfig } from '../../api/data'
 import type { PageRewrites, SiteData } from '../../core/site'
 import type { GeneratorPluginRunner } from '../../plugin/generator-runner'
-import type { ResolvedSiteConfig } from '../config'
+import type { GeneratorSiteConfig } from '../config'
 import { resolve } from 'node:path'
 
 const DATA_LOADER_CONTEXT = Symbol.for('kawapress.data-loader-context')
@@ -14,14 +14,14 @@ export interface InternalDataLoaderContext extends DataLoaderConfig {
 
 export function createDataLoaderContext(
   root: string,
-  config: ResolvedSiteConfig,
+  config: GeneratorSiteConfig,
 ): InternalDataLoaderContext {
   const resolvedRoot = resolve(root)
   const srcDir = resolve(resolvedRoot, config.srcDir)
   const site: SiteData = {
     title: config.title,
     base: config.base,
-    head: config.head,
+    head: [...config.head],
     locales: config.locales,
     ...(config.themeConfig === undefined
       ? {}

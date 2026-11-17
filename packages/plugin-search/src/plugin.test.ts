@@ -1,11 +1,8 @@
-import type {
-  GeneratorPluginAPI,
-  SiteConfig,
-} from 'kawapress'
 import type { UserConfig } from 'vite'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { setupGeneratorPlugins } from 'kawapress/generator'
 import { afterEach, describe, expect, it } from 'vitest'
 import { searchPlugin } from './plugin'
 import { loadSearchIndex } from './search'
@@ -26,21 +23,20 @@ describe('search plugin', () => {
 > [!IMPORTANT]
 > 需要搜索的正文。
 `)
-    const handlers = await registerPlugin(searchPlugin({
-      githubAlerts: {
-        localeLabels: {
-          root: { important: '必须阅读' },
-        },
-      },
-    }).setup)
-    await handlers.config({
-      srcDir: sourceRoot,
+    const host = await setupGeneratorPlugins({
       locales: {
         root: { label: '简体中文', lang: 'zh-CN' },
       },
-    })
+      plugins: [searchPlugin({
+        githubAlerts: {
+          localeLabels: {
+            root: { important: '必须阅读' },
+          },
+        },
+      })],
+    }, { root: sourceRoot })
     const viteConfig: UserConfig = {}
-    await handlers.vite(viteConfig)
+    await host.runVite(viteConfig)
     const plugin = findSearchIndexPlugin(viteConfig)
     const resolvedId = plugin.resolveId(
       'virtual:kawapress-search-index/root?v=0',
@@ -60,39 +56,10 @@ describe('search plugin', () => {
   })
 })
 
-type Setup = (api: GeneratorPluginAPI) => void | Promise<void>
-
 interface ExecutableSearchIndexPlugin {
   name: string
   resolveId: (id: string) => string | undefined
   load: (id: string) => Promise<string | undefined>
-}
-
-async function registerPlugin(setup: Setup): Promise<{
-  config: (config: SiteConfig) => void | Promise<void>
-  vite: (config: UserConfig) => void | Promise<void>
-}> {
-  let configHandler: ((config: SiteConfig) => void | Promise<void>) | undefined
-  let viteHandler: ((config: UserConfig) => void | Promise<void>) | undefined
-
-  const api = {
-    config(handler) {
-      configHandler = handler
-    },
-    vite(handler) {
-      viteHandler = handler
-    },
-  } satisfies Pick<GeneratorPluginAPI, 'config' | 'vite'>
-
-  await setup(api as GeneratorPluginAPI)
-
-  if (!configHandler || !viteHandler) {
-    throw new Error('Expected search plugin to register config and Vite handlers.')
-  }
-  return {
-    config: configHandler,
-    vite: viteHandler,
-  }
 }
 
 function findSearchIndexPlugin(config: UserConfig): ExecutableSearchIndexPlugin {

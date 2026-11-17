@@ -21,7 +21,7 @@ export function imageZoomPlugin(
   return definePlugin({
     name: '@kawapress/plugin-image-zoom',
     setup(api) {
-      api.config((config) => {
+      api.configResolved((config) => {
         localeLanguages = resolveLocaleLanguages(config.locales)
       })
       api.vite((config) => {

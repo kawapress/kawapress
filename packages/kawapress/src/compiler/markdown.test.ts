@@ -4,6 +4,7 @@ import { shikiPlugin } from '@kawapress/plugin-shiki'
 import { nagi } from '@kawapress/preset-nagi'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { definePlugin } from '../api/plugin'
+import { resolveSiteConfig } from '../generator/config'
 import { createGeneratorPluginRunner } from '../plugin/generator-runner'
 import { compileMarkdownToVue, createMarkdownCompiler, parseMarkdown } from './markdown'
 
@@ -33,12 +34,8 @@ beforeAll(async () => {
       },
     })],
   })
-  const calloutRunner = await createGeneratorPluginRunner(
-    calloutConfig.plugins ?? [],
-  )
-  await calloutRunner.runConfig(calloutConfig)
   mdWithCallouts = await createMarkdownCompiler({
-    pluginRunner: calloutRunner,
+    pluginRunner: (await resolveSiteConfig(calloutConfig)).pluginRunner,
   })
 })
 
@@ -340,9 +337,8 @@ const focused = true
         lineNumbers: true,
       },
     })
-    const runner = await createGeneratorPluginRunner(config.plugins ?? [])
-    await runner.runConfig(config)
-    const compiler = await createMarkdownCompiler({ pluginRunner: runner })
+    const { pluginRunner } = await resolveSiteConfig(config)
+    const compiler = await createMarkdownCompiler({ pluginRunner })
     const { code } = await compileMarkdownToVue(
       compiler,
       '```js\nconst value = 1\n```\n',

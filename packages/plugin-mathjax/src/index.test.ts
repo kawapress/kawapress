@@ -1,6 +1,6 @@
-import type { GeneratorPluginAPI } from 'kawapress'
 import type { MarkdownExit } from 'markdown-exit'
 import type { MathJaxPluginOptions } from './index'
+import { setupGeneratorPlugins } from 'kawapress/generator'
 import { createMarkdownExit } from 'markdown-exit'
 import { describe, expect, it } from 'vitest'
 import { mathjaxPlugin } from './index'
@@ -86,22 +86,8 @@ Reference $\\ref{shared}$.
 async function createMarkdown(
   options: MathJaxPluginOptions = {},
 ): Promise<MarkdownExit> {
-  let markdownHandler: Parameters<GeneratorPluginAPI['markdown']>[0] | undefined
-  await mathjaxPlugin(options).setup({
-    config() {},
-    markdown(handler) {
-      markdownHandler = handler
-    },
-    pageData() {},
-    pageArtifact() {},
-    vite() {},
-    buildArtifacts() {},
-  })
-  if (!markdownHandler) {
-    throw new Error('Expected MathJax to register a Markdown handler.')
-  }
-
+  const host = await setupGeneratorPlugins({ plugins: [mathjaxPlugin(options)] })
   const markdown = createMarkdownExit({ html: true })
-  await markdownHandler(markdown)
+  await host.runMarkdown(markdown)
   return markdown
 }

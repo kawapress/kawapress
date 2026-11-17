@@ -40,6 +40,30 @@ export interface SiteConfig {
   locales?: Record<string, LocaleConfig>
 }
 
+/**
+ * The site config with every default applied and every value checked, after
+ * all plugin `config()` hooks ran. Generator plugins read it in
+ * `configResolved()` instead of repeating KawaPress's defaults.
+ */
+export interface ResolvedSiteConfig {
+  /** Absolute path of the site root, the folder of `kawapress.config.ts`. */
+  readonly root: string
+  readonly title: string
+  readonly description?: string
+  /** Deploy path, always starting and ending with `/`. */
+  readonly base: string
+  /** Markdown source folder, relative to `root`. */
+  readonly srcDir: string
+  readonly srcExclude: readonly string[]
+  readonly rewrites: PageRewrites | undefined
+  /** Public folder, relative to `srcDir`. */
+  readonly publicDir: string
+  readonly head: readonly HeadConfig[]
+  readonly themeConfig: Readonly<Partial<ThemeConfig>>
+  /** Every locale; a site without `locales` has an English `root` locale. */
+  readonly locales: Readonly<Record<string, LocaleConfig>>
+}
+
 /** Raw site data exposed to the client via virtual module. */
 export interface SiteData {
   title: string

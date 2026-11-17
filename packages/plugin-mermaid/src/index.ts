@@ -29,7 +29,7 @@ export function mermaidPlugin(
   return definePlugin({
     name: PLUGIN_NAME,
     setup(api) {
-      api.config((config) => {
+      api.configResolved((config) => {
         localeLanguages = resolveLocaleLanguages(config.locales)
       })
       api.vite((config) => {

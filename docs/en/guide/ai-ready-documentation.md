@@ -100,17 +100,16 @@ The Generator Plugin creates the Markdown files. Its matching Runtime Plugin aut
 
 Set `llms: false` in `nagi()` to leave out both the llms files and the page actions above the document.
 
-Use `llms.description` in the nagi configuration to add a site description. A multilingual site can provide one value per locale:
+The site summary at the top of `llms.txt` is the `description` from the site config, the same sentence as the page description meta. A multilingual site gives each language its own `description`:
 
 ```ts
 import { nagi } from 'kawapress/nagi'
 
 export default nagi({
-  llms: {
-    description: {
-      root: 'KawaPress Chinese documentation.',
-      en: 'KawaPress English documentation.',
-    },
+  description: 'KawaPress English documentation.',
+  locales: {
+    root: { label: 'English', lang: 'en' },
+    zh: { label: '简体中文', lang: 'zh-CN', description: 'KawaPress 中文文档。' },
   },
 })
 ```

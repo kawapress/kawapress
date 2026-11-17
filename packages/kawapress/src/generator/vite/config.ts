@@ -1,6 +1,6 @@
 import type { InlineConfig, Plugin } from 'vite'
 import type { MarkdownPageLoader } from '../../compiler/page-loader'
-import type { ResolvedSiteConfig } from '../config'
+import type { GeneratorSiteConfig } from '../config'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
@@ -54,7 +54,7 @@ export interface CreateBaseViteConfigOptions {
 
 export function createBaseViteConfig(
   root: string,
-  siteConfig: ResolvedSiteConfig,
+  siteConfig: GeneratorSiteConfig,
   options: CreateBaseViteConfigOptions = {},
 ): InlineConfig {
   const pageLoader = options.pageLoader ?? createSitePageLoader(root, siteConfig)
@@ -120,7 +120,7 @@ function createDefineOverrides(): Pick<InlineConfig, 'define'> {
 /** Page loader shared by the Vite plugins and, during a build, the link checker. */
 export function createSitePageLoader(
   root: string,
-  siteConfig: ResolvedSiteConfig,
+  siteConfig: GeneratorSiteConfig,
 ): MarkdownPageLoader {
   return createMarkdownPageLoader({
     root,
@@ -153,7 +153,7 @@ function resolveVueAliases(root: string) {
 
 function createBasePlugins(
   root: string,
-  siteConfig: ResolvedSiteConfig,
+  siteConfig: GeneratorSiteConfig,
   pageLoader: MarkdownPageLoader,
 ): Plugin[] {
   const dataLoaderContext = createDataLoaderContext(root, siteConfig)
@@ -186,7 +186,7 @@ function createBasePlugins(
           : { description: siteConfig.description }
       ),
       base: siteConfig.base,
-      head: siteConfig.head,
+      head: [...siteConfig.head],
       locales: siteConfig.locales,
       ...(
         siteConfig.themeConfig === undefined

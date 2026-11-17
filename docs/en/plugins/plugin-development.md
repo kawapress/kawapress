@@ -16,6 +16,7 @@ Before writing an extension, ask where the work happens:
 | What you want to do | Extension point |
 | --- | --- |
 | Change site configuration | Generator Plugin `config()` |
+| Read the final site configuration | Generator Plugin `configResolved()` |
 | Extend Markdown syntax | Generator Plugin `markdown()` |
 | Change data for each page | Generator Plugin `pageData()` |
 | Observe the build result of each page | Generator Plugin `pageArtifact()` |
@@ -123,7 +124,7 @@ The factory function validates and normalizes options, while `setup(api)` only w
 
 ### Generator API Overview {#generator-api}
 
-There are six generator methods, all called inside `setup(api)` of `definePlugin()`. A plugin can register one or multiple methods as needed; plugins execute sequentially in the order listed in `plugins`.
+There are seven generator methods, all called inside `setup(api)` of `definePlugin()`. A plugin can register one or multiple methods as needed; plugins execute sequentially in the order listed in `plugins`.
 
 A typical generator plugin skeleton looks like:
 
@@ -135,22 +136,25 @@ export default function myGeneratorPlugin() {
   return definePlugin({
     name: '@acme/kawapress-plugin-notes',
     setup(api) {
-      // 1. Read or modify site configuration
+      // 1. Modify site configuration
       api.config((config) => { /* ... */ })
 
-      // 2. Extend Markdown compiler
+      // 2. Read the resolved site configuration
+      api.configResolved((site) => { /* ... */ })
+
+      // 3. Extend Markdown compiler
       api.markdown((markdown) => { /* ... */ })
 
-      // 3. Enhance page metadata
+      // 4. Enhance page metadata
       api.pageData((pageData, { file, sourcePath }) => { /* ... */ })
 
-      // 4. Observe page build artifacts
+      // 5. Observe page build artifacts
       api.pageArtifact((pageArtifact) => { /* ... */ })
 
-      // 5. Inject Vite plugins or options
+      // 6. Inject Vite plugins or options
       api.vite((vite) => { /* ... */ })
 
-      // 6. Emit static files after full build
+      // 7. Emit static files after full build
       api.buildArtifacts(async (context) => { /* ... */ })
     },
   })
@@ -161,7 +165,7 @@ Below is the detailed usage for each method.
 
 ### `api.config()` {#config}
 
-`config()` runs after the site configuration has been normalized. The handler receives the real site configuration object and can change it directly.
+`config()` runs before the site configuration is normalized. The handler receives the configuration object as the user wrote it and can change it directly; defaults are not applied yet, so `config.locales` is `undefined` on a site without `locales`.
 
 ```ts
 // Inside setup(api):
@@ -170,7 +174,24 @@ api.config((config) => {
 })
 ```
 
-A plugin that needs the language, deployment base, or source directory can record the values here and use them in later methods.
+### `api.configResolved()` {#config-resolved}
+
+After every plugin's `config()` ran, KawaPress applies its defaults, checks and normalizes the configuration, and passes the final result to `configResolved()`. It runs before `markdown()` and `vite()`. A plugin that only reads the configuration should use it instead of repeating KawaPress's defaults:
+
+```ts
+// Inside setup(api):
+let site: ResolvedSiteConfig | undefined
+
+api.configResolved((resolved) => {
+  site = resolved
+  // resolved.root     absolute path of the site root
+  // resolved.base     always starts and ends with /, for example '/docs/'
+  // resolved.locales  a site without locales still has an English root
+  // resolved.srcDir   source folder relative to root, '.' by default
+})
+```
+
+The object is read-only. Use `config()` to change the configuration.
 
 ### `api.markdown()` {#markdown}
 
@@ -361,8 +382,8 @@ const LABELS: Record<string, string> = {
 
 let localeKeys = ['root']
 
-api.config((config) => {
-  localeKeys = Object.keys(config.locales ?? { root: {} })
+api.configResolved((site) => {
+  localeKeys = Object.keys(site.locales)
 })
 
 api.markdown((markdown) => {
@@ -383,30 +404,14 @@ The function is pure and works on the runtime side too; import it from `kawapres
 When you build your own navigation, index, or search data, start from the list of pages. `listMarkdownPages()` from `kawapress/generator` applies exactly the same rules as KawaPress itself: it skips directories that start with `.` and the `dist` and `node_modules` directories, leaves out `publicDir`, and sorts by name.
 
 ```ts
-import { resolve } from 'node:path'
-import { listMarkdownPages } from 'kawapress/generator'
+import { listMarkdownPages, resolveMarkdownPageScope } from 'kawapress/generator'
 
-let srcDir = '.'
-
-api.config((config) => {
-  srcDir = config.srcDir ?? '.'
-})
-
-api.vite((config) => {
-  config.plugins ??= []
-  config.plugins.push({
-    name: 'your-plugin:pages',
-    async configResolved(resolved) {
-      // sourceRoot holds the pages; publicDir holds files copied as they are, so it holds none
-      const pages = await listMarkdownPages({
-        sourceRoot: resolve(resolved.root, srcDir),
-        publicDir: resolved.publicDir,
-      })
-      // Each entry looks like
-      // { file: '/site/src/guide/intro.md', sourcePath: '/guide/intro.md', pagePath: '/guide/intro.md', routePath: '/guide/intro' }
-      console.log(pages.map(page => page.routePath))
-    },
-  })
+api.configResolved(async (site) => {
+  // The same scope KawaPress lists its own pages with: source folder, publicDir, srcExclude and rewrites
+  const pages = await listMarkdownPages(resolveMarkdownPageScope(site))
+  // Each item looks like
+  // { file: '/site/src/guide/intro.md', sourcePath: '/guide/intro.md', pagePath: '/guide/intro.md', routePath: '/guide/intro' }
+  console.log(pages.map(page => page.routePath))
 })
 ```
 
@@ -607,6 +612,33 @@ The `Router` covers what a documentation site needs (navigation, the current rou
 A Runtime Plugin runs once for each Vue App. During server rendering, every render creates a new App. In the browser, the App is created once when the site starts. Therefore, do not store state in module scope if that state belongs to one render.
 
 A Runtime Plugin also runs on the server and in the browser. Before you access browser objects such as `window` or `document`, read [SSR Compatibility](/en/guide/ssr-compatibility).
+
+## Testing Plugins {#testing-plugins}
+
+A generator plugin test does not need a hand-made `api` object. `setupGeneratorPlugins()` from `kawapress/generator` loads plugins the way `kawapress build` does: it runs `setup()`, `config()` and `configResolved()` with KawaPress's own defaults and checks. It returns the resolved `site` and methods that run the remaining hooks:
+
+```ts
+import { setupGeneratorPlugins } from 'kawapress/generator'
+import { MarkdownExit } from 'markdown-exit'
+import { expect, it } from 'vitest'
+import notesPlugin from '../src'
+
+it('renders a localized note title', async () => {
+  const host = await setupGeneratorPlugins({
+    locales: {
+      root: { label: 'English', lang: 'en' },
+      zh: { label: '简体中文', lang: 'zh-CN' },
+    },
+    plugins: [notesPlugin()],
+  })
+  const markdown = new MarkdownExit()
+  await host.runMarkdown(markdown)
+
+  expect(markdown.render('::: note\nBody\n:::', { path: '/zh/guide' })).toContain('说明')
+})
+```
+
+`host` also provides `runPageData()`, `runVite()` and the other hooks, so tests keep working when the plugin API gains a hook.
 
 ## Publishing Checklist {#publish-checklist}
 

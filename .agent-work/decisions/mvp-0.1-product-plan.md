@@ -175,18 +175,19 @@ export default definePlugin({
 })
 ```
 
-MVP 公开六个生成侧注册方法：
+公开七个生成侧注册方法：
 
 | 方法 | 调用时机 | 得到的对象 |
 |---|---|---|
-| `config(handler)` | 站点配置归一化时 | 可修改的 KawaPress Config |
+| `config(handler)` | 站点配置归一化之前 | 用户写的原始、可修改的 KawaPress Config，默认值尚未补上 |
+| `configResolved(handler)` | 全部 `config()` 之后、配置归一化完成时，早于 `markdown()` 与 `vite()` | 冻结的只读 `ResolvedSiteConfig`：`root`（绝对路径）、`title`、`description`、`base`（以 `/` 开头结尾）、`srcDir`、`srcExclude`、`rewrites`、`publicDir`、`head`、`themeConfig`、`locales`（未配置时为英文 `root`） |
 | `markdown(handler)` | Markdown 编译器创建时 | 真实 `MarkdownExit` 实例 |
 | `pageData(handler)` | 每个页面的 pageData 生成后 | 当前页面的可修改 pageData，以及只读的来源 `{ file, sourcePath }` |
 | `pageArtifact(handler)` | 当前页面完成 Markdown 编译与全部 `pageData()` handler 后 | 当前源修订的只读页面构建材料 |
 | `vite(handler)` | Vite 配置完成基础组装后 | 完整、可修改的 Vite `UserConfig` |
+| `buildArtifacts(handler)` | 全部 Vite build environment 完成后、HTML 预渲染前 | 全部页面材料与受控文件发射器 |
 
 站点可直接在 `KawapressConfig.vite` 写常规 Vite `UserConfig`，在基础配置之后、插件 `vite()` hook 之前合并。`KawapressConfig.runtimePlugin` 可指向站点根目录下的本地 Runtime Plugin 模块，默认导出 `defineRuntimePlugin()`，在全部插件包之后执行；站点不必为 `enhanceApp`、全局组件和 CSS 建立本地 npm 包。
-| `buildArtifacts(handler)` | 全部 Vite build environment 完成后、HTML 预渲染前 | 全部页面材料与受控文件发射器 |
 
 页面构建材料与发射上下文使用宿主无关的数据契约：
 
@@ -209,9 +210,11 @@ interface BuildArtifactsContext {
 
 规则：
 
-- 六个方法都是按需使用的注册器。Plugin 只调用自己需要的方法，不需要为未使用的能力写空 handler。
+- 七个方法都是按需使用的注册器。Plugin 只调用自己需要的方法，不需要为未使用的能力写空 handler。
 - handler 可以同步或异步；同类 handler 按插件顺序串行执行。
 - `config()`、`markdown()`、`pageData()` 与 `vite()` 直接修改真实对象，不使用“返回局部对象再合并”的双重语义。
+- 只读取配置的插件使用 `configResolved()`，不得在插件内重复 KawaPress 的默认值与归一化规则（默认 locale、`base` 规范化、`srcDir` 默认值、站点根目录等）。需要页面范围时用 `kawapress/generator` 的 `resolveMarkdownPageScope(site)`，它与 Core 列页面使用同一规则。
+- `kawapress/generator` 的 `setupGeneratorPlugins(config, { root })` 按构建流程执行插件的 `setup()`、`config()` 与 `configResolved()`，返回解析后的 `site` 与执行其余 hook 的方法；官方插件测试通过它驱动插件，不手写伪造的 `GeneratorPluginAPI`。
 - `pageArtifact()` 只观察结果，不回写 source、pageData 或路由；同一源文件修订只产生一次材料，开发期文件变化以新材料替换旧材料。
 - `buildArtifacts()` 只在 `kawapress build` 执行。`pages` 按 `sourcePath` 稳定排序，`emitFile()` 与 `importModule()` 只接受构建输出目录内的相对路径；绝对路径、`..` 越界和与 public 或其他插件产物冲突都直接报错。`importModule()` 由 Core 在正常 Node 构建上下文执行，插件不得用 `eval`、`new Function` 或私有 Vite runner 绕过模块边界。
 - `vite()` 允许修改完整 Vite 配置；KawaPress 只保留维持渲染闭环所需的最小不变量并在最终创建 Vite 前校验。
@@ -587,7 +590,7 @@ dist
       └─ getting-started.md
 ```
 
-页面产物沿用公开路由身份：`/` 输出 `index.md`，`/guide/getting-started` 输出 `guide/getting-started.md`；部署 URL 统一应用站点 `base`。非默认 locale 在自己的路径下生成 `llms.txt` 与 `llms-full.txt`。`llms.txt` 默认按稳定的页面路径顺序列出标题、Markdown URL 与 description，locale 首页不重复列入目录；`llms-full.txt` 使用同一顺序拼接正文，并在每页前记录最终 Markdown URL。页面可用 frontmatter 的字面量 `llms: false` 同时关闭页面 `.md`、索引条目、全文条目和标题下 UI；它与 `search: false` 互不推导。插件允许用同步或异步 `llmsTxt(context)` 回调接管每个 locale 的完整 `llms.txt` 内容，回调得到站点标题、locale、lang、base 和最终页面列表。
+页面产物沿用公开路由身份：`/` 输出 `index.md`，`/guide/getting-started` 输出 `guide/getting-started.md`；部署 URL 统一应用站点 `base`。非默认 locale 在自己的路径下生成 `llms.txt` 与 `llms-full.txt`。`llms.txt` 默认按稳定的页面路径顺序列出标题、Markdown URL 与 description，locale 首页不重复列入目录；`llms-full.txt` 使用同一顺序拼接正文，并在每页前记录最终 Markdown URL。页面可用 frontmatter 的字面量 `llms: false` 同时关闭页面 `.md`、索引条目、全文条目和标题下 UI；它与 `search: false` 互不推导。`llms.txt` 的站点简介取当前 locale 的 `description`，回退站点 `description`，与页面 description meta 同源；插件不另设简介选项。插件允许用同步或异步 `llmsTxt(context)` 回调接管每个 locale 的完整 `llms.txt` 内容，回调得到站点标题、locale、lang、base 和最终页面列表。
 
 SSG-MD 不复制源文件，也不把整页最终 HTML 反转成 Markdown。KawaPress 使用双通道：
 

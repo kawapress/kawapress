@@ -42,8 +42,10 @@ export function lastUpdatedPlugin(
   return definePlugin({
     name: PLUGIN_NAME,
     setup(api) {
+      api.configResolved((site) => {
+        root = site.root
+      })
       api.vite((config) => {
-        root = config.root ? resolve(config.root) : process.cwd()
         config.plugins ??= []
         config.plugins.push(lastUpdatedOptionsPlugin(runtimeOptions))
       })

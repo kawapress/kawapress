@@ -65,7 +65,8 @@ import { nagi } from 'kawapress/nagi'
 
 export default nagi({
   title: 'Docs',
-  base: '/docs/',
+  // Without the trailing slash: the plugin reads the base KawaPress resolved.
+  base: '/docs',
   ${localesConfig}
   sitemap: {
     hostname: 'https://example.com',

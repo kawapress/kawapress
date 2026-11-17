@@ -1,5 +1,5 @@
 import type { MarkdownPageLoader } from '../compiler/page-loader'
-import type { ResolvedSiteConfig } from '../generator/config'
+import type { GeneratorSiteConfig } from '../generator/config'
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -104,14 +104,14 @@ describe('checkDeadLinks', () => {
   })
 
   it('skips the check when the site sets deadLinks to false', async () => {
-    const siteConfig: ResolvedSiteConfig = { ...await resolveSiteConfig({}), deadLinks: false }
+    const siteConfig: GeneratorSiteConfig = { ...await resolveSiteConfig({}), deadLinks: false }
     const pageLoader = await loadFixturePages(root, siteConfig)
 
     await expect(checkDeadLinks({ root, siteConfig, pageLoader })).resolves.toEqual([])
   })
 
   it('honors configured ignore patterns', async () => {
-    const siteConfig: ResolvedSiteConfig = {
+    const siteConfig: GeneratorSiteConfig = {
       ...await resolveSiteConfig({}),
       deadLinks: {
         level: 'warn' as const,
@@ -139,7 +139,7 @@ describe('checkDeadLinks', () => {
 
 describe('included content', () => {
   it('checks the links of an included part and names the line of the page', async () => {
-    const siteConfig: ResolvedSiteConfig = {
+    const siteConfig: GeneratorSiteConfig = {
       ...await resolveSiteConfig({ srcExclude: ['parts/**'] }),
       deadLinks: { level: 'warn' as const, ignore: [] },
     }

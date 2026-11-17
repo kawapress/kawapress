@@ -1,17 +1,14 @@
 import type {
   KawaPressPlugin,
-  LocaleConfig,
   PageBuildArtifact,
-  SiteConfig,
+  ResolvedSiteConfig,
 } from 'kawapress'
 import type { MarkdownExit } from 'markdown-exit'
 import type { InlineConfig } from 'vite'
-import type { LlmsSiteContext } from './artifacts'
 import type { SsgMarkdownBundle } from './ssg/render'
 import type { LlmsPluginOptions } from './types'
 import { rm, rmdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import process from 'node:process'
 import { definePlugin } from 'kawapress'
 import { createLlmsArtifacts } from './artifacts'
 import { SSG_MD_ENVIRONMENT } from './constants'
@@ -24,12 +21,6 @@ import {
   ssgMarkdownDefine,
 } from './vite-plugin'
 
-const DEFAULT_LOCALES: Record<string, LocaleConfig> = {
-  root: {
-    label: 'English',
-    lang: 'en',
-  },
-}
 const SSG_MD_OUTPUT_DIR = 'dist/.kawapress/llms'
 const SSG_MD_ENTRY_FILE = 'render.mjs'
 const SSG_MD_ENTRY_OUTPUT_PATH = `.kawapress/llms/${SSG_MD_ENTRY_FILE}`
@@ -38,12 +29,13 @@ export function llmsPlugin(
   options: LlmsPluginOptions = {},
 ): KawaPressPlugin {
   let markdown: MarkdownExit | undefined
-  let root = process.cwd()
   const pageArtifacts = new Map<string, PageBuildArtifact>()
-  const site: LlmsSiteContext = {
-    base: '/',
-    title: 'KawaPress',
-    locales: DEFAULT_LOCALES,
+  assertNoRemovedOptions(options)
+  let site: ResolvedSiteConfig | undefined
+  const getSite = (): ResolvedSiteConfig => {
+    if (!site)
+      throw new Error('KawaPress LLMS: the site config is not resolved yet.')
+    return site
   }
 
   const getPages = (): readonly PageBuildArtifact[] => (
@@ -54,15 +46,15 @@ export function llmsPlugin(
   const vitePluginOptions = {
     getMarkdown: () => markdown,
     getPages,
-    site,
+    getSite,
     pluginOptions: options,
   }
 
   return definePlugin({
     name: '@kawapress/plugin-llms',
     setup(api) {
-      api.config((config) => {
-        captureSiteConfig(site, config)
+      api.configResolved((config) => {
+        site = config
       })
       api.markdown((compiler) => {
         markdown = compiler
@@ -71,19 +63,18 @@ export function llmsPlugin(
         pageArtifacts.set(page.file, page)
       })
       api.vite((config) => {
-        root = config.root ? resolve(config.root) : process.cwd()
-        site.base = normalizeBase(config.base)
         installSsgMarkdownEnvironment(config)
         installSsgMarkdownPlugins(config, vitePluginOptions)
       })
       api.buildArtifacts(async ({ emitFile, importModule }) => {
+        const { root } = getSite()
         const outputDirectory = resolve(root, SSG_MD_OUTPUT_DIR)
         try {
           const bundle = await importModule<SsgMarkdownBundle>(
             SSG_MD_ENTRY_OUTPUT_PATH,
           )
           const rendered = await renderMarkdownPages(bundle, getPages())
-          const artifacts = await createLlmsArtifacts(rendered, site, options)
+          const artifacts = await createLlmsArtifacts(rendered, getSite(), options)
           for (const [path, content] of artifacts) {
             await emitFile(path, content)
           }
@@ -98,12 +89,6 @@ export function llmsPlugin(
 }
 
 export default llmsPlugin
-
-function captureSiteConfig(site: LlmsSiteContext, config: SiteConfig): void {
-  site.title = config.title ?? 'KawaPress'
-  site.base = normalizeBase(config.base)
-  site.locales = config.locales ?? DEFAULT_LOCALES
-}
 
 function installSsgMarkdownPlugins(
   config: InlineConfig,
@@ -175,9 +160,12 @@ async function removeEmptyDirectory(directory: string): Promise<void> {
   }
 }
 
-function normalizeBase(base: string | undefined): string {
-  if (!base || base === '/') {
-    return '/'
+/** `description` moved to the site and locale config in 0.8. */
+function assertNoRemovedOptions(options: LlmsPluginOptions): void {
+  if ('description' in options) {
+    throw new Error(
+      'KawaPress LLMS: `llms.description` was removed. Set `description` on the site config '
+      + 'or on `locales.<key>`; llms.txt uses the same summary as the page description meta.',
+    )
   }
-  return `/${base.replace(/^\/+|\/+$/g, '')}/`
 }

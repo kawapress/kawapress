@@ -1,7 +1,6 @@
 import type { MaybePromise, PageBuildArtifact } from 'kawapress'
 
 export interface LlmsPluginOptions {
-  description?: string | Record<string, string>
   llmsTxt?: (context: LlmsTxtContext) => MaybePromise<string | undefined>
 }
 

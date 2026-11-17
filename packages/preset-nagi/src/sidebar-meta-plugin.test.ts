@@ -1,3 +1,4 @@
+import type { MarkdownPageScope } from 'kawapress/generator'
 import type { NagiSidebarMetaPluginOptions } from './sidebar-meta-plugin'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -26,12 +27,14 @@ async function writePage(file: string, content: string): Promise<void> {
   await writeFile(path, content)
 }
 
+function siteScope(): MarkdownPageScope {
+  return { sourceRoot: join(siteDirectory, 'src'), publicDir: join(siteDirectory, 'src/public') }
+}
+
 async function renderModule(
   options: Partial<NagiSidebarMetaPluginOptions> = {},
 ): Promise<{ sidebarMeta: unknown, sidebarPages: Record<string, unknown>, source: string }> {
-  const plugin = nagiSidebarMetaPlugin({ srcDir: 'src', ...options })
-  const resolveConfig = plugin.configResolved as (config: unknown) => void
-  resolveConfig({ root: siteDirectory, publicDir: join(siteDirectory, 'src/public') })
+  const plugin = nagiSidebarMetaPlugin({ scope: siteScope(), ...options })
   const load = plugin.load as (id: string) => Promise<string | undefined>
   const source = await load(RESOLVED_ID) ?? ''
   const module = await import(
@@ -63,7 +66,7 @@ describe('the automatic sidebar page list', () => {
     await writePage('guide/a.md', '# A\n')
     await writePage('snippets/shared.md', '# Shared\n')
 
-    const { sidebarPages } = await renderModule({ srcExclude: ['snippets/**'] })
+    const { sidebarPages } = await renderModule({ scope: { ...siteScope(), exclude: ['snippets/**'] } })
 
     expect(sidebarPages).toEqual({ '/guide/a': { title: 'A' } })
   })
@@ -217,9 +220,7 @@ async function createLoadedPlugin(): Promise<{
   plugin: ReturnType<typeof nagiSidebarMetaPlugin>
   server: ReturnType<typeof createFakeServer>
 }> {
-  const plugin = nagiSidebarMetaPlugin({ srcDir: 'src' })
-  const resolveConfig = plugin.configResolved as (config: unknown) => void
-  resolveConfig({ root: siteDirectory, publicDir: join(siteDirectory, 'src/public') })
+  const plugin = nagiSidebarMetaPlugin({ scope: siteScope() })
   const load = plugin.load as (id: string) => Promise<string | undefined>
   await load(RESOLVED_ID)
   return { plugin, server: createFakeServer() }

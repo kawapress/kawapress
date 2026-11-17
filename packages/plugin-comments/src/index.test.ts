@@ -1,5 +1,5 @@
-import type { GeneratorPluginAPI } from 'kawapress'
 import type { UserConfig } from 'vite'
+import { setupGeneratorPlugins } from 'kawapress/generator'
 import { describe, expect, it } from 'vitest'
 import { commentsPlugin } from './index'
 import { COMMENTS_OPTIONS_MODULE_ID } from './vite-plugin'
@@ -12,7 +12,7 @@ interface ExecutableOptionsPlugin {
 
 describe('comments plugin', () => {
   it('publishes the resolved options to the runtime as JSON', async () => {
-    const viteHandler = await collectViteHandler(commentsPlugin({
+    const host = await setupGeneratorPlugins({ plugins: [commentsPlugin({
       giscus: {
         repo: 'kawapress/kawapress',
         repoId: 'R_kgDOExample',
@@ -20,9 +20,9 @@ describe('comments plugin', () => {
         categoryId: 'DIC_kwDOExample',
       },
       localeLabels: { root: { heading: '评论' } },
-    }))
+    })] })
     const config: UserConfig = {}
-    await viteHandler(config)
+    await host.runVite(config)
 
     const plugin = findOptionsPlugin(config)
     const resolvedId = plugin.resolveId(COMMENTS_OPTIONS_MODULE_ID)
@@ -58,28 +58,6 @@ describe('comments plugin', () => {
     )
   })
 })
-
-async function collectViteHandler(
-  plugin: ReturnType<typeof commentsPlugin>,
-): Promise<(config: UserConfig) => void | Promise<void>> {
-  let viteHandler: ((config: UserConfig) => void | Promise<void>) | undefined
-
-  await plugin.setup({
-    config: () => {},
-    markdown: () => {},
-    pageData: () => {},
-    pageArtifact: () => {},
-    vite: (handler) => {
-      viteHandler = handler
-    },
-    buildArtifacts: () => {},
-  } satisfies GeneratorPluginAPI)
-
-  if (!viteHandler) {
-    throw new Error('Expected the comments plugin to register a Vite handler.')
-  }
-  return viteHandler
-}
 
 function findOptionsPlugin(config: UserConfig): ExecutableOptionsPlugin {
   const plugin = config.plugins?.find((candidate) => {

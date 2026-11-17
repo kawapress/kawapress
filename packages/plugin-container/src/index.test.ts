@@ -1,5 +1,4 @@
-import type { GeneratorPluginAPI, SiteConfig } from 'kawapress'
-import type { MarkdownExit } from 'markdown-exit'
+import { setupGeneratorPlugins } from 'kawapress/generator'
 import { createMarkdownExit } from 'markdown-exit'
 import { describe, expect, it } from 'vitest'
 import {
@@ -109,15 +108,15 @@ Content
         },
       },
     })
-    const handlers = await registerPlugin(plugin.setup)
-    await handlers.config({
+    const host = await setupGeneratorPlugins({
       locales: {
         root: { label: '简体中文', lang: 'zh-CN' },
         en: { label: 'English', lang: 'en' },
       },
+      plugins: [plugin],
     })
     const markdown = createMarkdownExit({ html: true })
-    await handlers.markdown(markdown)
+    await host.runMarkdown(markdown)
 
     expect({
       chinese: markdown.render('::: tip\n内容\n:::', { path: '/guide' }),
@@ -144,35 +143,3 @@ Content
     `)
   })
 })
-
-type Setup = (api: GeneratorPluginAPI) => void | Promise<void>
-
-async function registerPlugin(setup: Setup): Promise<{
-  config: (config: SiteConfig) => void | Promise<void>
-  markdown: (markdown: MarkdownExit) => void | Promise<void>
-}> {
-  let configHandler: ((config: SiteConfig) => void | Promise<void>) | undefined
-  let markdownHandler: ((markdown: MarkdownExit) => void | Promise<void>) | undefined
-
-  await setup({
-    config(handler) {
-      configHandler = handler
-    },
-    markdown(handler) {
-      markdownHandler = handler
-    },
-    pageData() {},
-    pageArtifact() {},
-    vite() {},
-    buildArtifacts() {},
-  })
-
-  if (!configHandler || !markdownHandler) {
-    throw new Error('Expected container plugin to register config and markdown handlers.')
-  }
-
-  return {
-    config: configHandler,
-    markdown: markdownHandler,
-  }
-}
