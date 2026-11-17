@@ -159,6 +159,8 @@ export default nagi({
 
 可选值是 `'auto'`（默认）、`'light'` 和 `'dark'`。它只决定读者第一次打开时的样子；读者用顶栏按钮切换后，浏览器会记住他的选择。
 
+读者的选择保存在 `localStorage` 的 `kawapress:appearance` 里，值是 `'light'` 或 `'dark'`。截图、无障碍扫描这类自动化脚本可以在页面加载前写入它，固定页面的外观。
+
 ## 添加 head 标签 {#add-head-tags}
 
 `head` 用来往每一页的 `<head>` 里加入标签。统计脚本、分享卡片要用的 Open Graph、站点验证都写在这里：

@@ -157,6 +157,8 @@ export default nagi({
 
 The values are `'auto'` (default), `'light'`, and `'dark'`. It only sets the look on a reader's first visit; once the reader switches with the button in the navigation bar, the browser remembers that choice.
 
+The reader's choice is stored in `localStorage` under `kawapress:appearance`, as `'light'` or `'dark'`. Automated screenshots and accessibility scans can write it before the page loads to fix the appearance.
+
 ## Add Head Tags {#add-head-tags}
 
 Use `head` to put tags into the `<head>` of every page. Analytics scripts, Open Graph cards for sharing, and site verification tags all go here:
