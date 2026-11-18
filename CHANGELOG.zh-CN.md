@@ -9,6 +9,7 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 ### 新增
 
 - **`kawapress dev` 支持 `--port` 与 `--strictPort`。** 用法与 Vite 一致：`kawapress dev --port 5172 --strictPort` 在 5172 端口启动，端口被占用时报错退出；不加 `--strictPort` 时，端口被占用会自动换到下一个空闲端口。命令行参数优先于站点配置中的 `vite.server.port` 与 `vite.server.strictPort`。
+- **客户端与 SSR 从不同文件加载同一个包时，`kawapress build` 会给出警告。** 自 Vite 6 起顶层 `resolve.conditions` 只作用于客户端，站点只在那里加上 `source` 一类条件时，服务端渲染的是工作区组件库的 `dist/`，浏览器却用 `src/` 去 hydration。警告会列出两端各自加载的文件，以及应写进 `ssr.resolve.conditions` 的条件；包通过 `browser` 条件或 `browser` 字段有意提供的浏览器构建不会被报告。
 
 ### 变更
 
