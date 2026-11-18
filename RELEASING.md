@@ -161,6 +161,7 @@ gh release create v2026-05-30-mermaid --title "0.2.1" --notes-file <正文文件
 
 ### 发失败了怎么办
 
+- **报 `is not yet reported as latest`**：npm 已经接受了发布，但还没对外报告新的 `latest`。脚本发完后会并发等待所有包的标签，最多 15 分钟，通常足够；超时就重跑失败的 job（`gh run rerun <run-id> --failed`），已发布的包会被识别为 `(resumed)`。
 - **中途失败（比如第 9 个包网络超时）**：直接重跑同一个工作流即可。脚本会先在 npm 上核对每个包，已经发好的、内容和本地 tarball 一致的就跳过（输出里会标 `(resumed)`），只补剩下的。**不要**改版本号重来。
 - **报 `missing from npm`**：有包在 npm 上还不存在，回到第一节第 3 步补。
 - **报 `already exists with different contents`**：这个版本号已经被别人（或自己手工）发过、且内容和这次打包不一样。这种情况下同一个版本号永远发不上去，只能换一个新版本号。
