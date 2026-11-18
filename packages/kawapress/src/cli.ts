@@ -2,6 +2,7 @@ import { performance } from 'node:perf_hooks'
 import process from 'node:process'
 import { defineCommand, runMain } from 'citty'
 import { version } from '../package.json'
+import { parsePort } from './cli/parse-port'
 import {
   ensureProductionNodeEnv,
   warnAboutReplacedNodeEnv,
@@ -9,13 +10,26 @@ import {
 
 const dev = defineCommand({
   meta: { name: 'dev', description: 'Start the dev server' },
-  async run() {
+  args: {
+    port: {
+      type: 'string',
+      description: 'Port to listen on (default: vite.server.port or 5173)',
+    },
+    strictPort: {
+      type: 'boolean',
+      description: 'Exit if the port is already in use instead of trying the next one',
+    },
+  },
+  async run({ args }) {
     const startedAt = performance.now()
     const [{ logDevServerReady }, { createDevServer }] = await Promise.all([
       import('./cli/dev-output'),
       import('./server/dev'),
     ])
-    const server = await createDevServer(process.cwd())
+    const server = await createDevServer(process.cwd(), {
+      port: args.port === undefined ? undefined : parsePort(args.port),
+      strictPort: args.strictPort,
+    })
     logDevServerReady({
       durationMs: performance.now() - startedAt,
       port: server.port,
@@ -63,15 +77,5 @@ export const main = defineCommand({
     preview,
   },
 })
-
-function parsePort(port: string): number {
-  const parsed = Number(port)
-  if (!Number.isInteger(parsed)) {
-    throw new TypeError(
-      `KawaPress: --port must be an integer, got ${JSON.stringify(port)}.`,
-    )
-  }
-  return parsed
-}
 
 runMain(main)

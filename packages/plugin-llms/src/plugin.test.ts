@@ -221,7 +221,7 @@ function request(
 ): Promise<TestResponse> {
   return new Promise((resolve, reject) => {
     const request = get({
-      host: '127.0.0.1',
+      host: 'localhost',
       port,
       path,
       headers: {
