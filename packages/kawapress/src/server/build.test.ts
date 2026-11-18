@@ -21,6 +21,12 @@ const DEVELOPMENT_ONLY_MARKERS = [
   '[Vue warn]',
 ]
 
+/**
+ * Start of the warning Vue prints for a text mismatch. It is only in the bundle
+ * when `__VUE_PROD_HYDRATION_MISMATCH_DETAILS__` is on.
+ */
+const HYDRATION_DETAILS_MARKER = 'Hydration text mismatch'
+
 /** A sentence only one page contains, so a chunk can be recognised by it. */
 const PAGE_MARKER = 'Only this page mentions the yellow submarine.'
 
@@ -117,10 +123,12 @@ async function createSite(config = CONFIG, moduleType: 'module' | 'commonjs' = '
   )
 }
 
-async function buildWithoutNodeEnv(): Promise<void> {
+async function buildWithoutNodeEnv(args: string[] = []): Promise<void> {
   const env: NodeJS.ProcessEnv = { ...process.env }
   delete env.NODE_ENV
-  await run(process.execPath, [kawapressBin, 'build'], {
+  // The repository E2E switch turns the same flag on; keep it out of these builds.
+  delete env.KAWAPRESS_E2E
+  await run(process.execPath, [kawapressBin, 'build', ...args], {
     cwd: siteDirectory,
     env,
   })
@@ -234,6 +242,25 @@ describe('buildSite', () => {
     // The component itself is still rendered, only its comment node is gone.
     expect(await readClientFile(await pageChunkOf('/guide/one')))
       .toContain('class:`probe`')
+  }, 300_000)
+
+  it('leaves hydration mismatch details out by default', async () => {
+    await createSite()
+    await buildWithoutNodeEnv()
+
+    const app = await readClientFile(await findClientFile('assets/app-'))
+    expect(app).toContain('Hydration completed but contains mismatches.')
+    expect(app).not.toContain(HYDRATION_DETAILS_MARKER)
+  }, 300_000)
+
+  it('keeps hydration mismatch details with --debug-hydration', async () => {
+    await createSite()
+    await buildWithoutNodeEnv(['--debug-hydration'])
+
+    const app = await readClientFile(await findClientFile('assets/app-'))
+    expect(app).toContain(HYDRATION_DETAILS_MARKER)
+    // Still a production build otherwise.
+    expect(app).not.toContain('__VUE_DEVTOOLS_KIT')
   }, 300_000)
 
   it('keeps page code out of the app chunk', async () => {

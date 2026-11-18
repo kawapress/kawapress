@@ -39,14 +39,21 @@ const dev = defineCommand({
 
 const build = defineCommand({
   meta: { name: 'build', description: 'Build the static site' },
-  async run() {
+  args: {
+    'debug-hydration': {
+      type: 'boolean',
+      description: 'Keep Vue\'s hydration mismatch details in the production build',
+      default: false,
+    },
+  },
+  async run({ args }) {
     // Pinned before `./server/build` is imported: that import chain reaches
     // `@vue/compiler-core` through Vite's Vue plugin, and Vue picks its
     // development or production compiler the moment the module is required.
     // A later fix-up could no longer strip template comments from the output.
     warnAboutReplacedNodeEnv(ensureProductionNodeEnv(process.env))
     const { buildSite } = await import('./server/build')
-    await buildSite(process.cwd())
+    await buildSite(process.cwd(), { debugHydration: args['debug-hydration'] })
   },
 })
 

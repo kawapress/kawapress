@@ -153,3 +153,22 @@ Hydration requires the server HTML and the browser's first render to produce the
 Start with a stable value, then read browser state from `onMounted()`. Data needed by both environments should come from the same pageData, site configuration, or route information.
 
 KawaPress also performs real SSR in development. Compatibility errors usually appear while developing instead of waiting until a production build.
+
+## Debug Hydration Mismatches {#debug-hydration-mismatches}
+
+The dev server prints every mismatching node and what each side rendered in the browser console. A production build drops those details to stay small and prints a single line:
+
+```text
+Hydration completed but contains mismatches.
+```
+
+For a mismatch that only shows up in a production build, build once with `--debug-hydration` and preview it. The flag turns on Vue's `__VUE_PROD_HYDRATION_MISMATCH_DETAILS__` for that build, and the console lists the mismatching nodes again:
+
+```bash
+kawapress build --debug-hydration
+kawapress preview
+```
+
+The flag makes the client code larger. Once you have found the problem, rebuild without it before deploying.
+
+Mismatches that only appear in a production build and cluster around one dependency's components usually mean the two sides loaded different builds of that dependency, for example because `resolve.conditions` was configured for the client only; see [Load the Same Dependency on Both Sides](#load-the-same-dependency-on-both-sides).
