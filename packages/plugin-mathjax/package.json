@@ -1,7 +1,7 @@
 {
   "name": "@kawapress/plugin-mathjax",
   "type": "module",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Build-time MathJax rendering for KawaPress",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",

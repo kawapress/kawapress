@@ -6,6 +6,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-11-18
+
 ### 新增
 
 - **`kawapress dev` 支持 `--port` 与 `--strictPort`。** 用法与 Vite 一致：`kawapress dev --port 5172 --strictPort` 在 5172 端口启动，端口被占用时报错退出；不加 `--strictPort` 时，端口被占用会自动换到下一个空闲端口。命令行参数优先于站点配置中的 `vite.server.port` 与 `vite.server.strictPort`。
@@ -278,7 +280,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.8.2...HEAD
+[0.8.2]: https://github.com/kawapress/kawapress/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/kawapress/kawapress/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/kawapress/kawapress/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/kawapress/kawapress/compare/v0.7.0...v0.7.1
