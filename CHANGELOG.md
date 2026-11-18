@@ -6,6 +6,10 @@ The 21 public packages are released together and share one version number. [简�
 
 ## [Unreleased]
 
+### Fixed
+
+- **nagi's home hero title keeps CJK words together.** Chinese and Japanese titles break only at spaces and at newlines written in `hero.text`, instead of between any two characters, so a word like 驱动的 no longer splits across lines. A run too wide for the column still breaks.
+
 ## [0.8.2] - 2026-11-18
 
 ### Added
