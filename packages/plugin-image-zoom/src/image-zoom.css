@@ -3,6 +3,9 @@
     /* Size limits of the enlarged image, private to this plugin. */
     --kawa-image-zoom-max-width: min(92vw, 1600px);
     --kawa-image-zoom-max-height: 92vh;
+    /* A dark scrim in both color schemes, so the image stands out on any page. */
+    --kawa-image-zoom-backdrop: rgb(0 0 0 / 0.82);
+    --kawa-image-zoom-caption: rgb(255 255 255 / 0.86);
 
     max-width: none;
     max-height: none;
@@ -17,7 +20,15 @@
   }
 
   .kawa-image-zoom::backdrop {
-    background: color-mix(in oklab, var(--kawa-c-bg) 80%, transparent);
+    background: var(--kawa-image-zoom-backdrop, rgb(0 0 0 / 0.82));
+    opacity: 1;
+    transition: opacity 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @starting-style {
+    .kawa-image-zoom[open]::backdrop {
+      opacity: 0;
+    }
   }
 
   .kawa-image-zoom[open] {
@@ -52,7 +63,7 @@
 
   .kawa-image-zoom__caption {
     max-width: var(--kawa-image-zoom-max-width);
-    color: var(--kawa-c-text-2);
+    color: var(--kawa-image-zoom-caption);
     font-size: 0.875rem;
     text-align: center;
   }
@@ -67,7 +78,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .kawa-image-zoom {
+    .kawa-image-zoom,
+    .kawa-image-zoom::backdrop {
       transition: none;
     }
   }

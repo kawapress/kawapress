@@ -6,6 +6,10 @@ The 21 public packages are released together and share one version number. [简�
 
 ## [Unreleased]
 
+### Changed
+
+- **The image zoom backdrop is dark in both color schemes.** It was the page background at 80%, which left a light haze in light mode; it is now black at 82% and fades in with the image. The caption is light so it stays readable on the dark backdrop. Transparent images show their transparency on it.
+
 ### Fixed
 
 - **nagi's home hero title keeps CJK words together.** Chinese and Japanese titles break only at spaces and at newlines written in `hero.text`, instead of between any two characters, so a word like 驱动的 no longer splits across lines. A run too wide for the column still breaks.
