@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { classifyPackage, findMissingPackages, isSkippedState, packageExistsOnNpm } from './registry.mjs'
+import { classifyPackage, findMissingPackages, isSkippedState, packageExistsOnNpm, waitForDistTag } from './registry.mjs'
 
 /** Registry stub: `versionByName` maps a package name to its published version, or null. */
 function createRunner(versionByName: Record<string, string | null>) {
@@ -94,5 +94,27 @@ describe('classifyPackage', () => {
   it('only skips the published state', () => {
     for (const state of ['available', 'identical', 'pending'])
       expect(isSkippedState(state)).toBe(false)
+  })
+})
+
+describe('waitForDistTag', () => {
+  const packageInfo = { name: 'kawapress', version: '0.8.2' }
+
+  it('keeps polling until the registry reports the new version', async () => {
+    const answers = ['0.8.1', '0.8.1', '0.8.2']
+    let reads = 0
+    await waitForDistTag(packageInfo, 'latest', 'https://registry.npmjs.org/', {
+      intervalMs: 1,
+      readTag: async () => answers[reads++] ?? null,
+    })
+    expect(reads).toBe(3)
+  })
+
+  it('gives up after the timeout and says how to resume', async () => {
+    await expect(waitForDistTag(packageInfo, 'latest', 'https://registry.npmjs.org/', {
+      timeoutMs: 20,
+      intervalMs: 5,
+      readTag: async () => '0.8.1',
+    })).rejects.toThrow('kawapress@0.8.2 is not yet reported as latest by the registry after 0 minutes (currently 0.8.1)')
   })
 })

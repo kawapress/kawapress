@@ -111,21 +111,32 @@ export async function getPublishedTag(name, tag, registry) {
   return typeof tags?.[tag] === 'string' ? tags[tag] : null
 }
 
-const DIST_TAG_WAIT_ATTEMPTS = 36
-const DIST_TAG_WAIT_INTERVAL_MS = 5_000
+/**
+ * How long a release waits for npm to report a new dist-tag. npm accepts the
+ * publish at once but often takes several minutes to serve the new `latest`;
+ * 0.8.0, 0.8.1 and 0.8.2 each ran past the earlier three-minute wait.
+ */
+export const DIST_TAG_WAIT_TIMEOUT_MS = 15 * 60_000
+const DIST_TAG_WAIT_INTERVAL_MS = 10_000
 
-export async function waitForDistTag(packageInfo, tag, registry) {
+export async function waitForDistTag(packageInfo, tag, registry, {
+  timeoutMs = DIST_TAG_WAIT_TIMEOUT_MS,
+  intervalMs = DIST_TAG_WAIT_INTERVAL_MS,
+  readTag = getPublishedTag,
+} = {}) {
+  const deadline = Date.now() + timeoutMs
   let current = null
-  for (let attempt = 0; attempt < DIST_TAG_WAIT_ATTEMPTS; attempt += 1) {
-    current = await getPublishedTag(packageInfo.name, tag, registry)
+  while (true) {
+    current = await readTag(packageInfo.name, tag, registry)
     if (current === packageInfo.version)
       return
-    if (attempt < DIST_TAG_WAIT_ATTEMPTS - 1)
-      await delay(DIST_TAG_WAIT_INTERVAL_MS)
+    if (Date.now() + intervalMs > deadline)
+      break
+    await delay(intervalMs)
   }
 
   throw new Error(
-    `${packageInfo.name}@${packageInfo.version} is not yet reported as ${tag} by the registry (currently ${current}). The registry is still propagating; rerun the same command to resume.`,
+    `${packageInfo.name}@${packageInfo.version} is not yet reported as ${tag} by the registry after ${Math.round(timeoutMs / 60_000)} minutes (currently ${current}). The registry is still propagating; rerun the same command to resume.`,
   )
 }
 
