@@ -24,8 +24,9 @@ export async function createViteServer(
   siteConfig: GeneratorSiteConfig,
   options: CreateViteServerOptions = {},
 ): Promise<KawapressViteServer> {
+  const baseConfig = createBaseViteConfig(root, siteConfig)
   const viteConfig: InlineConfig = {
-    ...createBaseViteConfig(root, siteConfig),
+    ...baseConfig,
     environments: {
       ssr: {
         consumer: 'server',
@@ -35,7 +36,9 @@ export async function createViteServer(
       },
     },
     server: {
-      hmr: options.hmr,
+      // Keeps the site's own `vite.server` options (port, proxy, fs, ...).
+      ...baseConfig.server,
+      hmr: options.hmr ?? baseConfig.server?.hmr,
       middlewareMode: options.httpServer
         ? { server: options.httpServer }
         : true,

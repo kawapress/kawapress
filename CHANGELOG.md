@@ -6,6 +6,14 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ## [Unreleased]
 
+### Added
+
+- **`kawapress dev` accepts `--port` and `--strictPort`.** They work like Vite's: `kawapress dev --port 5172 --strictPort` serves on 5172 and exits with an error when that port is taken. Without `--strictPort`, a taken port moves on to the next free one. The flags override `vite.server.port` and `vite.server.strictPort` from the site config.
+
+### Fixed
+
+- **`vite.server` options in the site config reach the dev server.** `port`, `strictPort`, `proxy`, `fs` and the rest were dropped before; the dev server now keeps them.
+
 ### Changed
 
 - **nagi's outline expand button uses the Clarity tree-view icon.**

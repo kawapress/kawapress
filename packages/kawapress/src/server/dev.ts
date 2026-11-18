@@ -1,12 +1,14 @@
-import type { AddressInfo } from 'node:net'
 import { createServer as createHttpServer } from 'node:http'
+import { consola } from 'consola'
 import { createReloadableDevEnvironment } from './dev-environment'
-
-const DEFAULT_PORT = 5173
+import { listen } from './listen'
 
 export interface CreateDevServerOptions {
   hmr?: boolean
+  /** Overrides `vite.server.port` from the site config. */
   port?: number
+  /** Overrides `vite.server.strictPort` from the site config. */
+  strictPort?: boolean
 }
 
 export interface KawapressDevServer {
@@ -24,16 +26,21 @@ export async function createDevServer(
   })
   server.on('request', environment.dispatchRequest)
 
-  await new Promise<void>((resolve, reject) => {
-    const onError = (error: Error): void => reject(error)
-    server.once('error', onError)
-    server.listen(options.port ?? DEFAULT_PORT, () => {
-      server.off('error', onError)
-      resolve()
+  let port: number
+  try {
+    port = await listen(server, {
+      port: options.port ?? environment.serverOptions.port,
+      strictPort: options.strictPort ?? environment.serverOptions.strictPort,
+      command: 'kawapress dev',
+      onPortInUse: port => consola.info(
+        `KawaPress: port ${port} is in use, trying another one...`,
+      ),
     })
-  })
-
-  const port = (server.address() as AddressInfo).port
+  }
+  catch (error) {
+    await environment.close()
+    throw error
+  }
 
   return {
     port,
