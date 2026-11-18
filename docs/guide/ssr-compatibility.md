@@ -114,6 +114,33 @@ export default defineRuntimePlugin({
 
 这种方式适合不会改变首次渲染 HTML 的浏览器行为。如果插件会改变组件树，请改用上一节的客户端组件边界，避免服务端与浏览器输出不同。
 
+## 让两端加载同一份依赖 {#load-the-same-dependency-on-both-sides}
+
+服务端与浏览器必须运行同一份组件代码。常见的陷阱是只给客户端配置了导出条件：自 Vite 6 起，顶层的 `resolve.conditions` 只作用于浏览器构建，服务端构建读取 `ssr.resolve.conditions`。下面的配置让浏览器打包组件库的 `src/`，服务端却仍然打包预构建的 `dist/`，两份代码稍有差异就会造成 hydration 不匹配：
+
+```ts
+import { defineConfig } from 'kawapress'
+
+export default defineConfig({
+  vite: {
+    resolve: { conditions: ['source', 'module', 'browser', 'development|production'] },
+  },
+})
+```
+
+把同样的条件也交给服务端：
+
+```ts
+export default defineConfig({
+  vite: {
+    resolve: { conditions: ['source', 'module', 'browser', 'development|production'] },
+    ssr: { resolve: { conditions: ['source'] } },
+  },
+})
+```
+
+`kawapress build` 会检查两端都打包的依赖。同一个导入在两端加载了不同的文件时，构建会给出警告，列出两端各自加载的文件；差异能由导出条件解释时，还会给出应补上的条件。包通过 `browser` 导出条件或 `browser` 字段有意提供的浏览器构建不会触发警告。
+
 ## 保持首次渲染一致 {#keep-the-first-render-stable}
 
 hydration 要求服务端 HTML 与浏览器第一次渲染得到相同的节点结构和文字。下面这些值不适合直接参与首次渲染：
