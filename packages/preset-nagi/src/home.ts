@@ -22,7 +22,9 @@ export interface NagiHomeAction {
 
 export interface NagiHomeHero {
   name?: string
+  /** A newline in the text starts a new line, so a long title breaks where the author wants. */
   text?: string
+  /** Newlines start new lines, as in `text`. */
   tagline?: string
   image?: NagiHomeImage
   actions?: NagiHomeAction[]

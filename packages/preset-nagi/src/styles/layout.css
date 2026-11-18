@@ -675,10 +675,17 @@
   color: var(--nagi-c-brand-1);
 }
 
+/*
+ * CJK text may break between any two characters, which splits a title like
+ * "驱动的" across lines. The title breaks only at spaces and the author's
+ * newlines, and falls back to any character when a run alone is too wide.
+ */
 .nagi-home-hero__text {
   max-width: 12em;
   color: var(--nagi-c-text-1);
   white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .nagi-home-hero__tagline {
