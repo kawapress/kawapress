@@ -6,6 +6,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+## [0.8.3] - 2026-11-19
+
 ### 变更
 
 - **图片缩放的遮罩在浅色和深色模式下都是深色。**此前遮罩是 80% 的页面背景色，浅色模式下只是一层白雾；现在是 82% 不透明的黑色，并随图片一起淡入。图注改为浅色，在深色遮罩上也看得清。透明背景的图片会如实显示透明效果。
@@ -288,7 +290,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.8.2...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.8.3...HEAD
+[0.8.3]: https://github.com/kawapress/kawapress/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/kawapress/kawapress/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/kawapress/kawapress/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/kawapress/kawapress/compare/v0.7.1...v0.8.0
