@@ -137,7 +137,7 @@ describe('kawapress dev CLI', () => {
     const port = await freePort()
     await createSite()
     const dev = runDev(['--port', String(port), '--strictPort'])
-    await expect.poll(dev.output, { timeout: 30_000 })
+    await expect.poll(dev.output, { timeout: 20_000 })
       .toContain(`http://localhost:${port}/`)
     const response = await fetch(`http://localhost:${port}/`)
     expect(response.status).toBe(200)

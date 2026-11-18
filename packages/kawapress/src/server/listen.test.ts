@@ -2,7 +2,7 @@ import type { Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { createServer } from 'node:http'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { listen } from './listen'
+import { listen, resolveListenHost } from './listen'
 
 const servers: Server[] = []
 
@@ -18,9 +18,9 @@ function track(server: Server): Server {
 }
 
 /** Holds a free port so the server under test finds it taken. */
-async function occupyPort(): Promise<number> {
+async function occupyPort(host?: string): Promise<number> {
   const blocker = track(createServer())
-  await new Promise<void>(resolve => blocker.listen(0, resolve))
+  await new Promise<void>(resolve => blocker.listen(0, host, resolve))
   return (blocker.address() as AddressInfo).port
 }
 
@@ -57,5 +57,25 @@ describe('listen', () => {
     })
     expect(port).toBeGreaterThan(taken)
     expect(onPortInUse).toHaveBeenCalledWith(taken)
+  })
+
+  it('notices a port another server holds on localhost', async () => {
+    const taken = await occupyPort('localhost')
+    const server = track(createServer())
+    const port = await listen(server, {
+      port: taken,
+      strictPort: false,
+      command: 'kawapress dev',
+    })
+    expect(port).toBeGreaterThan(taken)
+  })
+})
+
+describe('resolveListenHost', () => {
+  it('maps vite.server.host like Vite', () => {
+    expect(resolveListenHost(undefined)).toBe('localhost')
+    expect(resolveListenHost(false)).toBe('localhost')
+    expect(resolveListenHost(true)).toBeUndefined()
+    expect(resolveListenHost('0.0.0.0')).toBe('0.0.0.0')
   })
 })

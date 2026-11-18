@@ -286,7 +286,7 @@ If port 5173 is already taken, the dev server moves on to the next free port, so
 kawapress dev --port 5172 --strictPort
 ```
 
-`vite.server.port` and `vite.server.strictPort` in your site config work too; the command-line flags take precedence.
+`vite.server.port` and `vite.server.strictPort` in your site config work too; the command-line flags take precedence. The dev server listens on `localhost` only; set `vite.server.host: true` to open it from another device on your network.
 
 Markdown changes are applied through HMR. Initial requests still run through real server-side rendering, so development and production builds share the same SSR semantics.
 

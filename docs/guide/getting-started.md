@@ -288,7 +288,7 @@ yarn docs:dev
 kawapress dev --port 5172 --strictPort
 ```
 
-站点配置里的 `vite.server.port` 与 `vite.server.strictPort` 也同样生效，命令行参数优先。
+站点配置里的 `vite.server.port` 与 `vite.server.strictPort` 也同样生效，命令行参数优先。开发服务器只监听 `localhost`，需要从局域网内其他设备访问时，设置 `vite.server.host: true`。
 
 试着修改任意一个 Markdown 文件，页面会通过 HMR 及时更新。首次访问仍会经过真实的服务端渲染，因此开发时看到的页面与最终构建使用相同的 SSR 语义。
 

@@ -29,6 +29,7 @@ export async function createDevServer(
   let port: number
   try {
     port = await listen(server, {
+      host: environment.serverOptions.host,
       port: options.port ?? environment.serverOptions.port,
       strictPort: options.strictPort ?? environment.serverOptions.strictPort,
       command: 'kawapress dev',

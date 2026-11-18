@@ -10,13 +10,15 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 - **`kawapress dev` accepts `--port` and `--strictPort`.** They work like Vite's: `kawapress dev --port 5172 --strictPort` serves on 5172 and exits with an error when that port is taken. Without `--strictPort`, a taken port moves on to the next free one. The flags override `vite.server.port` and `vite.server.strictPort` from the site config.
 
-### Fixed
-
-- **`vite.server` options in the site config reach the dev server.** `port`, `strictPort`, `proxy`, `fs` and the rest were dropped before; the dev server now keeps them.
-
 ### Changed
 
+- **`kawapress dev` listens on `localhost` by default**, like Vite. Before, it listened on every network address. *Site authors* who open the dev site from another device: set `vite.server.host: true`.
 - **nagi's outline expand button uses the Clarity tree-view icon.**
+
+### Fixed
+
+- **`vite.server` options in the site config reach the dev server.** `host`, `port`, `strictPort`, `proxy` and `fs` were dropped before; the dev server now applies them. `https` is still not supported.
+- **A second `kawapress dev` keeps hot reload.** The HMR WebSocket now shares the dev server's port instead of opening its own on 24678, which a second instance could not get.
 
 ## [0.8.1] - 2026-11-18
 

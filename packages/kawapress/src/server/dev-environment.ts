@@ -25,7 +25,7 @@ export interface ReloadableDevEnvironment {
    * after the site's `vite` option and plugin `vite()` hooks. A config reload
    * keeps the HTTP server listening where it already is.
    */
-  serverOptions: { port: number, strictPort: boolean }
+  serverOptions: { host: string | boolean | undefined, port: number, strictPort: boolean }
 }
 
 export interface ReloadableDevEnvironmentOptions {
@@ -131,10 +131,10 @@ export async function createReloadableDevEnvironment(
     }
   })
 
-  const { port, strictPort } = active.vite.config.server
+  const { host, port, strictPort } = active.vite.config.server
 
   return {
-    serverOptions: { port, strictPort },
+    serverOptions: { host, port, strictPort },
     dispatchRequest(req, res) {
       const current = active
       if (!current) {

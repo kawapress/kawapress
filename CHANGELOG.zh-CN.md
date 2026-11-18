@@ -10,13 +10,15 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 - **`kawapress dev` 支持 `--port` 与 `--strictPort`。** 用法与 Vite 一致：`kawapress dev --port 5172 --strictPort` 在 5172 端口启动，端口被占用时报错退出；不加 `--strictPort` 时，端口被占用会自动换到下一个空闲端口。命令行参数优先于站点配置中的 `vite.server.port` 与 `vite.server.strictPort`。
 
-### 修复
-
-- **站点配置里的 `vite.server` 选项会传给开发服务器。** 此前 `port`、`strictPort`、`proxy`、`fs` 等选项都被丢弃，现在开发服务器会保留它们。
-
 ### 变更
 
+- **`kawapress dev` 默认只监听 `localhost`**，与 Vite 一致。此前监听所有网络地址。*站点作者*需要从其他设备访问开发站点时，设置 `vite.server.host: true`。
 - **nagi 展开目录栏的按钮改用 Clarity 的树状视图图标。**
+
+### 修复
+
+- **站点配置里的 `vite.server` 选项会传给开发服务器。** 此前 `host`、`port`、`strictPort`、`proxy`、`fs` 都被丢弃，现在开发服务器会使用它们。`https` 仍不支持。
+- **同时启动第二个 `kawapress dev` 时热更新仍然可用。** HMR 的 WebSocket 改为与开发服务器共用端口，不再单独占用 24678，此前第二个实例拿不到这个端口。
 
 ## [0.8.1] - 2026-11-18
 
