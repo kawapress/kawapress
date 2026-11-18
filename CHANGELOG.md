@@ -8,12 +8,19 @@ The 21 public packages are released together and share one version number. [ç®€ä
 
 ### Added
 
+- **`kawapress dev` accepts `--port` and `--strictPort`.** They work like Vite's: `kawapress dev --port 5172 --strictPort` serves on 5172 and exits with an error when that port is taken. Without `--strictPort`, a taken port moves on to the next free one. The flags override `vite.server.port` and `vite.server.strictPort` from the site config.
 - **`kawapress build` warns when the client and SSR load a package from different files.** Since Vite 6 the top-level `resolve.conditions` reaches the client only, so a site that adds a condition such as `source` there renders a workspace library's `dist/` on the server and hydrates it with its `src/` in the browser. The warning lists the files each side loaded and the conditions to add to `ssr.resolve.conditions`; a browser build a package ships on purpose, through the `browser` condition or the `browser` field, is not reported.
 - **`kawapress build --debug-hydration` keeps Vue's hydration mismatch details.** A production build otherwise only logs `Hydration completed but contains mismatches.`; with the flag, `kawapress preview` shows which node differs. Rebuild without it before deploying.
 
 ### Changed
 
+- **`kawapress dev` listens on `localhost` by default**, like Vite. Before, it listened on every network address. *Site authors* who open the dev site from another device: set `vite.server.host: true`.
 - **nagi's outline expand button uses the Clarity tree-view icon.**
+
+### Fixed
+
+- **`vite.server` options in the site config reach the dev server.** `host`, `port`, `strictPort`, `proxy` and `fs` were dropped before; the dev server now applies them. `https` is still not supported.
+- **A second `kawapress dev` keeps hot reload.** The HMR WebSocket now shares the dev server's port instead of opening its own on 24678, which a second instance could not get.
 
 ## [0.8.1] - 2026-11-18
 

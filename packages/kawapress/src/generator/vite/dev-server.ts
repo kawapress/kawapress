@@ -3,6 +3,7 @@ import type {
   InlineConfig,
   RunnableDevEnvironment,
   ViteDevServer,
+  WsOptions,
 } from 'vite'
 import type { GeneratorSiteConfig } from '../config'
 import { createServer, isRunnableDevEnvironment } from 'vite'
@@ -24,8 +25,9 @@ export async function createViteServer(
   siteConfig: GeneratorSiteConfig,
   options: CreateViteServerOptions = {},
 ): Promise<KawapressViteServer> {
+  const baseConfig = createBaseViteConfig(root, siteConfig)
   const viteConfig: InlineConfig = {
-    ...createBaseViteConfig(root, siteConfig),
+    ...baseConfig,
     environments: {
       ssr: {
         consumer: 'server',
@@ -35,10 +37,13 @@ export async function createViteServer(
       },
     },
     server: {
-      hmr: options.hmr,
+      // Keeps the site's own `vite.server` options (port, proxy, fs, ...).
+      ...baseConfig.server,
+      hmr: options.hmr ?? baseConfig.server?.hmr,
       middlewareMode: options.httpServer
         ? { server: options.httpServer }
         : true,
+      ws: resolveWsOptions(baseConfig.server?.ws, options.httpServer),
     },
   }
   await siteConfig.pluginRunner.runVite(viteConfig)
@@ -50,4 +55,19 @@ export async function createViteServer(
   }
 
   return { vite, serverEnv }
+}
+
+/**
+ * In middleware mode Vite opens its own WebSocket server on 24678, so a second
+ * `kawapress dev` would serve pages without HMR. Share the HTTP server instead,
+ * unless the site configured its own WebSocket server, port or turned it off.
+ */
+function resolveWsOptions(
+  ws: WsOptions | false | undefined,
+  httpServer: Server | undefined,
+): WsOptions | false | undefined {
+  if (!httpServer || ws === false || ws?.server || ws?.port) {
+    return ws
+  }
+  return { ...ws, server: httpServer }
 }

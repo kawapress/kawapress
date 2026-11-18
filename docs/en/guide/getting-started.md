@@ -280,6 +280,14 @@ yarn docs:dev
 
 The site is now available at `http://localhost:5173`. Open it in a browser and follow the link from the home page to the guide.
 
+If port 5173 is already taken, the dev server moves on to the next free port, so check the terminal for the actual address. To pick a port yourself, pass `--port`. Add `--strictPort` to stop with an error when that port is taken instead of trying another one:
+
+```sh
+kawapress dev --port 5172 --strictPort
+```
+
+`vite.server.port` and `vite.server.strictPort` in your site config work too; the command-line flags take precedence. The dev server listens on `localhost` only; set `vite.server.host: true` to open it from another device on your network.
+
 Markdown changes are applied through HMR. Initial requests still run through real server-side rendering, so development and production builds share the same SSR semantics.
 
 ## Build and Preview {#build-and-preview}

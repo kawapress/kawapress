@@ -20,6 +20,12 @@ const RESTART_DELAY = 50
 export interface ReloadableDevEnvironment {
   close: () => Promise<void>
   dispatchRequest: (req: IncomingMessage, res: ServerResponse) => void
+  /**
+   * `server.port` and `server.strictPort` from the first resolved Vite config,
+   * after the site's `vite` option and plugin `vite()` hooks. A config reload
+   * keeps the HTTP server listening where it already is.
+   */
+  serverOptions: { host: string | boolean | undefined, port: number, strictPort: boolean }
 }
 
 export interface ReloadableDevEnvironmentOptions {
@@ -125,7 +131,10 @@ export async function createReloadableDevEnvironment(
     }
   })
 
+  const { host, port, strictPort } = active.vite.config.server
+
   return {
+    serverOptions: { host, port, strictPort },
     dispatchRequest(req, res) {
       const current = active
       if (!current) {

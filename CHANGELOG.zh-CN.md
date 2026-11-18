@@ -8,12 +8,19 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ### 新增
 
+- **`kawapress dev` 支持 `--port` 与 `--strictPort`。** 用法与 Vite 一致：`kawapress dev --port 5172 --strictPort` 在 5172 端口启动，端口被占用时报错退出；不加 `--strictPort` 时，端口被占用会自动换到下一个空闲端口。命令行参数优先于站点配置中的 `vite.server.port` 与 `vite.server.strictPort`。
 - **客户端与 SSR 从不同文件加载同一个包时，`kawapress build` 会给出警告。** 自 Vite 6 起顶层 `resolve.conditions` 只作用于客户端，站点只在那里加上 `source` 一类条件时，服务端渲染的是工作区组件库的 `dist/`，浏览器却用 `src/` 去 hydration。警告会列出两端各自加载的文件，以及应写进 `ssr.resolve.conditions` 的条件；包通过 `browser` 条件或 `browser` 字段有意提供的浏览器构建不会被报告。
 - **`kawapress build --debug-hydration` 保留 Vue 的 hydration 不匹配细节。** 生产构建原本只打印 `Hydration completed but contains mismatches.`；加上这个参数后，`kawapress preview` 会指出具体哪个节点不一致。部署前请去掉参数重新构建。
 
 ### 变更
 
+- **`kawapress dev` 默认只监听 `localhost`**，与 Vite 一致。此前监听所有网络地址。*站点作者*需要从其他设备访问开发站点时，设置 `vite.server.host: true`。
 - **nagi 展开目录栏的按钮改用 Clarity 的树状视图图标。**
+
+### 修复
+
+- **站点配置里的 `vite.server` 选项会传给开发服务器。** 此前 `host`、`port`、`strictPort`、`proxy`、`fs` 都被丢弃，现在开发服务器会使用它们。`https` 仍不支持。
+- **同时启动第二个 `kawapress dev` 时热更新仍然可用。** HMR 的 WebSocket 改为与开发服务器共用端口，不再单独占用 24678，此前第二个实例拿不到这个端口。
 
 ## [0.8.1] - 2026-11-18
 

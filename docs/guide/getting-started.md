@@ -282,6 +282,14 @@ yarn docs:dev
 
 开发服务器会启动在 `http://localhost:5173`。打开这个地址，你应该已经可以看到首页，并从首页进入刚刚写好的文档。
 
+5173 端口被占用时，开发服务器会自动换到下一个空闲端口，实际地址以终端输出为准。想固定端口，可以用 `--port` 指定；再加上 `--strictPort`，端口被占用时会直接报错退出，而不是换一个：
+
+```sh
+kawapress dev --port 5172 --strictPort
+```
+
+站点配置里的 `vite.server.port` 与 `vite.server.strictPort` 也同样生效，命令行参数优先。开发服务器只监听 `localhost`，需要从局域网内其他设备访问时，设置 `vite.server.host: true`。
+
 试着修改任意一个 Markdown 文件，页面会通过 HMR 及时更新。首次访问仍会经过真实的服务端渲染，因此开发时看到的页面与最终构建使用相同的 SSR 语义。
 
 ## 构建与预览 {#build-and-preview}
