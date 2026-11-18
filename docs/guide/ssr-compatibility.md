@@ -139,7 +139,7 @@ export default defineConfig({
 })
 ```
 
-`kawapress build` 会检查两端都打包的依赖。同一个导入在两端命中不同的导出条件时，构建会给出警告，列出两端各自加载的文件，并提示应该写进 `ssr.resolve.conditions` 的条件。包通过 `browser` 条件有意提供的浏览器构建不会触发警告。
+`kawapress build` 会检查两端都打包的依赖。同一个导入在两端加载了不同的文件时，构建会给出警告，列出两端各自加载的文件；差异能由导出条件解释时，还会给出应补上的条件。包通过 `browser` 导出条件或 `browser` 字段有意提供的浏览器构建不会触发警告。
 
 ## 保持首次渲染一致 {#keep-the-first-render-stable}
 

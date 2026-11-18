@@ -79,6 +79,8 @@ export function createResolutionCheck(): ResolutionCheck {
     name: 'kawapress:resolution-check',
     resolveId: {
       order: 'pre',
+      // Skips relative, absolute, virtual and `#` imports without calling into JS.
+      filter: { id: /^[^./\0#]/ },
       async handler(source, importer, options) {
         const environment = this.environment.name
         if (!isComparedEnvironment(environment)) {
@@ -144,20 +146,41 @@ function compareRecord(record: ImportRecord): (ImportMismatch & { packageName: s
       ssr: { file: ssrFile, conditions: undefined },
     }
   }
-  const client = resolvedSide(manifest.exports, record.subpath, clientFile)
-  const ssr = resolvedSide(manifest.exports, record.subpath, ssrFile)
-  if (
-    client.conditions
-    && ssr.conditions
-    && sameConditions(customConditions(client.conditions), customConditions(ssr.conditions))
-  ) {
+  // Vite applies an object `browser` field on top of what `exports` resolved,
+  // so a client file that field maps to is the package's own browser build.
+  if (isBrowserFieldTarget(manifest.browser, clientFile)) {
     return undefined
   }
-  return { packageName: record.packageName, specifier: record.specifier, client, ssr }
+  const clientChains = findExportConditions(manifest.exports, record.subpath, clientFile)
+  const ssrChains = findExportConditions(manifest.exports, record.subpath, ssrFile)
+  const intended = clientChains.some(clientChain => ssrChains.some(ssrChain =>
+    sameConditions(customConditions(clientChain), customConditions(ssrChain)),
+  ))
+  if (intended) {
+    return undefined
+  }
+  return {
+    packageName: record.packageName,
+    specifier: record.specifier,
+    client: { file: clientFile, conditions: clientChains[0] },
+    ssr: { file: ssrFile, conditions: ssrChains[0] },
+  }
 }
 
-function resolvedSide(exportsField: unknown, subpath: string, file: string): ResolvedSide {
-  return { file, conditions: findExportConditions(exportsField, subpath, file)[0] }
+function isBrowserFieldTarget(browserField: unknown, file: string): boolean {
+  if (typeof browserField === 'string') {
+    return normalizeFile(browserField) === file
+  }
+  if (typeof browserField !== 'object' || browserField === null) {
+    return false
+  }
+  return Object.values(browserField).some(target =>
+    typeof target === 'string' && normalizeFile(target) === file,
+  )
+}
+
+function normalizeFile(path: string): string {
+  return path.replace(/^\.\//, '')
 }
 
 function groupByPackage(
@@ -204,10 +227,12 @@ export function formatResolutionWarning(mismatches: PackageResolutionMismatch[])
 function describeFix(mismatches: PackageResolutionMismatch[]): string[] {
   const clientOnly = new Set<string>()
   const ssrOnly = new Set<string>()
+  let unexplained = false
   for (const { imports } of mismatches) {
     for (const { client, ssr } of imports) {
       const clientConditions = customConditions(client.conditions ?? [])
       const ssrConditions = customConditions(ssr.conditions ?? [])
+      const before = clientOnly.size + ssrOnly.size
       for (const condition of clientConditions) {
         if (!ssrConditions.includes(condition)) {
           clientOnly.add(condition)
@@ -218,22 +243,27 @@ function describeFix(mismatches: PackageResolutionMismatch[]): string[] {
           ssrOnly.add(condition)
         }
       }
+      if (!client.conditions || !ssr.conditions || clientOnly.size + ssrOnly.size === before) {
+        unexplained = true
+      }
     }
   }
   const lines = [
     'Since Vite 6, `resolve.conditions` applies to the client only; the SSR build reads `ssr.resolve.conditions`. '
-    + 'Give both the same conditions in the `vite` option of the KawaPress config',
+    + 'Give both the same conditions in the `vite` option of the KawaPress config:',
   ]
   if (clientOnly.size > 0) {
-    lines[0] += ':'
     lines.push(`  vite: { ssr: { resolve: { conditions: [${[...clientOnly].map(quote).join(', ')}] } } }`)
   }
-  else if (ssrOnly.size > 0) {
-    lines[0] += ':'
+  if (ssrOnly.size > 0) {
     lines.push(`  vite: { resolve: { conditions: [${[...ssrOnly].map(quote).join(', ')}, 'module', 'browser', 'development|production'] } }`)
   }
-  else {
-    lines[0] += ', and resolve the package the same way on both sides (check `resolve.alias` and plugins).'
+  if (unexplained) {
+    lines.push(
+      clientOnly.size + ssrOnly.size > 0
+        ? 'For imports without a differing condition, check `resolve.alias` and plugins that resolve the package differently on each side.'
+        : 'No export condition explains the difference; check `resolve.alias` and plugins that resolve the package differently on each side.',
+    )
   }
   return lines
 }

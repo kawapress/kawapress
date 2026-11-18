@@ -26,11 +26,12 @@ title: Home
 import { build } from 'source-lib'
 import { button } from 'source-lib/button'
 import { platform } from 'platform-lib'
+import { field } from 'browser-field-lib'
 </script>
 
 # Resolution Test
 
-{{ build }} {{ button }} {{ platform }}
+{{ build }} {{ button }} {{ platform }} {{ field }}
 `
 
 /** Files of a package, keyed by their path inside it. */
@@ -68,6 +69,21 @@ const PLATFORM_LIB: PackageFiles = {
   'dist/index.js': `export const platform = 'platform'\n`,
 }
 
+/**
+ * Maps its `exports` target to a browser build through the `browser` field,
+ * the way axios does. Vite applies the field on the client only.
+ */
+const BROWSER_FIELD_LIB: PackageFiles = {
+  'package.json': JSON.stringify({
+    name: 'browser-field-lib',
+    type: 'module',
+    exports: { '.': './dist/index.js' },
+    browser: { './dist/index.js': './dist/browser.js' },
+  }),
+  'dist/browser.js': `export const field = 'field'\n`,
+  'dist/index.js': `export const field = 'field'\n`,
+}
+
 let siteDirectory: string
 
 beforeEach(async () => {
@@ -99,7 +115,7 @@ async function createSite(viteOptions: string): Promise<void> {
   await writeFile(join(siteDirectory, 'index.md'), HOME_PAGE)
   await mkdir(join(siteDirectory, 'node_modules'), { recursive: true })
   await symlink(kawapressPackageDirectory, join(siteDirectory, 'node_modules/kawapress'), 'dir')
-  for (const [name, files] of Object.entries({ 'source-lib': SOURCE_LIB, 'platform-lib': PLATFORM_LIB })) {
+  for (const [name, files] of Object.entries({ 'source-lib': SOURCE_LIB, 'platform-lib': PLATFORM_LIB, 'browser-field-lib': BROWSER_FIELD_LIB })) {
     const packageDirectory = join(siteDirectory, 'packages', name)
     for (const [path, content] of Object.entries(files)) {
       await mkdir(dirname(join(packageDirectory, path)), { recursive: true })
@@ -132,6 +148,7 @@ describe('buildSite resolution check', () => {
     expect(output).toContain(`vite: { ssr: { resolve: { conditions: ['source'] } } }`)
     // A browser build next to a default one is intended, not a mismatch.
     expect(output).not.toContain('platform-lib')
+    expect(output).not.toContain('browser-field-lib')
   }, 300_000)
 
   it('stays quiet when SSR is given the same conditions', async () => {

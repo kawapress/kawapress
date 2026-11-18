@@ -139,7 +139,7 @@ export default defineConfig({
 })
 ```
 
-`kawapress build` checks the dependencies both sides bundle. When one import reaches different export conditions on the two sides, the build warns, lists the file each side loaded, and names the conditions to add to `ssr.resolve.conditions`. A browser build that a package ships on purpose through the `browser` condition does not trigger the warning.
+`kawapress build` checks the dependencies both sides bundle. When one import loads different files on the two sides, the build warns, lists the file each side loaded, and names the conditions to add where the export conditions explain the difference. A browser build that a package ships on purpose, through the `browser` export condition or the `browser` field, does not trigger the warning.
 
 ## Keep the First Render Stable {#keep-the-first-render-stable}
 
