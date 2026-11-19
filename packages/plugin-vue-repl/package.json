@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@mdit/plugin-container": "catalog:markdown",
-    "@vue/repl": "~4.7.2"
+    "@vue/repl": "catalog:frontend"
   },
   "devDependencies": {
     "happy-dom": "catalog:dev",

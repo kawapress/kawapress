@@ -235,6 +235,13 @@ export const pluginSidebars = defineLocalizedSidebars({
           },
           link: '/plugins/og-image',
         },
+        {
+          text: {
+            zhCN: 'Vue 演练场',
+            en: 'Vue REPL',
+          },
+          link: '/plugins/vue-repl',
+        },
       ],
     },
   ],

@@ -200,6 +200,14 @@ export const pluginCatalog: Record<string, PluginCatalogEntry> = {
       en: 'Renders `[[toc]]` as the table of contents of the page.',
     },
   },
+  '@kawapress/plugin-vue-repl': {
+    category: 'vue',
+    docs: '/plugins/vue-repl',
+    description: {
+      zhCN: '在文档里嵌入 `@vue/repl`，读者可以直接编辑并运行 Vue 代码；点击运行前不加载编辑器。',
+      en: 'Embeds `@vue/repl` so readers can edit and run Vue code; the editor loads only on Run.',
+    },
+  },
   '@kawapress/plugin-unocss': {
     category: 'page',
     description: {

@@ -43,6 +43,7 @@
   "dependencies": {
     "@fontsource/inter": "catalog:node",
     "@resvg/resvg-js": "catalog:node",
+    "@types/picomatch": "catalog:dev",
     "consola": "catalog:node",
     "opentype.js": "catalog:node",
     "picomatch": "catalog:node",
@@ -50,7 +51,6 @@
     "satori-html": "catalog:node"
   },
   "devDependencies": {
-    "@types/picomatch": "catalog:dev",
     "kawapress": "workspace:*",
     "typescript": "catalog:dev",
     "vite": "catalog:node",

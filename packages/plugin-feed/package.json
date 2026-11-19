@@ -40,12 +40,12 @@
     "kawapress": "workspace:^"
   },
   "dependencies": {
+    "@types/picomatch": "catalog:dev",
     "consola": "catalog:node",
     "feed": "catalog:node",
     "picomatch": "catalog:node"
   },
   "devDependencies": {
-    "@types/picomatch": "catalog:dev",
     "fast-xml-parser": "catalog:dev",
     "kawapress": "workspace:*",
     "typescript": "catalog:dev",
