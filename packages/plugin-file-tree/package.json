@@ -1,0 +1,53 @@
+{
+  "name": "@kawapress/plugin-file-tree",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "File trees for KawaPress Markdown, written as indented text with build-time file icons",
+  "license": "MIT",
+  "homepage": "https://kawapress.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kawapress/kawapress.git",
+    "directory": "packages/plugin-file-tree"
+  },
+  "bugs": {
+    "url": "https://github.com/kawapress/kawapress/issues"
+  },
+  "keywords": [
+    "kawapress",
+    "kawapress-plugin"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./runtime-plugin": {
+      "types": "./src/runtime-plugin.ts",
+      "import": "./src/runtime-plugin.ts",
+      "default": "./src/runtime-plugin.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "README-zh-CN.md",
+    "src/**/!(*.test.*)"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "kawapress": "workspace:^"
+  },
+  "dependencies": {
+    "@iconify-json/catppuccin": "^1.2.17"
+  },
+  "devDependencies": {
+    "markdown-exit": "catalog:markdown"
+  }
+}
