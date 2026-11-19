@@ -1,0 +1,112 @@
+@layer kawa.plugin {
+  .kawa-file-tree {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    color: var(--kawa-c-text-1);
+    border: 1px solid var(--kawa-c-divider);
+    border-radius: var(--kawa-radius);
+    background: var(--kawa-c-bg-soft);
+    font-family: var(--kawa-font-mono);
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+
+  /*
+   * The theme restyles every `ul` in the page body from the later `kawa.theme`
+   * layer, which beats this layer for normal declarations. `!important` flips
+   * the layer order, so the tree keeps its own list reset.
+   */
+  .kawa-file-tree__list {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+  }
+
+  .kawa-file-tree__list .kawa-file-tree__list {
+    margin-left: 0.55rem !important;
+    padding-left: 0.85rem !important;
+    border-left: 1px solid var(--kawa-c-divider);
+  }
+
+  .kawa-file-tree__item {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kawa-file-tree__item > details > summary {
+    cursor: pointer;
+  }
+
+  .kawa-file-tree__item > details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .kawa-file-tree__item > details > summary::marker {
+    content: '';
+  }
+
+  .kawa-file-tree__row {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: max-content;
+    margin: 0 !important; /* the theme gives `summary` a block margin */
+    padding: 0 0.25rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+  }
+
+  .kawa-file-tree__item > details > summary:hover {
+    background: var(--kawa-c-bg-elv);
+  }
+
+  .kawa-file-tree__item > details > summary:focus-visible {
+    outline: 2px solid var(--kawa-c-brand);
+    outline-offset: 1px;
+  }
+
+  .kawa-file-tree__icon {
+    display: block;
+    flex: none;
+    width: 1.1em;
+    height: 1.1em;
+    color: var(--kawa-c-text-2);
+  }
+
+  .kawa-file-tree__icons {
+    display: flex;
+    flex: none;
+  }
+
+  .kawa-file-tree__icon-closed,
+  details[open] > summary .kawa-file-tree__icon-open {
+    display: flex;
+  }
+
+  .kawa-file-tree__icon-open,
+  details[open] > summary .kawa-file-tree__icon-closed {
+    display: none;
+  }
+
+  .kawa-file-tree__name--highlight {
+    padding: 0 0.35rem;
+    color: var(--kawa-c-brand);
+    border-radius: 0.25rem;
+    background: color-mix(in oklab, var(--kawa-c-brand) 14%, transparent);
+    font-weight: 600;
+  }
+
+  .kawa-file-tree__comment {
+    margin-left: 0.5rem;
+    color: var(--kawa-c-text-3);
+    font-family: var(--kawa-font-sans);
+    font-size: 0.8125rem;
+  }
+
+  .kawa-file-tree__item--ellipsis .kawa-file-tree__name {
+    padding-left: 0.2rem;
+    color: var(--kawa-c-text-3);
+  }
+}
