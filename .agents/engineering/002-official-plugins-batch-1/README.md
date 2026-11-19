@@ -19,9 +19,9 @@
 | plugin-file-tree | `feat/plugin-file-tree` | Sonnet 子代理 | 已合并到 `feat/plugins-batch-1` |
 | plugin-analytics | `feat/plugin-analytics` | Sonnet 子代理 | 已合并 |
 | plugin-feed | `feat/plugin-feed` | Sonnet 子代理 | 已合并 |
-| plugin-og-image | `feat/plugin-og-image` | Sonnet 子代理 | 实施中 |
+| plugin-og-image | `feat/plugin-og-image` | Sonnet 子代理 | 已合并；文档站暂未启用，等中文字体方案 |
 | plugin-vue-repl | `feat/plugin-vue-repl` | Sonnet 子代理 | 实施中（提前开始） |
-| 插件市场页 + keywords | `feat/plugin-marketplace` | 主会话 | 未开始 |
+| 插件市场页 + keywords | 直接在集成分支上 | 主会话 | 已完成，vue-repl 合并时补一条数据 |
 
 同时进行的上限是 4 个。第一轮：file-tree、analytics、feed、og-image（都只依赖公开插件 API，互不相关）。第二轮：vue-repl，因为运行侧懒加载与 hydration 的风险最高，需要更仔细地审查。插件市场页放在最后，由主会话完成，因为它的数据文件需要列出本批全部新包。
 

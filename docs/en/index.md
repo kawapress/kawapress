@@ -18,7 +18,7 @@ hero:
       link: /en/guide/what-is-kawapress
     - theme: alt
       text: Explore Plugins
-      link: /en/plugins/overview
+      link: /en/plugins/
 features:
   - icon: ✍️
     title: Focus on content
@@ -32,6 +32,6 @@ features:
   - icon: 🧩
     title: Open to extension
     details: Build features and themes with Plugins and Presets. Official plugins use the same interface as yours.
-    link: /en/plugins/overview
+    link: /en/plugins/
     linkText: Browse official plugins
 ---

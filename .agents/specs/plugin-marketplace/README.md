@@ -20,13 +20,13 @@ VitePress 的插件散落在 npm 和各种 awesome 列表里，用户只能自�
 ## 数据
 
 - 版本、包名、description 不手写：一个 Data Loader 读取仓库 `packages/plugin-*/package.json`（以及 `preset-nagi` 的依赖列表，用来判断是否「nagi 已内置」）。版本号随独立发版自动正确。
-- 只有展示用的信息手写在一个数据文件里：类别、图标、文档路径、中英文的一句话说明（package.json 的 description 是英文，中文页用手写的）。
+- 只有展示用的信息手写在 `docs/plugins/plugin-catalog.ts` 里：类别、文档路径（没有独立文档页的插件可以不写）、中英文的一句话说明（package.json 的 description 是英文，中文页用手写的）。
 - 数据文件里缺少某个公开插件，或者写了不存在的包时，Data Loader 抛错，构建失败。新增插件因此不会忘记上架。
 - 这个数据文件属于并行交付规则里的共享文件，由合并时统一修改。
 
 ## 行为
 
-- 页面用 nagi 的 `page` 布局加本站自己的 Vue 组件实现，组件放在文档站内，不进任何包。
+- 页面使用 nagi 的 `doc` 布局并关闭大纲（`outline: false`），卡片由文档站自己的 Vue 组件 `docs/components/PluginMarket.vue` 渲染，不进任何包。
 - 筛选只用客户端状态；SSR 输出全部卡片，筛选不影响首屏内容和搜索索引。
 - 原来 overview 页的「怎么安装」说明合并到页面顶部的一小段。
 - 现有插件文档页的地址不变。overview 原地址 `/plugins/overview` 保留，内容改成指向新页面的说明，避免外部链接失效（死链检查会兜底站内链接）。

@@ -648,6 +648,7 @@ Before you publish, check each item:
 - Expose `./runtime-plugin` only when the plugin has a Runtime Plugin.
 - `files` includes only the source files needed by consumers and excludes test files.
 - Declare `kawapress` as a `peerDependency` so that a site does not install a second copy of the core package.
+- Name the package `kawapress-plugin-<name>` or `@scope/kawapress-plugin-<name>` and add `kawapress-plugin` to `keywords`, so users can find it from the [Plugin Market](/en/plugins/#community-plugins).
 - Include the license file and documentation in the package.
 
 ## Debugging and Common Errors {#debugging}

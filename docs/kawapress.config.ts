@@ -41,7 +41,7 @@ export default nagi({
     socialLinks: [{ icon: 'github', link: 'https://github.com/kawapress/kawapress' }],
     nav: [
       { text: '指南', link: '/guide/what-is-kawapress', activeMatch: '/guide' },
-      { text: '插件', link: '/plugins/plugin-system', activeMatch: '/plugins' },
+      { text: '插件', link: '/plugins/', activeMatch: '/plugins' },
     ],
     sidebar: {
       '/guide/': guideSidebars.zhCN,
@@ -60,7 +60,7 @@ export default nagi({
       themeConfig: {
         nav: [
           { text: 'Guide', link: '/en/guide/what-is-kawapress', activeMatch: '/en/guide' },
-          { text: 'Plugins', link: '/en/plugins/plugin-system', activeMatch: '/en/plugins' },
+          { text: 'Plugins', link: '/en/plugins/', activeMatch: '/en/plugins' },
         ],
         sidebar: {
           '/en/guide/': guideSidebars.en,

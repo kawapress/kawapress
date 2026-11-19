@@ -660,6 +660,7 @@ it('renders a localized note title', async () => {
 - 只有存在 Runtime Plugin 时才公开 `./runtime-plugin`。
 - `files` 只包含发布需要的源码，并排除测试文件。
 - `kawapress` 声明为 `peerDependencies`，避免站点中出现第二份核心包。
+- 包名使用 `kawapress-plugin-<名字>` 或 `@scope/kawapress-plugin-<名字>`，并在 `keywords` 中加上 `kawapress-plugin`，这样用户能从 [插件市场](/plugins/#community-plugins) 找到它。
 - 包内包含许可证文件和说明文档。
 
 ## 调试与常见错误 {#debugging}

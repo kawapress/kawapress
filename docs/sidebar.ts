@@ -160,10 +160,10 @@ export const pluginSidebars = defineLocalizedSidebars({
       items: [
         {
           text: {
-            zhCN: '总览',
-            en: 'Overview',
+            zhCN: '插件市场',
+            en: 'Plugin Market',
           },
-          link: '/plugins/overview',
+          link: '/plugins/',
         },
         {
           text: {
