@@ -41,13 +41,13 @@
     "vue": "catalog:frontend"
   },
   "dependencies": {
-    "@fontsource/inter": "^5.3.0",
-    "@resvg/resvg-js": "^2.6.2",
+    "@fontsource/inter": "catalog:node",
+    "@resvg/resvg-js": "catalog:node",
     "consola": "catalog:node",
-    "opentype.js": "^2.0.0",
+    "opentype.js": "catalog:node",
     "picomatch": "catalog:node",
-    "satori": "^0.63.2",
-    "satori-html": "^0.3.2"
+    "satori": "catalog:node",
+    "satori-html": "catalog:node"
   },
   "devDependencies": {
     "@types/picomatch": "catalog:dev",

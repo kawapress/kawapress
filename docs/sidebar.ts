@@ -228,6 +228,13 @@ export const pluginSidebars = defineLocalizedSidebars({
           },
           link: '/plugins/feed',
         },
+        {
+          text: {
+            zhCN: '分享卡片',
+            en: 'OG Image',
+          },
+          link: '/plugins/og-image',
+        },
       ],
     },
   ],
