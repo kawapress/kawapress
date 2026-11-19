@@ -33,13 +33,13 @@ One feature may use several entries in this table, but it should still ship as o
 
 A KawaPress plugin ships as a standard npm package. If it needs both build-time hooks and browser-side code, use the following layout:
 
-```text
-@acme/kawapress-plugin-notes
-├─ package.json
-└─ src
-   ├─ index.ts           Default entry: Generator Plugin
-   ├─ runtime-plugin.ts  Runtime entry: Runtime Plugin
-   └─ NotesBadge.vue     Components and style assets
+```tree
+@acme/kawapress-plugin-notes/
+  package.json
+  src/
+    index.ts           # Default entry: Generator Plugin
+    runtime-plugin.ts  # Runtime entry: Runtime Plugin
+    NotesBadge.vue     # Components and style assets
 ```
 
 Expose both entries in `package.json`:

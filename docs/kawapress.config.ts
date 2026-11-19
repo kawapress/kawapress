@@ -1,5 +1,6 @@
 import process from 'node:process'
 import commentsPlugin from '@kawapress/plugin-comments'
+import fileTreePlugin from '@kawapress/plugin-file-tree'
 import imageZoomPlugin from '@kawapress/plugin-image-zoom'
 import lastUpdatedPlugin from '@kawapress/plugin-last-updated'
 import mathjaxPlugin from '@kawapress/plugin-mathjax'
@@ -15,6 +16,7 @@ export default nagi({
     imageZoomPlugin(),
     mathjaxPlugin(),
     mermaidPlugin(),
+    fileTreePlugin(),
     lastUpdatedPlugin({
       editLink: {
         pattern: 'https://github.com/kawapress/kawapress/edit/main/:path',

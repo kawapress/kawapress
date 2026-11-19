@@ -207,6 +207,20 @@ export const pluginSidebars = defineLocalizedSidebars({
           },
           link: '/plugins/algolia-search',
         },
+        {
+          text: {
+            zhCN: '文件树',
+            en: 'File Tree',
+          },
+          link: '/plugins/file-tree',
+        },
+        {
+          text: {
+            zhCN: '网站统计',
+            en: 'Analytics',
+          },
+          link: '/plugins/analytics',
+        },
       ],
     },
   ],
