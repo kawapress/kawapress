@@ -20,8 +20,8 @@
 | plugin-analytics | `feat/plugin-analytics` | Sonnet 子代理 | 已合并 |
 | plugin-feed | `feat/plugin-feed` | Sonnet 子代理 | 已合并 |
 | plugin-og-image | `feat/plugin-og-image` | Sonnet 子代理 | 已合并；文档站暂未启用，等中文字体方案 |
-| plugin-vue-repl | `feat/plugin-vue-repl` | Sonnet 子代理 | 实施中（提前开始） |
-| 插件市场页 + keywords | 直接在集成分支上 | 主会话 | 已完成，vue-repl 合并时补一条数据 |
+| plugin-vue-repl | `feat/plugin-vue-repl` | Sonnet 子代理 | 已合并，文档站已启用 |
+| 插件市场页 + keywords | 直接在集成分支上 | 主会话 | 已完成 |
 
 同时进行的上限是 4 个。第一轮：file-tree、analytics、feed、og-image（都只依赖公开插件 API，互不相关）。第二轮：vue-repl，因为运行侧懒加载与 hydration 的风险最高，需要更仔细地审查。插件市场页放在最后，由主会话完成，因为它的数据文件需要列出本批全部新包。
 
@@ -40,7 +40,8 @@
 - 子代理的 worktree 从 `main` 切出，不含集成分支上的 `.agents/`。派发时在任务说明里给出规约的绝对路径。
 - Core 缺口：插件在 `config()` / `configResolved()` 拿不到当前命令（dev 还是 build），analytics 暂时读取命令行参数。
 - Core 缺口：导出了 `./runtime-plugin` 的包总会被加载，无法按配置省掉运行侧代码。
-- nagi 正文样式会盖过插件层的列表和 `summary` 样式，file-tree 暂用 `!important`。
+- nagi 正文样式会盖过插件层的列表、`summary` 和正文链接样式，file-tree 暂用 `!important`，vue-repl 的 Playground 链接沿用主题的链接样式。
+- `scripts/published-types.test.ts` 会检查发布源码 import 的包是否自带类型；feed、og-image 因此把 `@types/picomatch` 放进 dependencies。子代理只跑了自己包的测试，没跑到这个仓库级测试，以后派发时要求跑全量 `pnpm test`。
 
 ### 合并时主会话统一完成
 

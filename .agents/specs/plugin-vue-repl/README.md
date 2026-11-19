@@ -46,7 +46,8 @@ interface VueReplPluginOptions {
 
 - 围栏信息 `vue repl` 触发，其余 `vue` 代码块不受影响。
 - 多文件：连续的 `vue repl` / `ts repl` / `js repl` / `css repl` 代码块放在 `::: repl` 容器里，用代码组同样的 `[文件名]` 语法命名，第一个 `.vue` 文件是入口。
-- 单页高度用 `{height=480}` 之类的属性写在围栏信息上，默认值实施时定。
+- 高度用 `{height=N}` 写在围栏信息或 `::: repl` 容器上，默认 480 像素。
+- 容器里第一个文件可以省略 `[文件名]`，默认 `App.vue`；容器里出现正文、重名文件、没有 `.vue` 文件或不支持的语言时构建报错。
 
 ## 行为
 
@@ -54,7 +55,9 @@ interface VueReplPluginOptions {
 - 运行侧：`@vue/repl` 及编辑器只在点击后通过动态 `import()` 加载，不进入首屏包。挂载发生在 `onMounted` 之后，SSR 与客户端首帧 DOM 一致，没有 hydration 差异。
 - 明暗主题跟随 `useAppearance()` 的 `isDark`。
 - 「在 Vue Playground 中打开」按 play.vuejs.org 的 hash 格式序列化文件，不依赖 REPL 已加载。
-- 需要 `useRuntimeDependencies()` 声明运行侧依赖。
+- 需要 `useRuntimeDependencies()` 声明运行侧依赖。两种编辑器的入口都要声明，否则 dev 下第一次点「运行」会因为发现新依赖而整页刷新。
+- `@vue/repl` 锁在 `~4.7.2`。运行时从 jsDelivr 加载 Vue 运行时和编译器，离线时显示错误并允许重试，文档已写明。
+- 按钮文字等界面文案支持 `labels` 和 `localeLabels`，与 plugin-mermaid 一致。
 
 ## 边界
 
