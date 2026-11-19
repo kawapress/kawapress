@@ -15,12 +15,12 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+env:
+  KAWAPRESS_BASE: /kawapress/
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # GitHub Pages serves the site under the repository name.
-      KAWAPRESS_BASE: /kawapress/
     steps:
       # The docs show the last commit time of each page, which needs full history.
       - name: Checkout
@@ -62,39 +62,3 @@ jobs:
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-  # kawapress.dev serves the same docs from the domain root, so this build
-  # leaves KAWAPRESS_BASE unset. This job deploys it instead of the Pages
-  # project's own Git connection, which stops working when the repository moves.
-  cloudflare:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11.22.0
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build documentation
-        run: pnpm build
-
-      # Wrangler reads the commit hash and message from the checkout.
-      - name: Deploy to Cloudflare Pages
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: pnpm dlx wrangler@4 pages deploy docs/dist --project-name kawapress --branch main --commit-dirty=false
