@@ -72,8 +72,10 @@ interface FeedPluginOptions {
 - 正文：只输出 `description`。没有 `description` 时取正文第一段纯文本（去掉 Markdown 标记，最多 300 字符）。0.1 版不输出全文 HTML：`buildArtifacts` 发生在预渲染之前，拿不到最终 HTML，用无组件的 Markdown 渲染又会丢掉 Vue 组件内容。
 - `image`：站内路径自动拼成带 `hostname` 和 `base` 的绝对地址。
 - 多语言：每个 locale 各出一套文件，root 在根目录，其余在 `<locale 前缀>/`。只有某个 locale 有匹配页面时才为它输出。
-- 自动发现：在 `config()` 里为每个有订阅源的 locale 往 `head` 写 `<link rel="alternate" type="application/rss+xml|application/atom+xml|application/feed+json" title=... href=...>`。
-- 输出路径冲突沿用 `emitFile` 的报错。没有任何匹配页面时警告并不输出文件。
+- 哪些 locale 有订阅源：该 locale 至少有一个页面的 `sourcePath` 匹配 `include`。只按路径判断，不解析 frontmatter。这样的 locale 一定输出文件；其中没有带 `date` 的页面时，输出没有条目的订阅源并警告，保证自动发现链接不会 404。
+- 自动发现：在 `pageData()` 中给有订阅源的 locale 的页面追加 `<link rel="alternate" ...>`，`href` 是带 `hostname` 和 `base` 的绝对地址。不在 `config()` 中写，因为那时还拿不到站点根目录和页面列表。
+- 输出路径冲突沿用 `emitFile` 的报错。没有任何页面匹配 `include` 时警告并不输出文件。
+- `transformItems(items, { locale })` 按 locale 分别调用。JSON Feed 由 `feed` 库输出，版本为 1。
 
 ## 边界
 

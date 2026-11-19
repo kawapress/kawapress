@@ -36,8 +36,9 @@ docs/
 
 ## 行为
 
-- 输出嵌套 `<ul>`，目录用 `<details open>` / `<summary>`，折叠不需要 JS。语义：`role="tree"` / `treeitem` / `group`，键盘可用原生 details 行为。
-- 图标：构建时按文件名和扩展名从 Iconify 图标集（`@iconify-json/catppuccin` 或同类开源图标集，实施时选定并写回此处）解析成内联 SVG，只有用到的图标进入页面；未知类型用通用文件图标。与 nagi 的 socialLinks 一样在构建期解析，不请求在线服务。
+- 输出嵌套 `<ul>`，有子项的目录用 `<details open>` / `<summary>`，折叠不需要 JS。不加 ARIA `tree` 系列角色：它们要求方向键导航，而这里没有脚本；原生列表和 details 的语义已经足够。外层带 `v-pre`，名字里的 `{{ }}` 原样显示。
+- 图标：构建时按文件名和扩展名从 `@iconify-json/catppuccin`（MIT，含 `folder-<name>` / `-open` 成对图标）解析成内联 SVG，只有用到的图标进入页面；未知类型用通用文件图标。图标集里的中性描边色在构建时换成 `currentColor`，跟随明暗主题。不请求在线服务。
+- nagi 正文对 `ul` 和 `summary` 的样式位于 `kawa.theme` 层，会盖过插件层，所以列表重置使用了 `!important`。以后 nagi 的正文样式应避开 `.kawa-*` 组件。
 - 样式包在 `@layer kawa.plugin` 中，只读取 `--kawa-*` Token。
 - 搜索索引和 `llms` 的 Markdown 输出保留原始围栏文本。
 

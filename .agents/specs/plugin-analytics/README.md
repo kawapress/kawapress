@@ -42,12 +42,14 @@ interface AnalyticsPluginOptions {
 
 ## 行为
 
-- 脚本通过 `config()` 写入站点 `head`，全部 `async` 或 `defer`，不阻塞渲染。只在 `kawapress build`（以及 `dev: true` 时的 dev）注入；判断方式用插件 API 能拿到的构建模式，不读 `process.env`。
+- 脚本通过 `config()` 写入站点 `head`，全部 `async` 或 `defer`，不阻塞渲染。只在 `kawapress build`（以及 `dev: true` 时的 dev）注入，判断方式见下文。
 - 站内跳转：
   - Google：初始化时设置 `send_page_view: false`，由 Runtime Plugin 在 `router.afterEach` 中发送 `page_view`（含 `page_location`、`page_title`）。首次加载也由同一处发送，保证只发一次。
   - Plausible、Umami：官方脚本自己监听 History API，不重复上报。
   - Cloudflare：`data-cf-beacon` 中写 `"spa": true`。
-- 运行侧只在需要时（配置了 Google）注册路由钩子；其余服务没有运行侧代码进入页面包。
+- 运行侧只在配置了 Google 时注册路由钩子。包导出了 `./runtime-plugin`，Core 总会加载这个入口，所以其他服务也会带上一个只含开关的极小模块。
+- 判断 dev 还是 build：插件 API 在 `config()` 阶段不提供命令，目前读取命令行参数里是否有 `build`。Core 在 `configResolved()` 提供 `command` 之后改用它。
+- Google 的 `page_view` 按路径去重；站内跳转后等 `<title>` 更新（最多 300 毫秒）再上报，保证标题是新页面的。
 - 选项在配置期校验格式（例如 Google id 以 `G-` 开头），错误信息指出是哪一项。
 
 ## 边界
