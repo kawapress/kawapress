@@ -116,7 +116,7 @@ describe('feed plugin', () => {
     expect(enHead).not.toContain('href="https://example.com/docs/feed.xml"')
   })
 
-  it('warns about undated pages, and writes nothing when no page qualifies', async () => {
+  it('writes an empty feed with links when matching pages have no date', async () => {
     const warn = vi.spyOn(consola, 'warn')
     const root = await createSite(
       siteConfig(`{ hostname: 'https://example.com', include: ['blog/**/*.md'], formats: ['rss'] }`),
@@ -128,9 +128,25 @@ describe('feed plugin', () => {
 
     await buildSite(root)
 
-    await expect(readFile(join(root, 'dist/feed.xml'), 'utf8')).rejects.toThrow()
+    const rss = await readFile(join(root, 'dist/feed.xml'), 'utf8')
+    expect(rss).toContain('<channel>')
+    expect(rss).not.toContain('<item>')
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('/blog/undated'))
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('没有任何页面进入订阅源'))
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('没有条目'))
+    expect(await readFile(join(root, 'dist/index.html'), 'utf8')).toContain('application/rss+xml')
+  })
+
+  it('writes nothing when no page matches include', async () => {
+    const warn = vi.spyOn(consola, 'warn')
+    const root = await createSite(
+      siteConfig(`{ hostname: 'https://example.com', include: ['blog/**/*.md'], formats: ['rss'] }`),
+      { 'index.md': '# Home\n' },
+    )
+
+    await buildSite(root)
+
+    await expect(readFile(join(root, 'dist/feed.xml'), 'utf8')).rejects.toThrow()
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('没有任何页面匹配 include'))
     expect(await readFile(join(root, 'dist/index.html'), 'utf8')).not.toContain('application/rss+xml')
   })
 

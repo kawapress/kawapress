@@ -98,7 +98,7 @@ feed({
 
 Each feed holds at most `limit` entries, 20 by default, sorted by `date` from newest to oldest.
 
-When no page enters the feeds, the plugin prints a warning and writes no file. If `public/` already contains a file with the same name, the build fails instead of overwriting it.
+A locale gets feeds, and autodiscovery links on its pages, as soon as one of its pages matches `include`. If none of those pages has a `date`, its feeds have no entries and the build prints a warning. When no page matches `include` at all, the plugin prints a warning and writes no file. If `public/` already contains a file with the same name, the build fails instead of overwriting it.
 
 ## Autodiscovery {#autodiscovery}
 

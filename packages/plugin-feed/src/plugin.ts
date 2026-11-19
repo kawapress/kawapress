@@ -2,7 +2,6 @@ import type { HeadConfig, ResolvedSiteConfig } from 'kawapress'
 import type { FeedPageMatcher } from './items'
 import type { FeedChannel } from './render'
 import type { FeedAuthor, FeedFormat, FeedPluginOptions } from './types'
-import { readFile } from 'node:fs/promises'
 import { consola } from 'consola'
 import { definePlugin, resolveLocaleIndex } from 'kawapress'
 import { listMarkdownPages, resolveMarkdownPageScope } from 'kawapress/generator'
@@ -12,9 +11,6 @@ import { FEED_FILES, FEED_MIME_TYPES, renderFeed } from './render'
 
 const ALL_FORMATS: readonly FeedFormat[] = ['rss', 'atom', 'json']
 const DEFAULT_LIMIT = 20
-const FRONTMATTER_RE = /^---\r?\n[\s\S]*?\r?\n---/
-const FEED_OPT_OUT_RE = /^feed\s*:\s*false\s*$/m
-const DATE_KEY_RE = /^date\s*:\s*\S/m
 
 export function feedPlugin(options: FeedPluginOptions) {
   const settings = validateOptions(options)
@@ -44,9 +40,10 @@ export function feedPlugin(options: FeedPluginOptions) {
   }
 
   /**
-   * Locales that will get a feed. Autodiscovery links are page head data, which
-   * is written before the build ends, so this looks at the source files: the
-   * pages that match `include` and carry a `date`.
+   * Locales that get a feed: those with at least one page matching `include`.
+   * Autodiscovery links are page head data, written before the build ends, so
+   * this decides from paths alone. Such a locale always gets its files, empty
+   * when none of its pages has a date, so a discovered link never 404s.
    */
   const findLocalesWithFeed = (): Promise<Set<string>> => {
     localesWithFeed ??= (async () => {
@@ -55,7 +52,7 @@ export function feedPlugin(options: FeedPluginOptions) {
       const found = new Set<string>()
       const pages = await listMarkdownPages(resolveMarkdownPageScope(resolved))
       await Promise.all(pages.map(async (page) => {
-        if (!matches(page.sourcePath) || !(await hasFeedDate(page.file))) {
+        if (!matches(page.sourcePath)) {
           return
         }
         found.add(resolveLocaleIndex(page.routePath, localeKeys))
@@ -102,13 +99,19 @@ export function feedPlugin(options: FeedPluginOptions) {
           consola.warn(`feed：以下页面匹配 include，但没有可解析的字符串 date，已跳过：\n${undated.map(route => `  - ${route}`).join('\n')}`)
         }
 
+        const feedLocales = await findLocalesWithFeed()
+        if (feedLocales.size === 0) {
+          consola.warn('feed：没有任何页面匹配 include，未输出文件。')
+          return
+        }
+
         let fileCount = 0
         let itemCount = 0
-        for (const [localeKey, localeItems] of groups) {
-          let items = sortAndLimit(localeItems, settings.limit)
+        for (const localeKey of feedLocales) {
+          let items = sortAndLimit(groups.get(localeKey) ?? [], settings.limit)
           items = (await options.transformItems?.(items, { locale: localeKey })) || items
           if (items.length === 0) {
-            continue
+            consola.warn(`feed：${localeKey} 的订阅源没有条目，已输出空订阅源。请检查页面 frontmatter 的 date。`)
           }
           const channel = channelOf(localeKey)
           const prefix = localeKey === 'root' ? '' : `${localeKey}/`
@@ -119,19 +122,10 @@ export function feedPlugin(options: FeedPluginOptions) {
           itemCount += items.length
         }
 
-        if (fileCount === 0) {
-          consola.warn('feed：没有任何页面进入订阅源，未输出文件。请检查 include 与页面 frontmatter 的 date。')
-          return
-        }
         consola.success(`feed 已生成：共计 ${fileCount} 个文件、${itemCount} 个条目`)
       })
     },
   })
-}
-
-async function hasFeedDate(file: string): Promise<boolean> {
-  const block = FRONTMATTER_RE.exec(await readFile(file, 'utf8'))?.[0]
-  return block !== undefined && !FEED_OPT_OUT_RE.test(block) && DATE_KEY_RE.test(block)
 }
 
 interface FeedSettings {
