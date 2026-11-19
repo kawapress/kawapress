@@ -1,0 +1,10 @@
+export const OG_IMAGE_PLUGIN_NAME = '@kawapress/plugin-og-image'
+export const OG_IMAGE_ENVIRONMENT = 'ogImage'
+export const OG_IMAGE_ENTRY_ID = 'virtual:kawapress-og-image-entry'
+export const OG_IMAGE_OUTPUT_DIR = 'dist/.kawapress/og-image'
+export const OG_IMAGE_ENTRY_FILE = 'render.mjs'
+export const OG_IMAGE_ENTRY_OUTPUT_PATH = `.kawapress/og-image/${OG_IMAGE_ENTRY_FILE}`
+export const OG_IMAGE_WIDTH = 1200
+export const OG_IMAGE_HEIGHT = 630
+export const OG_IMAGE_DIR = 'og'
+export const OG_IMAGE_DEV_PREFIX = '__og-image'
