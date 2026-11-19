@@ -1,0 +1,97 @@
+@layer kawa.plugin {
+  .kawa-vue-repl {
+    margin: 1rem 0;
+    overflow: hidden;
+    border: 1px solid var(--kawa-c-divider);
+    border-radius: var(--kawa-radius);
+    background: var(--kawa-c-bg-soft);
+  }
+
+  /* The highlighted blocks sit flush inside the frame, which draws the border. */
+  .kawa-vue-repl__source :where(div[class*='language-'], pre) {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .kawa-vue-repl__file + .kawa-vue-repl__file {
+    border-top: 1px solid var(--kawa-c-divider);
+  }
+
+  .kawa-vue-repl__name {
+    margin: 0;
+    padding: 0.5rem 1rem;
+    color: var(--kawa-c-text-2);
+    font-family: var(--kawa-font-mono);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    border-bottom: 1px solid var(--kawa-c-divider);
+  }
+
+  .kawa-vue-repl__stage {
+    /* The REPL fills the box that the author's height defines. */
+    min-height: 0;
+  }
+
+  .kawa-vue-repl__stage > * {
+    height: 100%;
+  }
+
+  /* The REPL's error and auto-save toggles are off here, which leaves an empty floating box. */
+  .kawa-vue-repl .editor-floating:empty {
+    display: none !important;
+  }
+
+  .kawa-vue-repl__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid var(--kawa-c-divider);
+  }
+
+  .kawa-vue-repl__run {
+    padding: 0.25rem 0.875rem;
+    color: var(--kawa-c-bg);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.5rem;
+    background: var(--kawa-c-brand);
+    border-radius: calc(var(--kawa-radius) - 0.25rem);
+    transition: opacity 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .kawa-vue-repl__run:hover:not(:disabled) {
+    opacity: 0.85;
+  }
+
+  .kawa-vue-repl__run:disabled {
+    cursor: progress;
+    opacity: 0.6;
+  }
+
+  .kawa-vue-repl__run:focus-visible,
+  .kawa-vue-repl__playground:focus-visible {
+    outline: 2px solid var(--kawa-c-brand);
+    outline-offset: 2px;
+  }
+
+  /* The theme styles links inside the content, so the link keeps the theme's look. */
+  .kawa-vue-repl__playground {
+    font-size: 0.8125rem;
+  }
+
+  .kawa-vue-repl__error {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--kawa-c-danger, #d03050);
+    font-size: 0.8125rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kawa-vue-repl__run {
+      transition: none;
+    }
+  }
+}
