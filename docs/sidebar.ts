@@ -221,6 +221,13 @@ export const pluginSidebars = defineLocalizedSidebars({
           },
           link: '/plugins/analytics',
         },
+        {
+          text: {
+            zhCN: '订阅源',
+            en: 'Feed',
+          },
+          link: '/plugins/feed',
+        },
       ],
     },
   ],
