@@ -140,12 +140,11 @@ describe('tree fence', () => {
     '',
   ].join('\n')
 
-  it('renders a nested list with details, roles and no script', () => {
+  it('renders a nested list with details and no script', () => {
     const html = createMarkdown().render(source)
 
     expect(html).toContain('<div class="kawa-file-tree" v-pre>')
-    expect(html).toContain('role="tree"')
-    expect(html).toContain('role="group"')
+    expect(html).not.toContain('role=')
     expect(html).toContain('<details open>')
     expect(html).toContain('<details><summary')
     expect(html).toContain('kawa-file-tree__name--highlight')

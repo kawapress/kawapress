@@ -18,7 +18,7 @@ export function isTreeFence(info: string): boolean {
  */
 export function renderTree(source: string): string {
   const nodes = parseTree(source)
-  return `<div class="kawa-file-tree" v-pre>\n<ul class="kawa-file-tree__list" role="tree">\n${renderNodes(nodes)}</ul>\n</div>\n`
+  return `<div class="kawa-file-tree" v-pre>\n<ul class="kawa-file-tree__list">\n${renderNodes(nodes)}</ul>\n</div>\n`
 }
 
 function renderNodes(nodes: readonly TreeNode[]): string {
@@ -27,24 +27,24 @@ function renderNodes(nodes: readonly TreeNode[]): string {
 
 function renderNode(node: TreeNode): string {
   if (node.kind === 'ellipsis') {
-    return `<li class="kawa-file-tree__item kawa-file-tree__item--ellipsis" role="treeitem">${renderRow(node, '<span class="kawa-file-tree__name">…</span>', false)}</li>\n`
+    return `<li class="kawa-file-tree__item kawa-file-tree__item--ellipsis">${renderRow(node, '<span class="kawa-file-tree__name">…</span>', false)}</li>\n`
   }
 
   const name = `<span class="${nameClass(node)}">${escapeHtml(node.name)}${node.kind === 'directory' ? '/' : ''}</span>`
 
   if (node.kind === 'file') {
-    return `<li class="kawa-file-tree__item kawa-file-tree__item--file" role="treeitem">${renderRow(node, name, true)}</li>\n`
+    return `<li class="kawa-file-tree__item kawa-file-tree__item--file">${renderRow(node, name, true)}</li>\n`
   }
 
   const open = !node.collapsed
   if (node.children.length === 0) {
     // Nothing to fold, so no toggle either.
     const icon = renderIcon(resolveFolderIconName(node.name, false))
-    return `<li class="kawa-file-tree__item kawa-file-tree__item--directory" role="treeitem"><span class="kawa-file-tree__row">${icon}${name}${renderComment(node)}</span></li>\n`
+    return `<li class="kawa-file-tree__item kawa-file-tree__item--directory"><span class="kawa-file-tree__row">${icon}${name}${renderComment(node)}</span></li>\n`
   }
   const openIcon = renderIcon(resolveFolderIconName(node.name, true))
   const closedIcon = renderIcon(resolveFolderIconName(node.name, false))
-  return `<li class="kawa-file-tree__item kawa-file-tree__item--directory" role="treeitem"><details${open ? ' open' : ''}><summary class="kawa-file-tree__row"><span class="kawa-file-tree__icons"><span class="kawa-file-tree__icon-open">${openIcon}</span><span class="kawa-file-tree__icon-closed">${closedIcon}</span></span>${name}${renderComment(node)}</summary>\n<ul class="kawa-file-tree__list" role="group">\n${renderNodes(node.children)}</ul>\n</details></li>\n`
+  return `<li class="kawa-file-tree__item kawa-file-tree__item--directory"><details${open ? ' open' : ''}><summary class="kawa-file-tree__row"><span class="kawa-file-tree__icons"><span class="kawa-file-tree__icon-open">${openIcon}</span><span class="kawa-file-tree__icon-closed">${closedIcon}</span></span>${name}${renderComment(node)}</summary>\n<ul class="kawa-file-tree__list">\n${renderNodes(node.children)}</ul>\n</details></li>\n`
 }
 
 function renderRow(node: TreeNode, name: string, withIcon: boolean): string {
