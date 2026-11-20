@@ -6,6 +6,15 @@ All notable changes to KawaPress are listed here. The format follows [Keep a Cha
 
 ## [Unreleased]
 
+### Changed
+
+- **Plugins declare which `kawapress` versions they work with.** The peer dependency on `kawapress` is now `>=0.8.3 <0.10.0` instead of following the core's exact minor version, so a new core release no longer requires a new release of every plugin.
+- **Every official plugin carries the npm keywords `kawapress` and `kawapress-plugin`**, and `@kawapress/preset-nagi` carries `kawapress-preset`. Community plugins can use the same keywords to be found on npm.
+
+## [0.8.4] - 2026-11-20
+
+Published: `kawapress` 0.8.4, `create-kawapress` 0.8.4, `@kawapress/preset-nagi` 0.8.4, `@kawapress/plugin-vue-component-meta` 0.1.0, `@kawapress/plugin-vue-component-demo` 0.1.0.
+
 ### Added
 
 - **`@kawapress/plugin-vue-component-meta` 0.1.0: API tables from component source.** `<ComponentApi src="./Button.vue" />` renders the props, events, slots and exposed members of a Vue component, read at build time with `vue-component-meta` and the TypeScript checker, including imported types, `withDefaults` values and JSDoc. The tables hot-update in dev, appear as Markdown tables in the page `.md`, and `import doc from './Button.vue?component-doc'` gives the same data to other plugins.
@@ -14,8 +23,6 @@ All notable changes to KawaPress are listed here. The format follows [Keep a Cha
 ### Changed
 
 - **nagi tables are quieter.** Markdown tables sit in a card with a rounded border that scrolls sideways when wide; the header is muted text over one line, rows are separated by thin lines, and the column lines and zebra stripes are gone. *Theme authors*: each Markdown table is now wrapped in `<div class="nagi-table">`.
-- **Plugins declare which `kawapress` versions they work with.** The peer dependency on `kawapress` is now `>=0.8.3 <0.10.0` instead of following the core's exact minor version, so a new core release no longer requires a new release of every plugin.
-- **Every official plugin carries the npm keywords `kawapress` and `kawapress-plugin`**, and `@kawapress/preset-nagi` carries `kawapress-preset`. Community plugins can use the same keywords to be found on npm.
 
 ### Fixed
 
@@ -317,7 +324,8 @@ What changes for each kind of user:
 - The CSS target is a browser that supports `light-dark()`, so theme override tokens no longer lose their colors in production builds.
 - A release no longer fails when a version is already on npm.
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v2026-11-20-plugins...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.8.4...HEAD
+[0.8.4]: https://github.com/kawapress/kawapress/compare/v2026-11-20-plugins...v0.8.4
 [2026-11-20]: https://github.com/kawapress/kawapress/compare/v0.8.3...v2026-11-20-plugins
 [0.8.3]: https://github.com/kawapress/kawapress/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/kawapress/kawapress/compare/v0.8.1...v0.8.2

@@ -6,6 +6,15 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+### 变更
+
+- **插件声明自己兼容的 `kawapress` 版本范围。** 插件对 `kawapress` 的 peer 依赖改为 `>=0.8.3 <0.10.0`，不再绑定核心当前的小版本；核心发新版本时，不再需要所有插件跟着发版。
+- **所有官方插件都带上 npm 关键词 `kawapress` 与 `kawapress-plugin`**，`@kawapress/preset-nagi` 带 `kawapress-preset`。社区插件使用同样的关键词，就能在 npm 上被搜到。
+
+## [0.8.4] - 2026-11-20
+
+本次发布：`kawapress` 0.8.4、`create-kawapress` 0.8.4、`@kawapress/preset-nagi` 0.8.4、`@kawapress/plugin-vue-component-meta` 0.1.0、`@kawapress/plugin-vue-component-demo` 0.1.0。
+
 ### 新增
 
 - **`@kawapress/plugin-vue-component-meta` 0.1.0：从组件源码生成 API 表格。** `<ComponentApi src="./Button.vue" />` 渲染 Vue 组件的 Props、事件、插槽与组件实例公开接口，由 `vue-component-meta` 借助 TypeScript 检查器在构建时读出，导入的类型、`withDefaults` 默认值和 JSDoc 都能读到。表格在开发时热更新，页面 `.md` 里输出为 Markdown 表格；`import doc from './Button.vue?component-doc'` 把同样的数据交给其他插件。
@@ -14,8 +23,6 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 ### 变更
 
 - **nagi 的表格更素净。** Markdown 表格放进带圆角描边的卡片里，太宽时可以横向滚动；表头是浅色文字加一条底线，行与行之间只有细分隔线，去掉了列线和斑马纹。*主题作者*：每个 Markdown 表格现在包在 `<div class="nagi-table">` 里。
-- **插件声明自己兼容的 `kawapress` 版本范围。** 插件对 `kawapress` 的 peer 依赖改为 `>=0.8.3 <0.10.0`，不再绑定核心当前的小版本；核心发新版本时，不再需要所有插件跟着发版。
-- **所有官方插件都带上 npm 关键词 `kawapress` 与 `kawapress-plugin`**，`@kawapress/preset-nagi` 带 `kawapress-preset`。社区插件使用同样的关键词，就能在 npm 上被搜到。
 
 ### 修复
 
@@ -317,7 +324,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v2026-11-20-plugins...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.8.4...HEAD
+[0.8.4]: https://github.com/kawapress/kawapress/compare/v2026-11-20-plugins...v0.8.4
 [2026-11-20]: https://github.com/kawapress/kawapress/compare/v0.8.3...v2026-11-20-plugins
 [0.8.3]: https://github.com/kawapress/kawapress/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/kawapress/kawapress/compare/v0.8.1...v0.8.2
