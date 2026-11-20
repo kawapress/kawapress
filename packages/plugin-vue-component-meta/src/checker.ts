@@ -2,8 +2,11 @@ import type { ComponentMetaChecker } from 'vue-component-meta'
 import type { RawMeta } from './normalize'
 import type { ComponentDoc } from './types'
 import { existsSync, readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { basename, dirname, extname, join, resolve } from 'node:path'
 import { normalizeComponentMeta } from './normalize'
+
+const require = createRequire(import.meta.url)
 
 /**
  * Node-only: this module reaches `vue-component-meta` and TypeScript. Only the
@@ -67,7 +70,14 @@ export class ComponentDocService {
       generic,
       description: readPropsDescription(source),
     })
+    fillEventDescriptions(doc, source)
 
+    if (!canResolveVue(file)) {
+      this.warnOnce(
+        `${file}\0vue`,
+        `KawaPress Vue Component Meta: \`vue\` cannot be resolved from ${dirname(file)}, so the types of defineProps, defineEmits and defineSlots are unknown and ${file} shows no API. Install vue in the package that holds the component.`,
+      )
+    }
     if (doc.unsupported === 'generic') {
       this.warnOnce(
         file,
@@ -129,8 +139,10 @@ export class ComponentDocService {
   }
 
   private loadChecker(): Promise<CheckerModule> {
-    // Dynamic, so the generator pays for TypeScript only when a page asks for it.
-    this.checkerModule ??= import('vue-component-meta')
+    // Loaded on demand, so the generator pays for TypeScript only when a page asks for it.
+    // `require`, not `import()`: the site config, and this module with it, is loaded by a
+    // Vite module runner that is closed by the time pages are built.
+    this.checkerModule ??= Promise.resolve(require('vue-component-meta') as CheckerModule)
     return this.checkerModule
   }
 
@@ -177,13 +189,44 @@ function readComponentName(source: string, file: string): string {
 
 function readPropsDescription(source: string): string {
   const block = PROPS_JSDOC_RE.exec(source)?.[1]
-  if (!block) {
-    return ''
+  return block ? jsdocText(block) : ''
+}
+
+/**
+ * vue-component-meta 3.3 drops the JSDoc of emits, whichever way they are typed.
+ * Read it from the source instead: the comment right before `name: [...]` or
+ * `(e: 'name', ...)`.
+ */
+function fillEventDescriptions(doc: ComponentDoc, source: string): void {
+  for (const event of doc.events) {
+    if (event.description) {
+      continue
+    }
+    const name = event.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pattern = new RegExp(`/\\*\\*((?:(?!\\*/)[\\s\\S])*)\\*/\\s*(?:['"]?${name}['"]?\\??\\s*:|\\(\\s*\\w+\\s*:\\s*['"]${name}['"])`)
+    const block = pattern.exec(source)?.[1]
+    if (block) {
+      event.description = jsdocText(block)
+    }
   }
+}
+
+function jsdocText(block: string): string {
   return block
     .split('\n')
     .map(line => line.replace(/^\s*\*? ?/, '').trimEnd())
     .filter(line => !line.startsWith('@'))
     .join('\n')
     .trim()
+}
+
+/** The checker reads the macro types from `vue`; without it every table comes out empty. */
+function canResolveVue(file: string): boolean {
+  try {
+    createRequire(file).resolve('vue/package.json')
+    return true
+  }
+  catch {
+    return false
+  }
 }

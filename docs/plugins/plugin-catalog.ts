@@ -208,6 +208,14 @@ export const pluginCatalog: Record<string, PluginCatalogEntry> = {
       en: 'Embeds `@vue/repl` so readers can edit and run Vue code; the editor loads only on Run.',
     },
   },
+  '@kawapress/plugin-vue-component-meta': {
+    category: 'vue',
+    docs: '/plugins/vue-component-meta',
+    description: {
+      zhCN: '从组件源码读出 Props、事件、插槽与暴露成员，渲染成随源码更新的 API 表格。',
+      en: 'Reads props, events, slots and exposed members from component source into API tables that stay in sync.',
+    },
+  },
   '@kawapress/plugin-unocss': {
     category: 'page',
     description: {

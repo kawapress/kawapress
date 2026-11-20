@@ -95,7 +95,6 @@ The default export of a `?component-doc` import is a `ComponentDoc`: `name`, `de
 
 - Analysing a component loads TypeScript: the first one takes about 0.3 seconds and 300 MB of memory. Only pages that use the tag, or the demo plugin's control panel, pay for it.
 - If the checker returns nothing for a generic component (`<script setup generic="T">`), the table shows a notice and the build prints a warning.
-- Event descriptions must be written as JSDoc on the properties of a type literal; comments on call signatures are lost.
 - A relative `src` is resolved against the page's path after `rewrites`.
 
 ## Documentation

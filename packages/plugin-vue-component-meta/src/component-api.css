@@ -56,11 +56,22 @@
     font-family: var(--kawa-font-mono);
     font-size: 0.8125rem;
     color: var(--kawa-c-brand);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+  }
+
+  /* Names never break inside a word; long types and descriptions wrap instead. */
+  .kawa-component-api__table td:first-child {
+    white-space: nowrap;
   }
 
   .kawa-component-api__table del {
     color: var(--kawa-c-text-3);
+  }
+
+  /* The theme draws `code` as its own box, which hides the line of the outer `del`. */
+  .kawa-component-api__table del code {
+    color: var(--kawa-c-text-3);
+    text-decoration: line-through;
   }
 
   .kawa-component-api__note {

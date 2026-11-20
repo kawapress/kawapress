@@ -75,8 +75,8 @@ describe('component doc service', () => {
     const doc = await createService().service.getDoc(BUTTON)
 
     expect(doc.events).toEqual([
-      { name: 'click', description: expect.any(String), type: '[event: MouseEvent]', tags: {} },
-      { name: 'change', description: expect.any(String), type: '[value: number, previous: number]', tags: {} },
+      { name: 'click', description: 'Fired when the button is clicked.', type: '[event: MouseEvent]', tags: {} },
+      { name: 'change', description: 'Fired when the value changes.', type: '[value: number, previous: number]', tags: {} },
     ])
     expect(doc.slots).toEqual([
       { name: 'default', description: 'Main content of the button.', type: '{ count: number; }', tags: {} },

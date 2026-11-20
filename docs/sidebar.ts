@@ -242,6 +242,13 @@ export const pluginSidebars = defineLocalizedSidebars({
           },
           link: '/plugins/vue-repl',
         },
+        {
+          text: {
+            zhCN: '组件 API',
+            en: 'Component API',
+          },
+          link: '/plugins/vue-component-meta',
+        },
       ],
     },
   ],

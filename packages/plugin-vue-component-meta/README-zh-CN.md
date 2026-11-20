@@ -95,7 +95,6 @@ import doc from './Button.vue?component-doc'
 
 - 分析组件会加载 TypeScript：第一次约需 0.3 秒、300 MB 内存。只有用到这个标签或 demo 调节面板的页面才会承担。
 - 检查器读不出泛型组件（`<script setup generic="T">`）时，表格显示提示，构建时输出警告。
-- 事件说明要写在类型字面量属性的 JSDoc 上；调用签名上的注释会丢失。
 - 相对路径的 `src` 按页面经过 `rewrites` 之后的路径解析。
 
 ## 文档
