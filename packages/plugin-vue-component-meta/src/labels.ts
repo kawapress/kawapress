@@ -58,7 +58,7 @@ export const CHINESE_COMPONENT_API_LABELS: ComponentApiLabels = {
   props: 'Props',
   events: '事件',
   slots: '插槽',
-  exposed: 'Exposes',
+  exposed: '公开接口',
   name: '名称',
   type: '类型',
   default: '默认值',
