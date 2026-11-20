@@ -1,0 +1,58 @@
+{
+  "name": "@kawapress/plugin-vue-component-demo",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Live Vue component demos with highlighted source for KawaPress Markdown",
+  "license": "MIT",
+  "homepage": "https://kawapress.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kawapress/kawapress.git",
+    "directory": "packages/plugin-vue-component-demo"
+  },
+  "bugs": {
+    "url": "https://github.com/kawapress/kawapress/issues"
+  },
+  "keywords": [
+    "kawapress",
+    "kawapress-plugin"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./runtime-plugin": {
+      "types": "./src/runtime-plugin.ts",
+      "import": "./src/runtime-plugin.ts",
+      "default": "./src/runtime-plugin.ts"
+    },
+    "./demo": {
+      "import": "./src/KawaComponentDemo.vue",
+      "default": "./src/KawaComponentDemo.vue"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "README-zh-CN.md",
+    "src/**/!(*.test.*)"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "kawapress": "workspace:>=0.8.3 <0.10.0",
+    "vue": "catalog:frontend"
+  },
+  "devDependencies": {
+    "happy-dom": "catalog:dev",
+    "markdown-exit": "catalog:markdown",
+    "vite": "catalog:node",
+    "vue": "catalog:frontend"
+  }
+}
