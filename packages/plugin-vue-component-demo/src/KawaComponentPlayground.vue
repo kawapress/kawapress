@@ -28,6 +28,7 @@ const props = defineProps<{
 const initial = computed(() => resolveInitialArgs(props.doc, props.initialProps))
 const args = shallowRef<PlaygroundArgs>(initial.value)
 const log = shallowRef<EventLogEntry[]>([])
+const latest = computed(() => log.value.at(-1))
 let nextLogId = 0
 
 const name = computed(() => props.doc.name || props.fallbackName)
@@ -88,16 +89,14 @@ function reset(): void {
         <component :is="component" v-bind="{ ...args, ...listeners }" />
       </div>
 
-      <div class="kawa-playground__side">
-        <section class="kawa-playground__panel" :aria-label="labels.controls">
-          <header class="kawa-playground__panel-header">
-            <h4 class="kawa-playground__heading">
-              {{ labels.controls }}
-            </h4>
-            <button type="button" class="kawa-component-demo__button" @click="reset">
-              {{ labels.reset }}
-            </button>
-          </header>
+      <section class="kawa-playground__panel" :aria-label="labels.controls">
+        <header class="kawa-playground__panel-header">
+          <span class="kawa-playground__heading">{{ labels.controls }}</span>
+          <button type="button" class="kawa-component-demo__button" @click="reset">
+            {{ labels.reset }}
+          </button>
+        </header>
+        <div class="kawa-playground__grid">
           <PlaygroundControl
             v-for="prop in controls"
             :key="prop.name"
@@ -106,28 +105,33 @@ function reset(): void {
             :labels="labels"
             @change="setArg(prop.name, $event)"
           />
-        </section>
+        </div>
 
-        <section v-if="doc.events.length > 0" class="kawa-playground__panel kawa-playground__events">
-          <header class="kawa-playground__panel-header">
-            <h4 class="kawa-playground__heading">
-              {{ labels.events }}
-            </h4>
+        <details v-if="doc.events.length > 0" class="kawa-playground__events">
+          <summary class="kawa-playground__events-summary">
+            <span class="kawa-playground__heading">{{ labels.events }}</span>
+            <span class="kawa-playground__badge">{{ log.length }}</span>
+            <span class="kawa-playground__latest" aria-live="polite">
+              <template v-if="latest">
+                <span class="kawa-playground__log-name">{{ latest.name }}</span>
+                <span v-if="latest.payload" class="kawa-playground__log-payload">{{ latest.payload }}</span>
+              </template>
+              <template v-else>{{ labels.noEvents }}</template>
+            </span>
+          </summary>
+          <div class="kawa-playground__events-body">
+            <ol class="kawa-playground__log" role="log" :aria-label="labels.events">
+              <li v-for="entry in log" :key="entry.id" class="kawa-playground__log-line">
+                <span class="kawa-playground__log-name">{{ entry.name }}</span>
+                <span v-if="entry.payload" class="kawa-playground__log-payload">{{ entry.payload }}</span>
+              </li>
+            </ol>
             <button type="button" class="kawa-component-demo__button" :disabled="log.length === 0" @click="log = []">
               {{ labels.clearEvents }}
             </button>
-          </header>
-          <ol class="kawa-playground__log" role="log" aria-live="polite" :aria-label="labels.events">
-            <li v-for="entry in log" :key="entry.id" class="kawa-playground__log-line">
-              <code class="kawa-playground__log-name">{{ entry.name }}</code>
-              <code v-if="entry.payload" class="kawa-playground__log-payload">{{ entry.payload }}</code>
-            </li>
-          </ol>
-          <p v-if="log.length === 0" class="kawa-playground__empty">
-            {{ labels.noEvents }}
-          </p>
-        </section>
-      </div>
+          </div>
+        </details>
+      </section>
     </div>
 
     <template v-if="$slots.title" #title>

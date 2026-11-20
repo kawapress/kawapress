@@ -72,14 +72,12 @@ With the [Component API](/en/plugins/vue-component-meta) plugin also installed, 
 <ComponentDemo
   component="../../components/examples/KButton.vue"
   props='{"label":"Submit"}'
-  title="Button playground"
 />
 ```
 
 <ComponentDemo
   component="../../components/examples/KButton.vue"
   props='{"label":"Submit"}'
-  title="Button playground"
 />
 
 - Each control is inferred by the Component API plugin from the prop's type: a switch for booleans, a number input for numbers, options for literal unions, a JSON input for objects and arrays. Props that cannot be edited, such as functions, are left out.

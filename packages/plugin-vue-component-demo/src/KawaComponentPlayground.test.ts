@@ -172,7 +172,12 @@ describe('kawaComponentPlayground', () => {
     expect(lines).toHaveLength(20)
     expect(lines[0].textContent).toContain('press')
     expect(lines[0].textContent).toContain('1')
-    expect(host.querySelector('[role="log"]')?.getAttribute('aria-live')).toBe('polite')
+    expect(host.querySelector('[role="log"]')).not.toBeNull()
+    // The summary line announces the latest event, so it is heard while the log is folded.
+    const latest = host.querySelector('.kawa-playground__latest')!
+    expect(latest.getAttribute('aria-live')).toBe('polite')
+    expect(latest.textContent?.replace(/\s+/g, '')).toBe(lines[19].textContent?.replace(/\s+/g, ''))
+    expect(host.querySelector('.kawa-playground__badge')?.textContent).toBe('20')
 
     const clear = [...host.querySelectorAll('button')].find(button => button.textContent?.trim() === 'Clear')!
     clear.click()

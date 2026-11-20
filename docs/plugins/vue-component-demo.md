@@ -72,14 +72,12 @@ import KButton from '../KButton.vue'
 <ComponentDemo
   component="../components/examples/KButton.vue"
   props='{"label":"提交"}'
-  title="按钮演练"
 />
 ```
 
 <ComponentDemo
   component="../components/examples/KButton.vue"
   props='{"label":"提交"}'
-  title="按钮演练"
 />
 
 - 面板里的每一项都由组件 API 插件从 prop 的类型推断：布尔值是开关，数字是数字输入，字面量联合是选项，对象和数组是 JSON 输入。函数等无法编辑的 prop 不出现在面板里。

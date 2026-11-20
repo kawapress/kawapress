@@ -82,7 +82,7 @@ function onJson(event: Event): void {
 <template>
   <div class="kawa-playground-control" :data-kind="kind">
     <component :is="kind === 'select' && asRadios ? 'span' : 'label'" v-if="kind !== 'boolean'" :id="`${id}-label`" :for="kind === 'select' && asRadios ? undefined : id" class="kawa-playground-control__label">
-      <code>{{ prop.name }}</code>
+      <span class="kawa-playground-control__name">{{ prop.name }}</span>
       <span v-if="prop.required" class="kawa-playground-control__required" :title="labels.required" aria-hidden="true">*</span>
       <span v-if="prop.required" class="kawa-component-demo__sr-only">({{ labels.required }})</span>
     </component>
@@ -98,7 +98,7 @@ function onJson(event: Event): void {
       >
       <span class="kawa-playground-control__track" aria-hidden="true" />
       <span class="kawa-playground-control__label">
-        <code>{{ prop.name }}</code>
+        <span class="kawa-playground-control__name">{{ prop.name }}</span>
         <span v-if="prop.required" class="kawa-playground-control__required" :title="labels.required" aria-hidden="true">*</span>
         <span v-if="prop.required" class="kawa-component-demo__sr-only">({{ labels.required }})</span>
       </span>
@@ -133,12 +133,13 @@ function onJson(event: Event): void {
     >
       <label v-for="(option, index) in options" :key="index" class="kawa-playground-control__radio">
         <input
+          class="kawa-component-demo__sr-only"
           type="radio"
           :name="id"
           :checked="index === selectedIndex"
           @change="emit('change', option)"
         >
-        <span>{{ option }}</span>
+        <span class="kawa-playground-control__segment">{{ option }}</span>
       </label>
     </div>
 
@@ -166,13 +167,13 @@ function onJson(event: Event): void {
         :aria-describedby="[prop.description ? hintId : '', jsonInvalid ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined"
         @input="onJson"
       />
-      <p v-if="jsonInvalid" :id="`${id}-error`" class="kawa-playground-control__error" role="alert">
+      <div v-if="jsonInvalid" :id="`${id}-error`" class="kawa-playground-control__error" role="alert">
         {{ labels.invalidJson }}
-      </p>
+      </div>
     </template>
 
-    <p v-if="prop.description" :id="hintId" class="kawa-playground-control__hint">
+    <div v-if="prop.description" :id="hintId" class="kawa-playground-control__hint" :title="prop.description">
       {{ prop.description }}
-    </p>
+    </div>
   </div>
 </template>
