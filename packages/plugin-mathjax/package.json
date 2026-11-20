@@ -42,7 +42,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "peerDependencies": {
-    "kawapress": "workspace:^"
+    "kawapress": "workspace:>=0.8.3 <0.10.0"
   },
   "dependencies": {
     "@mdit/plugin-mathjax": "catalog:markdown",

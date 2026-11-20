@@ -13,10 +13,11 @@ import { applyBumps, discoverPackages, parseBumps } from './packages.mjs'
 import { confirmPublish, dryRunPublish, filterPublishOrder, publishPackages, sortForPublish } from './publish.mjs'
 import { runQualityChecks } from './quality.mjs'
 import { findMissingPackages, inspectRegistry, isSkippedState, logMissingPackages } from './registry.mjs'
-import { logStep, logSuccess } from './runtime.mjs'
+import { logStep, logSuccess, logWarning } from './runtime.mjs'
 import { defaultTag, parseSemver, validateTag } from './semver.mjs'
 import { checkNpmVersion, checkToolchain } from './toolchain.mjs'
 import { printTrustCommands } from './trust.mjs'
+import { findLastReleaseTag, findPeerRangeConflicts, findUnbumpedPackages, findVersionGroupProblems } from './versioning.mjs'
 
 /** Modes that write to npm and therefore need a logged-in maintainer when run locally. */
 const publishingModes = new Set(['publish', 'bootstrap'])
@@ -152,11 +153,10 @@ async function prepareRelease(options, packages) {
     throw new Error('Name the packages to release, for example: pnpm release:prepare @kawapress/plugin-mermaid=0.2.1')
 
   const bumps = parseBumps(packages, options.bumps)
-  // New sites get `kawapressVersion` from create-kawapress, so it has to ship with every
-  // kawapress release or it keeps pointing at the old version.
-  if (bumps.has('kawapress') && !bumps.has('create-kawapress')) {
-    throw new Error('kawapress changes the version create-kawapress writes into new sites, so release both: add create-kawapress=<version>.')
-  }
+  // The core group shares a version; create-kawapress also writes it into new sites as `kawapressVersion`.
+  const problems = [...findVersionGroupProblems(packages, bumps), ...findPeerRangeConflicts(packages, bumps)]
+  if (problems.length > 0)
+    throw new Error(problems.join('\n'))
 
   logStep('Checking release prerequisites')
   await checkToolchain()
@@ -166,6 +166,15 @@ async function prepareRelease(options, packages) {
   logSuccess(`${changed.length} package.json file(s) changed`)
   for (const [name, version] of bumps)
     console.log(`  ${name} → ${version}`)
+
+  const tag = await findLastReleaseTag()
+  const unbumped = tag ? await findUnbumpedPackages(packages, bumps, tag) : []
+  if (unbumped.length > 0) {
+    logWarning(`${unbumped.length} package(s) changed since ${tag} but keep their version, so this release skips their changes:`)
+    for (const { name, version, files } of unbumped)
+      console.log(`  ${name}@${version}  ${files.length} file(s), e.g. ${files[0]}`)
+    console.log('  Add them to this release with <name>=<version> if the changes should ship.')
+  }
 
   console.log('\nNext steps:')
   console.log('  1. review the diff: git diff')

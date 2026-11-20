@@ -2,7 +2,7 @@
 
 All notable changes to KawaPress are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/). Before 1.0, a change to the second number (`0.2` → `0.3`) can contain breaking changes.
 
-The 21 public packages are released together and share one version number. [简体中文](https://github.com/kawapress/kawapress/blob/main/CHANGELOG.zh-CN.md)
+`kawapress`, `create-kawapress` and `@kawapress/preset-nagi` share one version and are released together; every other plugin has its own version and is released when it changes. Up to 0.8.3, all packages shared one version. Each release section lists the packages and versions it published. [简体中文](https://github.com/kawapress/kawapress/blob/main/CHANGELOG.zh-CN.md)
 
 ## [Unreleased]
 

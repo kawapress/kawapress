@@ -792,6 +792,7 @@ docs
 - 全仓库使用 TypeScript 6。
 - Vue 代码使用 Composition API、`<script setup>` 与 TypeScript。
 - 依赖版本通过具名 pnpm catalogs 管理，禁止裸 `catalog:`。
+- 版本号：`kawapress`、`create-kawapress`、`@kawapress/preset-nagi` 是核心版本组，同号同发；其余插件各自独立计版本、有改动才发布。插件对 `kawapress` 的 peer 写成明确的比较范围（如 `workspace:>=0.8.3 <0.10.0`），只在用到新核心 API 时提高下限；`release:prepare` 校验版本组、peer 范围，并提醒改了源码却没升版本的包。更新日志保留根目录中英文两份，按发布分节并列出本次各包版本，不设分包 CHANGELOG。
 - 0.1 官方包直接发布 TypeScript、Vue SFC 与 CSS 源码，不执行独立的 package build；CLI 源码入口由 Jiti 加载，站点配置及其 Generator Plugin 模块图由 Vite `runnerImport()` 加载并收集本地配置依赖，网站运行侧源码由 Vite 加载。
 - 源码发布包使用标准 package exports：`types`、`import` 与 `default` 均指向源码，不使用自定义 `source` condition，也不使用旧式 `module` 字段或 condition。
 - 第三方插件可以发布源码或预编译产物；KawaPress 不要求插件声明 `source` condition。预编译包将 `types` 指向声明文件，并将 `import`、`default` 指向 ESM 产物。

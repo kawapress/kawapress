@@ -2,7 +2,7 @@
 
 KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。1.0 之前，第二位数字的变化（如 `0.2` → `0.3`）可能包含破坏性变更。
 
-21 个公开包一起发布，使用同一个版本号。[English](https://github.com/kawapress/kawapress/blob/main/CHANGELOG.md)
+`kawapress`、`create-kawapress` 和 `@kawapress/preset-nagi` 使用同一个版本号，一起发布；其余插件各有自己的版本号，有改动时单独发布。0.8.3 及以前，全部包共用一个版本号。每次发布的一节会列出这次发布了哪些包、各自什么版本。[English](https://github.com/kawapress/kawapress/blob/main/CHANGELOG.md)
 
 ## [Unreleased]
 
