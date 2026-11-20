@@ -6,6 +6,8 @@ import lastUpdatedPlugin from '@kawapress/plugin-last-updated'
 import mathjaxPlugin from '@kawapress/plugin-mathjax'
 import mermaidPlugin from '@kawapress/plugin-mermaid'
 import ogImagePlugin from '@kawapress/plugin-og-image'
+import vueComponentDemoPlugin from '@kawapress/plugin-vue-component-demo'
+import vueComponentMetaPlugin from '@kawapress/plugin-vue-component-meta'
 import vueReplPlugin from '@kawapress/plugin-vue-repl'
 import { nagi } from 'kawapress/nagi'
 import { guideSidebars, pluginSidebars } from './sidebar'
@@ -20,6 +22,8 @@ export default nagi({
     mermaidPlugin(),
     fileTreePlugin(),
     vueReplPlugin(),
+    vueComponentMetaPlugin(),
+    vueComponentDemoPlugin(),
     ogImagePlugin({ hostname: 'https://kawapress.dev', logo: '/kawapress-logo.png' }),
     lastUpdatedPlugin({
       editLink: {

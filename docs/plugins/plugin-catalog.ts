@@ -208,6 +208,22 @@ export const pluginCatalog: Record<string, PluginCatalogEntry> = {
       en: 'Embeds `@vue/repl` so readers can edit and run Vue code; the editor loads only on Run.',
     },
   },
+  '@kawapress/plugin-vue-component-demo': {
+    category: 'vue',
+    docs: '/plugins/vue-component-demo',
+    description: {
+      zhCN: '用独立的 .vue 文件写组件示例，页面上展示真实渲染的效果和高亮源码；配合组件 API 插件还有属性调节面板。',
+      en: 'Demos written as standalone .vue files, rendered live with highlighted source; with the Component API plugin, a props controls panel too.',
+    },
+  },
+  '@kawapress/plugin-vue-component-meta': {
+    category: 'vue',
+    docs: '/plugins/vue-component-meta',
+    description: {
+      zhCN: '从组件源码读出 Props、事件、插槽与组件实例公开接口，渲染成随源码更新的 API 表格。',
+      en: 'Reads props, events, slots and exposed members from component source into API tables that stay in sync.',
+    },
+  },
   '@kawapress/plugin-unocss': {
     category: 'page',
     description: {

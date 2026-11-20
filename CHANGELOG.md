@@ -6,10 +6,20 @@ All notable changes to KawaPress are listed here. The format follows [Keep a Cha
 
 ## [Unreleased]
 
+### Added
+
+- **`@kawapress/plugin-vue-component-meta` 0.1.0: API tables from component source.** `<ComponentApi src="./Button.vue" />` renders the props, events, slots and exposed members of a Vue component, read at build time with `vue-component-meta` and the TypeScript checker, including imported types, `withDefaults` values and JSDoc. The tables hot-update in dev, appear as Markdown tables in the page `.md`, and `import doc from './Button.vue?component-doc'` gives the same data to other plugins.
+- **`@kawapress/plugin-vue-component-demo` 0.1.0: live component demos.** `<ComponentDemo src="./demos/Basic.vue" />` renders a standalone demo file on the page with its highlighted source, with `client-only` for demos that need the browser. With the Component API plugin installed, `<ComponentDemo component="./Button.vue" />` shows the component with a controls panel built from its prop types, an event log and a live source snippet.
+
 ### Changed
 
+- **nagi tables are quieter.** Markdown tables sit in a card with a rounded border that scrolls sideways when wide; the header is muted text over one line, rows are separated by thin lines, and the column lines and zebra stripes are gone. *Theme authors*: each Markdown table is now wrapped in `<div class="nagi-table">`.
 - **Plugins declare which `kawapress` versions they work with.** The peer dependency on `kawapress` is now `>=0.8.3 <0.10.0` instead of following the core's exact minor version, so a new core release no longer requires a new release of every plugin.
 - **Every official plugin carries the npm keywords `kawapress` and `kawapress-plugin`**, and `@kawapress/preset-nagi` carries `kawapress-preset`. Community plugins can use the same keywords to be found on npm.
+
+### Fixed
+
+- **Links to a heading on a page with a component demo title no longer count as dead.** A plugin that renders a snippet with `renderInline(text, env)` cleared the headings the page had collected. *Plugin authors*: rendering inline Markdown with the page env no longer affects dead link checks.
 
 ## [2026-11-20] - five new plugins
 

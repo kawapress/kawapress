@@ -665,6 +665,7 @@ Also keep these boundaries in mind:
 
 - Generator and runtime code run at different stages. Do not make one side depend on state stored in a module of the other side.
 - Do not use `eval` or `new Function` in `buildArtifacts()` to bypass module boundaries. To load a module, use `importModule()`.
+- Do not load dependencies with a dynamic `import()` from generator code while the site builds. The site config and the plugin modules it imports are loaded by a Vite module runner that is closed by the time pages are built, so such an `import()` fails with `Vite module runner has been closed`. For a large dependency you want to load on demand, use `createRequire(import.meta.url)`, or import it statically at the top of the module.
 - 0.1 does not provide `addPage()`. When you need a new page, create it in a Markdown source file first.
 
 ## Official Plugins as Reference {#official-plugins-reference}

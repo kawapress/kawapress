@@ -1,0 +1,502 @@
+@layer kawa.plugin {
+  .kawa-component-demo {
+    margin: 1rem 0;
+    overflow: hidden;
+    border: 1px solid var(--kawa-c-divider);
+    border-radius: var(--kawa-radius);
+    background: var(--kawa-c-bg);
+  }
+
+  /* The demo brings its own styles; the stage only gives it room. */
+  .kawa-component-demo__stage {
+    padding: 1.5rem;
+    overflow-x: auto;
+  }
+
+  .kawa-component-demo__placeholder {
+    margin: 0;
+    color: var(--kawa-c-text-3);
+    font-size: 0.875rem;
+  }
+
+  .kawa-component-demo__caption {
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid var(--kawa-c-divider);
+  }
+
+  .kawa-component-demo__title,
+  .kawa-component-demo__description {
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .kawa-component-demo__title {
+    color: var(--kawa-c-text-1);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .kawa-component-demo__description {
+    color: var(--kawa-c-text-2);
+    font-size: 0.875rem;
+  }
+
+  .kawa-component-demo__title + .kawa-component-demo__description {
+    margin-top: 0.25rem;
+  }
+
+  .kawa-component-demo__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    border-top: 1px solid var(--kawa-c-divider);
+    background: var(--kawa-c-bg-soft);
+  }
+
+  .kawa-component-demo__button {
+    padding: 0.125rem 0.625rem;
+    color: var(--kawa-c-text-3);
+    font-size: 0.8125rem;
+    line-height: 1.75rem;
+    border: 1px solid transparent;
+    border-radius: calc(var(--kawa-radius) - 0.25rem);
+    background: transparent;
+    cursor: pointer;
+    transition:
+      color 160ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 160ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .kawa-component-demo__button:hover,
+  .kawa-component-demo__button[data-copied] {
+    color: var(--kawa-c-brand);
+    background: color-mix(in oklab, var(--kawa-c-brand) 10%, transparent);
+  }
+
+  .kawa-component-demo__button:focus-visible {
+    outline: 2px solid var(--kawa-c-brand);
+    outline-offset: 1px;
+  }
+
+  /* Only read by screen readers: the button label already shows the result. */
+  .kawa-component-demo__status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .kawa-component-demo__source {
+    border-top: 1px solid var(--kawa-c-divider);
+    background: var(--kawa-c-bg-soft);
+  }
+
+  /*
+   * The source sits in a kawa-code-block wrapper like the code blocks of the pages, so
+   * themes leave it alone and the line highlight and diff styles of the code
+   * block plugin still apply. The frame and the room for a language label and a
+   * copy button belong to the code block, not to the demo.
+   */
+  .kawa-component-demo__source .kawa-code-block {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .kawa-component-demo__source pre,
+  .kawa-component-demo__source .kawa-code-block pre {
+    margin: 0;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    border: 0;
+    border-radius: 0;
+    text-align: left;
+    tab-size: 4;
+  }
+
+  .kawa-component-demo__source pre > code {
+    display: block;
+    width: fit-content;
+    min-width: 100%;
+    color: var(--kawa-c-text-2);
+    font-size: 0.875em;
+    line-height: 1.5;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kawa-component-demo__button {
+      transition: none;
+    }
+  }
+
+  .kawa-component-demo__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .kawa-component-demo__button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  /* Controls playground: the component on a wide stage, a compact grid of controls below it. */
+  .kawa-playground {
+    display: flex;
+    flex-direction: column;
+    margin: -1.5rem; /* the playground fills the demo stage edge to edge */
+  }
+
+  .kawa-playground__stage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    min-height: 9rem;
+    padding: 2rem 1.5rem;
+    background-image: radial-gradient(color-mix(in oklab, var(--kawa-c-text-3) 35%, transparent) 1px, transparent 1px);
+    background-size: 1rem 1rem;
+  }
+
+  .kawa-playground__panel {
+    padding: 0.75rem 1rem 0.5rem;
+    border-top: 1px solid var(--kawa-c-divider);
+    background: var(--kawa-c-bg-soft);
+  }
+
+  .kawa-playground__panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .kawa-playground__heading {
+    color: var(--kawa-c-text-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .kawa-playground__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.75rem 1.25rem;
+  }
+
+  .kawa-playground-control {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: 0.125rem 0.75rem;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .kawa-playground-control[data-kind='json'] {
+    grid-column: 1 / -1;
+    align-items: start;
+  }
+
+  .kawa-playground-control__label {
+    display: inline-flex;
+    gap: 0.2rem;
+    align-items: baseline;
+    min-width: 0;
+    color: var(--kawa-c-text-1);
+  }
+
+  .kawa-playground-control__name {
+    overflow: hidden;
+    font-family: var(--kawa-font-mono);
+    font-size: 0.8125rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .kawa-playground-control__required {
+    color: var(--kawa-c-danger);
+    font-size: 0.8125rem;
+  }
+
+  /* One muted line under the control; the full text is in the tooltip. */
+  .kawa-playground-control__hint {
+    grid-column: 2;
+    margin: 0;
+    overflow: hidden;
+    color: var(--kawa-c-text-3);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .kawa-playground-control__input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 1.875rem;
+    padding: 0 0.5rem;
+    color: var(--kawa-c-text-1);
+    font: inherit;
+    font-size: 0.8125rem;
+    border: 1px solid var(--kawa-c-border);
+    border-radius: calc(var(--kawa-radius) - 0.25rem);
+    background: var(--kawa-c-bg);
+  }
+
+  .kawa-playground-control__json {
+    height: auto;
+    padding: 0.375rem 0.5rem;
+    font-family: var(--kawa-font-mono);
+    resize: vertical;
+  }
+
+  .kawa-playground-control__input:focus-visible,
+  .kawa-playground-control__radio input:focus-visible + .kawa-playground-control__segment,
+  .kawa-playground-control__switch input:focus-visible + .kawa-playground-control__track {
+    outline: 2px solid var(--kawa-c-brand);
+    outline-offset: 1px;
+  }
+
+  .kawa-playground-control__input[aria-invalid='true'] {
+    border-color: var(--kawa-c-danger);
+  }
+
+  .kawa-playground-control__error {
+    grid-column: 2;
+    margin: 0;
+    color: var(--kawa-c-danger);
+    font-size: 0.75rem;
+  }
+
+  /* Up to five options: a segmented control over native radios. */
+  .kawa-playground-control__radios {
+    display: inline-flex;
+    width: fit-content;
+    max-width: 100%;
+    padding: 0.125rem;
+    overflow-x: auto;
+    border: 1px solid var(--kawa-c-border);
+    border-radius: calc(var(--kawa-radius) - 0.25rem);
+    background: var(--kawa-c-bg);
+  }
+
+  .kawa-playground-control__radio {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+  }
+
+  .kawa-playground-control__segment {
+    padding: 0.125rem 0.625rem;
+    color: var(--kawa-c-text-2);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    white-space: nowrap;
+    border-radius: calc(var(--kawa-radius) - 0.375rem);
+    transition: background-color 120ms, color 120ms;
+  }
+
+  .kawa-playground-control__radio:hover .kawa-playground-control__segment {
+    color: var(--kawa-c-text-1);
+  }
+
+  .kawa-playground-control__radio input:checked + .kawa-playground-control__segment {
+    color: var(--kawa-c-bg);
+    background: var(--kawa-c-brand);
+  }
+
+  /* A checkbox drawn as a switch: the native input stays for keyboards and screen readers. */
+  .kawa-playground-control[data-kind='boolean'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kawa-playground-control[data-kind='boolean'] .kawa-playground-control__hint {
+    grid-column: 1;
+    padding-left: 2.5rem;
+  }
+
+  .kawa-playground-control__switch {
+    position: relative;
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    width: fit-content;
+    min-height: 1.875rem;
+    cursor: pointer;
+  }
+
+  .kawa-playground-control__switch input {
+    position: absolute;
+    width: 2rem;
+    height: 1.125rem;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .kawa-playground-control__track {
+    position: relative;
+    flex: none;
+    width: 2rem;
+    height: 1.125rem;
+    border-radius: 999px;
+    background: var(--kawa-c-border);
+    transition: background-color 160ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .kawa-playground-control__track::after {
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 50%;
+    background: var(--kawa-c-bg);
+    content: '';
+    transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .kawa-playground-control__switch input:checked + .kawa-playground-control__track {
+    background: var(--kawa-c-brand);
+  }
+
+  .kawa-playground-control__switch input:checked + .kawa-playground-control__track::after {
+    transform: translateX(0.875rem);
+  }
+
+  /* Event log: one line with the latest event; the whole log when opened. */
+  .kawa-playground__events {
+    margin-top: 0.75rem;
+    border-top: 1px dashed var(--kawa-c-divider);
+  }
+
+  .kawa-playground__events-summary {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    min-width: 0;
+    margin: 0 !important; /* the theme gives `summary` a block margin */
+    padding: 0.5rem 0 0.25rem;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .kawa-playground__events-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .kawa-playground__events-summary::before {
+    flex: none;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-right: 1.5px solid var(--kawa-c-text-3);
+    border-bottom: 1.5px solid var(--kawa-c-text-3);
+    content: '';
+    transform: rotate(-45deg);
+    transition: transform 120ms;
+  }
+
+  .kawa-playground__events[open] > .kawa-playground__events-summary::before {
+    transform: rotate(45deg);
+  }
+
+  .kawa-playground__badge {
+    flex: none;
+    min-width: 1.25rem;
+    padding: 0 0.3rem;
+    color: var(--kawa-c-text-2);
+    font-size: 0.6875rem;
+    text-align: center;
+    border-radius: 999px;
+    background: var(--kawa-c-bg-elv);
+  }
+
+  .kawa-playground__latest {
+    display: flex;
+    gap: 0.5rem;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--kawa-c-text-3);
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .kawa-playground__events-body {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 0.25rem;
+  }
+
+  .kawa-playground__log {
+    flex: 1;
+    min-width: 0;
+    max-height: 8rem;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-y: auto;
+    list-style: none !important;
+  }
+
+  .kawa-playground__log-line {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0 !important;
+    padding: 0.125rem 0;
+    font-family: var(--kawa-font-mono);
+    font-size: 0.75rem;
+  }
+
+  .kawa-playground__log-name {
+    flex: none;
+    color: var(--kawa-c-brand);
+    font-family: var(--kawa-font-mono);
+  }
+
+  .kawa-playground__log-payload {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--kawa-c-text-2);
+    font-family: var(--kawa-font-mono);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Snippet tokens: no Shiki here, the snippet changes at runtime. */
+  .kawa-playground-token--tag {
+    color: var(--kawa-c-text-1);
+    font-weight: 600;
+  }
+
+  .kawa-playground-token--attr {
+    color: var(--kawa-c-brand);
+  }
+
+  .kawa-playground-token--string {
+    color: var(--kawa-c-info);
+  }
+
+  .kawa-playground-token--punct {
+    color: var(--kawa-c-text-3);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kawa-playground-control__track,
+    .kawa-playground-control__track::after {
+      transition: none;
+    }
+  }
+}

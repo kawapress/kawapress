@@ -15,7 +15,11 @@
     "@kawapress/plugin-mathjax": "workspace:*",
     "@kawapress/plugin-mermaid": "workspace:*",
     "@kawapress/plugin-og-image": "workspace:*",
+    "@kawapress/plugin-vue-component-demo": "workspace:*",
+    "@kawapress/plugin-vue-component-meta": "workspace:*",
     "@kawapress/plugin-vue-repl": "workspace:*",
-    "kawapress": "workspace:*"
+    "kawapress": "workspace:*",
+    "typescript": "catalog:dev",
+    "vue": "catalog:frontend"
   }
 }

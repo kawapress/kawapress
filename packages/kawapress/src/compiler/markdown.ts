@@ -209,6 +209,11 @@ const EXTERNAL_LINK_RE = /^(?:[a-z][a-z\d+.-]*:|\/\/)/i
  */
 function installPageLinkCollector(md: MarkdownExit): void {
   md.core.ruler.push('kawapress:page-links', (state) => {
+    // A plugin that renders a snippet with `renderInline(text, env)` shares the page env;
+    // the snippet has no headings, so it must not replace what the page collected.
+    if (state.inlineMode) {
+      return
+    }
     const env = state.env as MarkdownEnv
     const linkLines = new Map<Token, number>()
     const headings: string[] = []

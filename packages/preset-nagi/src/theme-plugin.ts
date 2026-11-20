@@ -3,6 +3,7 @@ import { definePlugin } from 'kawapress'
 import { resolveMarkdownPageScope, useRuntimeDependencies } from 'kawapress/generator'
 import { nagiSidebarMetaPlugin } from './sidebar-meta-plugin'
 import { nagiSocialIconsPlugin } from './social-icons-plugin'
+import { installTableWrapper } from './tables'
 
 const PLUGIN_NAME = '@kawapress/preset-nagi'
 const RUNTIME_DEPENDENCIES = ['overlayscrollbars']
@@ -16,6 +17,7 @@ export function nagiThemePlugin(): KawaPressPlugin {
       api.configResolved((resolved) => {
         site = resolved
       })
+      api.markdown(installTableWrapper)
       api.vite((config) => {
         if (!site)
           throw new Error('nagi: the site config is not resolved yet.')

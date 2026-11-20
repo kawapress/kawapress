@@ -6,10 +6,20 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+### 新增
+
+- **`@kawapress/plugin-vue-component-meta` 0.1.0：从组件源码生成 API 表格。** `<ComponentApi src="./Button.vue" />` 渲染 Vue 组件的 Props、事件、插槽与组件实例公开接口，由 `vue-component-meta` 借助 TypeScript 检查器在构建时读出，导入的类型、`withDefaults` 默认值和 JSDoc 都能读到。表格在开发时热更新，页面 `.md` 里输出为 Markdown 表格；`import doc from './Button.vue?component-doc'` 把同样的数据交给其他插件。
+- **`@kawapress/plugin-vue-component-demo` 0.1.0：真实渲染的组件示例。** `<ComponentDemo src="./demos/Basic.vue" />` 在页面里渲染独立的示例文件并附上高亮源码，需要浏览器的示例加上 `client-only`。同时安装组件 API 插件时，`<ComponentDemo component="./Button.vue" />` 展示组件本身，附带由 prop 类型生成的调节面板、事件日志和实时源码片段。
+
 ### 变更
 
+- **nagi 的表格更素净。** Markdown 表格放进带圆角描边的卡片里，太宽时可以横向滚动；表头是浅色文字加一条底线，行与行之间只有细分隔线，去掉了列线和斑马纹。*主题作者*：每个 Markdown 表格现在包在 `<div class="nagi-table">` 里。
 - **插件声明自己兼容的 `kawapress` 版本范围。** 插件对 `kawapress` 的 peer 依赖改为 `>=0.8.3 <0.10.0`，不再绑定核心当前的小版本；核心发新版本时，不再需要所有插件跟着发版。
 - **所有官方插件都带上 npm 关键词 `kawapress` 与 `kawapress-plugin`**，`@kawapress/preset-nagi` 带 `kawapress-preset`。社区插件使用同样的关键词，就能在 npm 上被搜到。
+
+### 修复
+
+- **指向某页标题的链接不再被误判为死链。** 插件用 `renderInline(text, env)` 渲染一小段 Markdown 时，会清空页面已收集的标题。*插件作者*：用页面 env 渲染行内 Markdown 不再影响死链检查。
 
 ## [2026-11-20] - 五个新插件
 

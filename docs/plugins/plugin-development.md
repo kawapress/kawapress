@@ -677,6 +677,7 @@ it('renders a localized note title', async () => {
 
 - 生成侧和运行侧的代码运行在不同阶段。不要让一侧依赖另一侧模块中的状态。
 - `buildArtifacts()` 中不要使用 `eval` 或 `new Function` 绕过模块边界。需要加载模块时，请使用 `importModule()`。
+- 生成侧代码不要在构建过程中用动态 `import()` 加载依赖。站点配置和它引用的插件模块由 Vite 的模块运行器加载，构建页面时这个运行器已经关闭，此时的 `import()` 会报 `Vite module runner has been closed`。体积大、想按需加载的依赖，请用 `createRequire(import.meta.url)` 加载，或在模块顶部静态导入。
 - 0.1 不提供 `addPage()`。需要新的页面时，请先在 Markdown 源文件中创建它。
 
 ## 官方插件参考 {#official-plugins-reference}
