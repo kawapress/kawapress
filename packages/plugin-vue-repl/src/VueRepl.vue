@@ -122,8 +122,10 @@ function escapeAttribute(value: string): string {
     <div
       v-if="loaded"
       class="kawa-vue-repl__stage"
+      :class="{ dark: isDark }"
       :style="{ height: `${height}px` }"
     >
+      <!-- @vue/repl styles its dark mode as `.dark .vue-repl`; the page itself may follow the system setting without a class. -->
       <component
         :is="loaded.Repl"
         :store="loaded.store"
