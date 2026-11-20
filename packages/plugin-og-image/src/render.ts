@@ -1,4 +1,4 @@
-import type { LoadedFonts } from './fonts'
+import type { SatoriFont } from './fonts'
 import { createHash } from 'node:crypto'
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { extname, join, resolve, sep } from 'node:path'
@@ -9,6 +9,9 @@ import { html as parseHtml } from 'satori-html'
 import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from './constants'
 
 const COMMENT_RE = /<!--[\s\S]*?-->/g
+const TAG_RE = /<[^>]*>/g
+const ENTITY_RE = /&(?:#(\d+)|#x([\da-f]+)|(amp|lt|gt|quot|apos|nbsp));/gi
+const NAMED_ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: '\'', nbsp: '\u00A0' }
 const IMG_TAG_RE = /<img\b[^>]*>/gi
 const SRC_RE = /\bsrc="([^"]*)"/i
 const MIME_TYPES: Record<string, string> = {
@@ -31,6 +34,34 @@ export function stripComments(html: string): string {
   return html.replace(COMMENT_RE, '')
 }
 
+/** The text a card shows: the HTML without tags and with its entities decoded. */
+export function textContent(html: string): string {
+  return decodeEntities(html.replace(TAG_RE, ' '))
+}
+
+function decodeEntities(text: string): string {
+  return text.replace(ENTITY_RE, (match, decimal?: string, hex?: string, name?: string) => {
+    if (decimal || hex) {
+      return String.fromCodePoint(Number.parseInt(decimal ?? hex!, decimal ? 10 : 16))
+    }
+    return NAMED_ENTITIES[name!.toLowerCase()] ?? match
+  })
+}
+
+interface HtmlNode {
+  props?: { children?: unknown }
+}
+
+/** satori-html keeps text as Vue SSR escaped it, so `&` would be drawn as `&amp;`. */
+export function decodeTextNodes<T>(node: T): T {
+  const decode = (child: unknown): unknown => typeof child === 'string' ? decodeEntities(child) : decodeTextNodes(child)
+  const props = (node as HtmlNode | null)?.props
+  if (props && 'children' in props) {
+    props.children = Array.isArray(props.children) ? props.children.map(decode) : decode(props.children)
+  }
+  return node
+}
+
 /**
  * Inlines site-internal images. A template refers to them with a path that
  * starts with `/`, like in a page: it is read from the public folder, then from
@@ -46,7 +77,7 @@ export async function inlineLocalImages(
     if (!src || !src.startsWith('/') || src.startsWith('//') || replacements.has(src)) {
       continue
     }
-    replacements.set(src, await readLocalImage(decodeEntities(src), directories))
+    replacements.set(src, await readLocalImage(decodeAmpersands(src), directories))
   }
 
   return html.replace(IMG_TAG_RE, tag => tag.replace(SRC_RE, (match, src: string) => {
@@ -76,7 +107,7 @@ async function readLocalImage(src: string, directories: readonly string[]): Prom
   throw new Error(`KawaPress OG Image: image ${JSON.stringify(src)} used in the template was not found in the public folder or the site root.`)
 }
 
-function decodeEntities(value: string): string {
+function decodeAmpersands(value: string): string {
   return value.replace(/&amp;/g, '&')
 }
 
@@ -86,13 +117,13 @@ export function cacheKey(html: string, fontsDigest: string): string {
     .digest('hex')
 }
 
-export async function renderPng(html: string, fonts: LoadedFonts): Promise<Uint8Array> {
+export async function renderPng(html: string, fonts: readonly SatoriFont[]): Promise<Uint8Array> {
   // satori-html returns a satori-compatible node tree; its type is looser than satori's.
-  const node = parseHtml(html) as unknown as Parameters<typeof satori>[0]
+  const node = decodeTextNodes(parseHtml(html)) as unknown as Parameters<typeof satori>[0]
   const svg = await satori(node, {
     width: OG_IMAGE_WIDTH,
     height: OG_IMAGE_HEIGHT,
-    fonts: fonts.fonts,
+    fonts: [...fonts],
   })
   const resvg = new Resvg(svg, {
     fitTo: { mode: 'width', value: OG_IMAGE_WIDTH },

@@ -11,7 +11,7 @@ Per-page social share images (`og:image`) for KawaPress, rendered at build time 
 - Zero config: every page gets a 1200×630 PNG with its title, description and site name.
 - Writes `og:image`, `og:image:width`, `og:image:height`, `twitter:card` and `twitter:image`. The site `base` is added to the address for you.
 - Custom template as a Vue component, drawn with satori.
-- A Latin font is built in. Add your own font file for Chinese, Japanese or Korean text.
+- A Latin font (Figtree) is built in. Chinese, Japanese, Korean and other scripts work out of the box: Noto font subsets are downloaded at build time and cached. Use `fonts` with `remoteFonts: false` to build offline.
 - Cached, so a second build only draws pages that changed.
 - Never overrides an `og:image` you wrote yourself. `ogImage: false` in frontmatter skips a page.
 
@@ -44,7 +44,8 @@ Cards are written to `dist/og/<route>.png`.
 | --- | --- |
 | `hostname` | Required. The absolute address of the site. |
 | `template` | Path of a Vue single-file component, relative to the site root. |
-| `fonts` | `{ name, path, weight?, style? }[]`. TTF, OTF or WOFF files. |
+| `fonts` | `{ name, path, weight?, style? }[]`. TTF, OTF or WOFF files. They take precedence over remote fonts. |
+| `remoteFonts` | `boolean \| { endpoints?, timeout? }`, on by default. Downloads Noto font subsets at build time for characters no other font draws. The characters on cards are sent to the font service; set `false` to stay offline. |
 | `exclude` | Globs matched against the page `sourcePath`. |
 
 ## Documentation

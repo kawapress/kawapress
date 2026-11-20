@@ -12,7 +12,7 @@ import { consola } from 'consola'
 import { definePlugin, resolveLocaleIndex } from 'kawapress'
 import picomatch from 'picomatch'
 import { isRunnableDevEnvironment } from 'vite'
-import { formatMissingGlyphWarning, renderCard } from './cards'
+import { formatMissingGlyphWarning, formatRemoteFontWarning, renderCard } from './cards'
 import {
   OG_IMAGE_DEV_PREFIX,
   OG_IMAGE_ENTRY_ID,
@@ -23,12 +23,14 @@ import {
 } from './constants'
 import { loadFonts } from './fonts'
 import { createOgImageHead, hasOgImage, imageUrl, resolveHostname, routeToImagePath } from './head'
+import { createRemoteFontLoader } from './remote-fonts'
 import { createCardCache } from './render'
 import { createOgImageVitePlugin, installOgImageEnvironment } from './vite-plugin'
 
 const BUILT_IN_TEMPLATE = fileURLToPath(new URL('./template/OgTemplate.vue', import.meta.url))
 const CACHE_DIRECTORY = 'node_modules/.cache/kawapress-og-image'
 const DEFAULT_LANG = 'en'
+const RENDER_CONCURRENCY = 6
 
 export function ogImagePlugin(options: OgImagePluginOptions): KawaPressPlugin {
   if (!options || typeof options.hostname !== 'string' || !options.hostname) {
@@ -53,7 +55,16 @@ export function ogImagePlugin(options: OgImagePluginOptions): KawaPressPlugin {
     return site
   }
   const getFonts = (): Promise<LoadedFonts> => {
-    fonts ??= loadFonts(getSite().root, options.fonts)
+    if (!fonts) {
+      const { root } = getSite()
+      const remote = options.remoteFonts === false
+        ? undefined
+        : createRemoteFontLoader({
+            ...(typeof options.remoteFonts === 'object' ? options.remoteFonts : {}),
+            cacheDirectory: join(root, CACHE_DIRECTORY, 'fonts'),
+          })
+      fonts = loadFonts(root, options.fonts, remote)
+    }
     return fonts
   }
   const createContext = async (bundle: TemplateBundle): Promise<CardContext> => {
@@ -61,7 +72,7 @@ export function ogImagePlugin(options: OgImagePluginOptions): KawaPressPlugin {
     return {
       bundle,
       fonts: await getFonts(),
-      cache: createCardCache(join(root, CACHE_DIRECTORY)),
+      cache: createCardCache(join(root, CACHE_DIRECTORY, 'cards')),
       imageDirectories: [resolve(root, srcDir, publicDir), root],
     }
   }
@@ -77,6 +88,7 @@ export function ogImagePlugin(options: OgImagePluginOptions): KawaPressPlugin {
       siteTitle: locale?.title ?? title,
       lang: locale?.lang ?? DEFAULT_LANG,
       routePath,
+      url: hostname + routePath.replace(/^\/+/, ''),
       frontmatter: pageData.frontmatter,
     }
   }
@@ -163,16 +175,26 @@ export function ogImagePlugin(options: OgImagePluginOptions): KawaPressPlugin {
           const context = await createContext(bundle)
 
           const missing = new Map<string, string[]>()
+          const fontErrors = new Set<string>()
           let reused = 0
-          for (const page of targets) {
-            const card = await renderCard(createProps(page.routePath, page.pageData), context)
-            if (card.cached) {
-              reused++
+          // Several cards at a time, so that font downloads of a cold build overlap.
+          const queue = [...targets]
+          const worker = async (): Promise<void> => {
+            for (let page = queue.shift(); page; page = queue.shift()) {
+              const card = await renderCard(createProps(page.routePath, page.pageData), context)
+              if (card.cached) {
+                reused++
+              }
+              if (card.missingCharacters.length > 0) {
+                missing.set(page.routePath, card.missingCharacters)
+              }
+              card.remoteFontErrors.forEach(error => fontErrors.add(error))
+              await emitFile(routeToImagePath(page.routePath), card.png)
             }
-            if (card.missingCharacters.length > 0) {
-              missing.set(page.routePath, card.missingCharacters)
-            }
-            await emitFile(routeToImagePath(page.routePath), card.png)
+          }
+          await Promise.all(Array.from({ length: Math.min(RENDER_CONCURRENCY, targets.length) }, worker))
+          if (fontErrors.size > 0) {
+            consola.warn(formatRemoteFontWarning(fontErrors))
           }
           if (missing.size > 0) {
             consola.warn(formatMissingGlyphWarning(missing))
@@ -205,6 +227,9 @@ export function ogImagePlugin(options: OgImagePluginOptions): KawaPressPlugin {
     }
     const bundle = await environment.runner.import(OG_IMAGE_ENTRY_ID) as TemplateBundle
     const card = await renderCard(props, await createContext(bundle))
+    if (card.remoteFontErrors.length > 0) {
+      consola.warn(formatRemoteFontWarning(new Set(card.remoteFontErrors)))
+    }
     if (card.missingCharacters.length > 0) {
       consola.warn(`KawaPress OG Image: ${route} uses characters no font draws: ${card.missingCharacters.join('')}`)
     }

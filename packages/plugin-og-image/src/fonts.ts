@@ -1,4 +1,5 @@
 import type { Buffer } from 'node:buffer'
+import type { RemoteFontLoader } from './remote-fonts'
 import type { OgImageFont } from './types'
 import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
@@ -27,21 +28,27 @@ export interface LoadedFonts {
   fonts: SatoriFont[]
   /** Identifies the font set, so a cached card is dropped when a font changes. */
   digest: string
-  /** Characters of `text` that no font has a glyph for. */
-  findMissingCharacters: (text: string) => string[]
+  /** Characters of `text` that no font, nor any of `extraFonts`, has a glyph for. */
+  findMissingCharacters: (text: string, extraFonts?: readonly SatoriFont[]) => string[]
+  /** Downloads fonts for the characters the fonts above do not draw. */
+  remote?: RemoteFontLoader
 }
 
 const BUILT_IN_FONT_FILES: Array<{ file: string, weight: SatoriFont['weight'] }> = [
-  { file: '@fontsource/inter/files/inter-latin-400-normal.woff', weight: 400 },
-  { file: '@fontsource/inter/files/inter-latin-700-normal.woff', weight: 700 },
+  { file: '@fontsource/figtree/files/figtree-latin-400-normal.woff', weight: 400 },
+  { file: '@fontsource/figtree/files/figtree-latin-500-normal.woff', weight: 500 },
+  { file: '@fontsource/figtree/files/figtree-latin-600-normal.woff', weight: 600 },
+  { file: '@fontsource/figtree/files/figtree-latin-700-normal.woff', weight: 700 },
 ]
 
+const BUILT_IN_FONT_FAMILY = 'Figtree'
 const WEIGHTS = new Set([100, 200, 300, 400, 500, 600, 700, 800, 900])
 const IGNORED_CHARACTER_RE = /[\s\p{C}]/u
 
 export async function loadFonts(
   root: string,
   userFonts: readonly OgImageFont[] = [],
+  remote?: RemoteFontLoader,
 ): Promise<LoadedFonts> {
   const fonts: SatoriFont[] = []
   for (const font of userFonts) {
@@ -66,7 +73,7 @@ export async function loadFonts(
   }
   for (const { file, weight } of BUILT_IN_FONT_FILES) {
     fonts.push({
-      name: 'Inter',
+      name: BUILT_IN_FONT_FAMILY,
       data: await readFile(require.resolve(file)),
       weight,
       style: 'normal',
@@ -78,36 +85,42 @@ export async function loadFonts(
     hash.update(`${font.name}\0${font.weight}\0${font.style}\0`)
     hash.update(font.data)
   }
+  // Mirrors serve the same fonts, so only whether remote fonts are on matters.
+  hash.update(remote ? 'remote-fonts:on' : 'remote-fonts:off')
 
-  // Parsed on demand and the small built-in font first: a site of Latin text never opens a CJK font.
-  const parsed = new Map<SatoriFont, OpenTypeFont>()
-  const hasGlyph = (font: SatoriFont, char: string): boolean => {
-    let opentypeFont = parsed.get(font)
-    if (!opentypeFont) {
-      const opentype = require('opentype.js') as OpenTypeModule
-      opentypeFont = opentype.parse(toArrayBuffer(font.data))
-      parsed.set(font, opentypeFont)
-    }
-    return opentypeFont.charToGlyphIndex(char) > 0
-  }
+  // The small built-in font is tried first: a site of Latin text never opens a CJK font.
   const lookupOrder = [...fonts].reverse()
 
   return {
     fonts,
     digest: hash.digest('hex'),
-    findMissingCharacters(text) {
+    remote,
+    findMissingCharacters(text, extraFonts = []) {
       const missing: string[] = []
       for (const char of new Set(text)) {
         if (IGNORED_CHARACTER_RE.test(char)) {
           continue
         }
-        if (!lookupOrder.some(font => hasGlyph(font, char))) {
+        if (!lookupOrder.some(font => hasGlyph(font, char)) && !extraFonts.some(font => hasGlyph(font, char))) {
           missing.push(char)
         }
       }
       return missing
     },
   }
+}
+
+// Parsed on demand, once per font.
+const parsedFonts = new WeakMap<SatoriFont, OpenTypeFont>()
+
+function hasGlyph(font: SatoriFont, char: string): boolean {
+  let opentypeFont = parsedFonts.get(font)
+  if (!opentypeFont) {
+    const opentype = require('opentype.js') as OpenTypeModule
+    opentypeFont = opentype.parse(toArrayBuffer(font.data))
+    parsedFonts.set(font, opentypeFont)
+  }
+  return opentypeFont.charToGlyphIndex(char) > 0
 }
 
 function toArrayBuffer(buffer: Buffer): ArrayBuffer {

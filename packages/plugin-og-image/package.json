@@ -37,18 +37,19 @@
     "registry": "https://registry.npmjs.org/"
   },
   "peerDependencies": {
-    "kawapress": "workspace:^",
+    "kawapress": "workspace:>=0.8.3 <0.10.0",
     "vue": "catalog:frontend"
   },
   "dependencies": {
-    "@fontsource/inter": "catalog:node",
+    "@fontsource/figtree": "catalog:node",
     "@resvg/resvg-js": "catalog:node",
     "@types/picomatch": "catalog:dev",
     "consola": "catalog:node",
     "opentype.js": "catalog:node",
     "picomatch": "catalog:node",
     "satori": "catalog:node",
-    "satori-html": "catalog:node"
+    "satori-html": "catalog:node",
+    "undici": "catalog:node"
   },
   "devDependencies": {
     "kawapress": "workspace:*",

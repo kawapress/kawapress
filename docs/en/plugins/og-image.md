@@ -47,11 +47,58 @@ After a build, every page has:
 - A file `og/<route>.png` in the output folder. The home page is `og/index.png`, and `/guide/intro` is `og/guide/intro.png`.
 - `og:image`, `og:image:width`, `og:image:height`, `twitter:card` (set to `summary_large_image`) and `twitter:image` in its `<head>`.
 
-The built-in template shows the site name, the page title, the page description and the route on a dark background. The title is the page title. The description comes from the page frontmatter, then the `description` of the current locale, then the site `description`. The site name is the `title` of the current locale, or the site `title`.
+The built-in template is a light card: the site name with a small accent square at the top, a large bold page title (the size shrinks for long titles, and CJK characters count double width) with up to two lines of description in the middle, and the page address (the URL without the protocol) under a divider at the bottom. The title is the page title. The description comes from the page frontmatter, then the `description` of the current locale, then the site `description`. The site name is the `title` of the current locale, or the site `title`.
 
 ## Chinese, Japanese, Korean and Other Scripts {#cjk-fonts}
 
-The plugin ships one Latin font (Inter). When a title or description contains glyphs it does not have, such as Chinese characters, Japanese kana or Korean, provide a font that covers them with `fonts`:
+The plugin ships one Latin font (Figtree, weights 400, 500, 600 and 700). When a title or description contains glyphs it does not have, such as Chinese characters, Japanese kana or Korean, the build downloads subsets of the matching Noto fonts from Google Fonts. A subset holds only the characters the card shows, so a Chinese site needs no configuration:
+
+```ts
+import ogImage from '@kawapress/plugin-og-image'
+import { nagi } from 'kawapress/nagi'
+
+export default nagi({
+  plugins: [
+    ogImage({ hostname: 'https://example.com' }),
+  ],
+})
+```
+
+The plugin downloads regular (400) and bold (700), and picks the font by script:
+
+- **Han characters**: Japanese (JP) when the card has kana or the page language is `ja`; Korean (KR) for `ko`; Traditional Chinese (TC) for `zh-TW` and `zh-Hant`; Hong Kong (HK) for `zh-HK`; Simplified Chinese (SC) otherwise.
+- **Other scripts**: their own Noto family, such as Korean (KR), Thai, Arabic, Hebrew or Devanagari.
+- **Symbols**: Noto Sans Math for math operators, Noto Sans Symbols or Symbols 2 for other symbols, and Noto Sans for anything else.
+- **Emoji are not covered** and are still drawn as blank boxes.
+
+Downloaded fonts are cached in `node_modules/.cache/kawapress-og-image/fonts/` under the site root. What a card downloads depends only on its own text, so later builds work offline once the cache is filled. Cache `node_modules/.cache/kawapress-og-image` in CI.
+
+### Remote Font Options {#remote-fonts}
+
+`remoteFonts` is on by default. Pass an object to tune it:
+
+```ts
+ogImage({
+  hostname: 'https://example.com',
+  remoteFonts: {
+    endpoints: ['https://fonts.googleapis.com'],
+    timeout: 10000,
+  },
+})
+```
+
+- `endpoints`: addresses compatible with the Google Fonts CSS API, tried in order. Defaults to `['https://fonts.googleapis.com']`. A mirror that offers the same API works too.
+- `timeout`: the time limit of each request in milliseconds, `10000` by default. A dropped connection is retried once, and an endpoint that fails twice is skipped for the rest of the build.
+- **Proxy**: when `HTTPS_PROXY` or `HTTP_PROXY` is set, requests go through it, and `NO_PROXY` is honored. Node's own `fetch` ignores these variables, so the plugin handles them.
+- **A failed download never fails the build**: a warning lists the errors, the characters are drawn as blank boxes, and that card is not cached, so the next build tries again.
+
+::: warning Privacy
+The characters shown on cards (titles and descriptions) are sent to the font service at build time. To avoid that, set `remoteFonts: false` to keep the build offline and provide font files with `fonts`.
+:::
+
+### Offline and Your Own Fonts {#offline-fonts}
+
+`fonts` still works and takes precedence: each character uses the built-in font first, then your fonts, and remote fonts last. For an offline build, or to pin a specific font, use `remoteFonts: false` with `fonts`:
 
 ```ts
 import ogImage from '@kawapress/plugin-og-image'
@@ -61,6 +108,7 @@ export default nagi({
   plugins: [
     ogImage({
       hostname: 'https://example.com',
+      remoteFonts: false,
       fonts: [
         { name: 'Noto Sans SC', path: 'fonts/NotoSansSC-Regular.otf', weight: 400 },
         { name: 'Noto Sans SC', path: 'fonts/NotoSansSC-Bold.otf', weight: 700 },
@@ -70,11 +118,9 @@ export default nagi({
 })
 ```
 
-`path` is relative to the site root. TTF, OTF and WOFF files work; WOFF2 does not. The built-in template mixes your fonts with the built-in one: each character uses the built-in font first and falls back to your fonts when the glyph is missing.
+`path` is relative to the site root. TTF, OTF and WOFF files work; WOFF2 does not. A full CJK font is often more than ten megabytes, which does not belong in a repository. A tool such as `pyftsubset` can keep only the characters your site uses and give a subset of a few hundred kilobytes.
 
-A full CJK font is often more than ten megabytes, which does not belong in a repository. Use a tool such as `pyftsubset` to keep only the characters your site uses and get a subset of a few hundred kilobytes.
-
-Characters that no font covers are drawn as blank boxes. The build warns about them first, listing the affected pages and characters, and still generates the images. The plugin never downloads fonts during a build.
+Characters that no font covers are drawn as blank boxes. The build warns about them first, listing the affected pages and characters, and still generates the images. The warning only considers text that actually appears on the card.
 
 ## Custom Template {#custom-template}
 
@@ -103,6 +149,7 @@ The template component receives these props:
 | `siteTitle` | The site title of the current locale |
 | `lang` | The `lang` of the current locale, `en` by default |
 | `routePath` | The page route, for example `/guide/intro` |
+| `url` | The absolute address of the page, for example `https://example.com/guide/intro` (`hostname`, `base` and route) |
 | `frontmatter` | The page frontmatter |
 
 An example with the site logo:
@@ -130,7 +177,7 @@ defineProps<{
       padding: '64px 80px',
       backgroundColor: '#ffffff',
       color: '#111827',
-      fontFamily: 'Inter',
+      fontFamily: 'Figtree',
     }"
   >
     <div :style="{ display: 'flex', alignItems: 'center' }">
@@ -162,9 +209,10 @@ Images are drawn by [satori](https://github.com/vercel/satori), which implements
 - **An element with more than one child needs `display: flex`.** An element that only holds text uses `display: block` (use `lineClamp` to truncate to several lines).
 - Common box and text properties work: sizes, `margin`, `padding`, `border`, `borderRadius`, `gap`, `fontSize`, `fontWeight`, `fontFamily`, `lineHeight`, `letterSpacing`, `textAlign`, `color`, `opacity`, `boxShadow` and `transform`.
 - Backgrounds support solid colors, `linear-gradient`, `radial-gradient` and images.
-- `fontFamily` must be the built-in `Inter` or a `name` declared in `fonts`. A font weight only works when you provided a font file for it.
+- `fontFamily` must be the built-in `Figtree` or a `name` declared in `fonts`. The built-in font has weights 400, 500, 600 and 700; a weight of a font from `fonts` only works when you provided a file for it.
 - CSS variables, animations and media queries are not supported.
-- The built-in font has no emoji, so emoji are drawn as blank boxes.
+- Text in the template is HTML-entity-decoded before drawing, so characters such as `&` render correctly.
+- Neither the built-in font nor the remote fonts have emoji, so emoji are drawn as blank boxes.
 
 See the [CSS support list](https://github.com/vercel/satori#css) of satori for every property.
 
@@ -208,7 +256,7 @@ head:
 
 The cache key of every image comes from the rendered template output, the fonts and the image size. Results are stored in `node_modules/.cache/kawapress-og-image/` under the site root. A page whose content did not change is not drawn again, so a second build adds almost no time. In CI you can cache this folder.
 
-Changing the template, the fonts, the site title, or a page title or description invalidates the affected pages automatically.
+Changing the template, the fonts, the site title, or a page title or description invalidates the affected pages automatically. Downloaded remote fonts are cached in `fonts/` of the same folder, and cards in `cards/`.
 
 ## Preview in the Dev Server {#dev-preview}
 
@@ -222,7 +270,8 @@ The dev server does not write `og:image` or other meta into pages.
 | --- | --- |
 | `hostname` | Required. The absolute address of the site. The `base` is appended for you. |
 | `template` | A custom template: the path of a Vue single-file component, relative to the site root. Defaults to the built-in template. |
-| `fonts` | Fonts the template uses, an array of `{ name, path, weight?, style? }`. A Latin font is built in. |
+| `fonts` | Fonts the template uses, an array of `{ name, path, weight?, style? }`. A Latin font (Figtree) is built in, and your fonts take precedence over remote fonts. |
+| `remoteFonts` | Downloads Noto font subsets at build time for characters neither the built-in font nor `fonts` draws. `boolean` or `{ endpoints?, timeout? }`, on by default. `false` keeps the build offline. |
 | `exclude` | Pages without an image, as globs that match the page `sourcePath`. |
 
 ## Limitations {#limitations}

@@ -22,7 +22,7 @@ const PLUGIN_ENTRY = '../../packages/plugin-og-image/src/index'
 describe('og-image plugin', () => {
   it('renders cards, writes head tags, and honours every opt-out', async () => {
     const root = await createSite({
-      pluginOptions: `{ hostname: 'https://example.com', exclude: ['/private/**'] }`,
+      pluginOptions: `{ hostname: 'https://example.com', exclude: ['/private/**'], remoteFonts: false }`,
       config: `
   base: '/docs/',
   locales: {
@@ -76,7 +76,7 @@ describe('og-image plugin', () => {
   it('renders a custom Vue template with local images and warns about missing glyphs', async () => {
     const warn = vi.spyOn(consola, 'warn').mockImplementation(() => {})
     const root = await createSite({
-      pluginOptions: `{ hostname: 'https://example.com', template: 'card.vue' }`,
+      pluginOptions: `{ hostname: 'https://example.com', template: 'card.vue', remoteFonts: false }`,
     })
     await Promise.all([
       writeFile(join(root, 'card.vue'), `
@@ -85,7 +85,7 @@ defineProps<{ title: string, siteTitle: string, lang: string }>()
 </script>
 
 <template>
-  <div :style="{ display: 'flex', width: '100%', height: '100%', backgroundColor: '#ff0000', fontFamily: 'Inter' }">
+  <div :style="{ display: 'flex', width: '100%', height: '100%', backgroundColor: '#ff0000', fontFamily: 'Figtree' }">
     <img src="/mark.svg" width="64" height="64">
     <div :style="{ display: 'block', fontSize: '48px', color: '#ffffff' }">{{ siteTitle }} {{ title }} {{ lang }}</div>
   </div>
@@ -126,7 +126,7 @@ defineProps<{ title: string, siteTitle: string, lang: string }>()
   }, 120_000)
 
   it('previews cards in dev without writing head tags', async () => {
-    const root = await createSite({ pluginOptions: `{ hostname: 'https://example.com' }` })
+    const root = await createSite({ pluginOptions: `{ hostname: 'https://example.com', remoteFonts: false }` })
     await writeFile(join(root, 'index.md'), '# Home\n')
     await writeFile(join(root, 'guide.md'), '# Guide\n')
     const server = await createDevServer(root, { hmr: false, port: 0 })
