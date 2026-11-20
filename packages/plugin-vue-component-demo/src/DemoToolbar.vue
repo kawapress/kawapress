@@ -44,6 +44,7 @@ async function copy(): Promise<void> {
       type="button"
       class="kawa-component-demo__button"
       :aria-controls="controls"
+      :aria-expanded="expanded"
       @click="$emit('toggle')"
     >
       {{ expanded ? labels.collapse : labels.expand }}
