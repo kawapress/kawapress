@@ -1,6 +1,6 @@
 @layer kawa.plugin {
   .kawa-component-api {
-    margin: 1rem 0;
+    margin: 1.25rem 0;
   }
 
   .kawa-component-api__title {
@@ -19,7 +19,9 @@
     background: color-mix(in oklab, var(--kawa-c-warning) 12%, var(--kawa-c-bg));
   }
 
+  /* The gap lives here: the theme restyles the margins of the `h3` titles. */
   .kawa-component-api__scroll {
+    margin-top: 0.625rem;
     overflow-x: auto;
     border: 1px solid var(--kawa-c-divider);
     border-radius: var(--kawa-radius);
