@@ -149,6 +149,7 @@ export default nagi({
 | `siteTitle` | 当前语言的站点标题 |
 | `lang` | 当前语言的 `lang`，默认 `en` |
 | `routePath` | 页面路由，例如 `/guide/intro` |
+| `logo` | `logo` 选项的值，未设置时为空字符串 |
 | `url` | 页面的绝对地址，例如 `https://example.com/guide/intro`（`hostname` + `base` + 路由） |
 | `frontmatter` | 页面的 Frontmatter |
 
@@ -272,6 +273,7 @@ head:
 | `template` | 自定义模板，Vue 单文件组件的路径，相对站点根目录。默认使用内置模板。 |
 | `fonts` | 模板用到的字体，`{ name, path, weight?, style? }` 数组。内置一份拉丁字体（Figtree），优先于远程字体。 |
 | `remoteFonts` | 构建时下载 Noto 字体子集，绘制内置字体和 `fonts` 都没有的字符。`boolean` 或 `{ endpoints?, timeout? }`，默认开启。`false` 保持构建离线。 |
+| `logo` | 内置模板在站点名前显示的图片：public 目录下的路径（如 `/logo.png`）或绝对地址。不设置时显示一个小色块。 |
 | `exclude` | 不生成分享图的页面，glob，匹配页面的 `sourcePath`。 |
 
 ## 注意事项 {#limitations}

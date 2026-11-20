@@ -30,6 +30,11 @@ export interface OgImagePluginOptions {
    * `node_modules/.cache`. Defaults to `true`; `false` keeps the build offline.
    */
   remoteFonts?: boolean | OgImageRemoteFontsOptions
+  /**
+   * Image shown before the site title in the built-in template: a path in the
+   * public folder such as `/logo.png`, or an absolute URL.
+   */
+  logo?: string
   /** Glob patterns, matched against the page `sourcePath`, of pages without a card. */
   exclude?: string[]
 }
@@ -43,5 +48,7 @@ export interface OgImageTemplateProps {
   routePath: string
   /** Absolute address of the page, such as `https://example.com/guide/intro`. */
   url: string
+  /** The `logo` option, or an empty string. */
+  logo: string
   frontmatter: Record<string, unknown>
 }

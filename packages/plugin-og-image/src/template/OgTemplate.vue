@@ -11,6 +11,7 @@ const props = defineProps<{
   lang: string
   routePath: string
   url: string
+  logo: string
   frontmatter: Record<string, unknown>
 }>()
 
@@ -42,7 +43,8 @@ const address = computed(() => props.url.replace(/^https?:\/\//, '').replace(/\/
     }"
   >
     <div :style="{ display: 'flex', alignItems: 'center', fontSize: '30px', fontWeight: 600, color: '#3f3f46' }">
-      <div :style="{ width: '14px', height: '14px', borderRadius: '4px', backgroundColor: ACCENT, marginRight: '18px' }" />
+      <img v-if="logo" :src="logo" width="84" height="84" :style="{ width: '84px', height: '84px', objectFit: 'contain', margin: '-14px 6px -14px -12px' }">
+      <div v-else :style="{ width: '14px', height: '14px', borderRadius: '4px', backgroundColor: ACCENT, marginRight: '18px' }" />
       {{ siteTitle }}
     </div>
 

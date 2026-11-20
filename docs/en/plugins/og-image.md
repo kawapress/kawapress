@@ -149,6 +149,7 @@ The template component receives these props:
 | `siteTitle` | The site title of the current locale |
 | `lang` | The `lang` of the current locale, `en` by default |
 | `routePath` | The page route, for example `/guide/intro` |
+| `logo` | The `logo` option, or an empty string |
 | `url` | The absolute address of the page, for example `https://example.com/guide/intro` (`hostname`, `base` and route) |
 | `frontmatter` | The page frontmatter |
 
@@ -272,6 +273,7 @@ The dev server does not write `og:image` or other meta into pages.
 | `template` | A custom template: the path of a Vue single-file component, relative to the site root. Defaults to the built-in template. |
 | `fonts` | Fonts the template uses, an array of `{ name, path, weight?, style? }`. A Latin font (Figtree) is built in, and your fonts take precedence over remote fonts. |
 | `remoteFonts` | Downloads Noto font subsets at build time for characters neither the built-in font nor `fonts` draws. `boolean` or `{ endpoints?, timeout? }`, on by default. `false` keeps the build offline. |
+| `logo` | Image the built-in template shows before the site title: a path in the public folder such as `/logo.png`, or an absolute URL. Without it, a small accent square is shown. |
 | `exclude` | Pages without an image, as globs that match the page `sourcePath`. |
 
 ## Limitations {#limitations}

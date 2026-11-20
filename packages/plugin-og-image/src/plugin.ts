@@ -89,6 +89,7 @@ export function ogImagePlugin(options: OgImagePluginOptions): KawaPressPlugin {
       lang: locale?.lang ?? DEFAULT_LANG,
       routePath,
       url: hostname + routePath.replace(/^\/+/, ''),
+      logo: options.logo ?? '',
       frontmatter: pageData.frontmatter,
     }
   }

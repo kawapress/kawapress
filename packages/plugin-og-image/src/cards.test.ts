@@ -37,6 +37,7 @@ const props = {
   lang: 'en',
   routePath: '/hello',
   url: 'https://example.com/hello',
+  logo: '',
   frontmatter: {},
 }
 

@@ -46,6 +46,7 @@ Cards are written to `dist/og/<route>.png`.
 | `template` | Path of a Vue single-file component, relative to the site root. |
 | `fonts` | `{ name, path, weight?, style? }[]`. TTF, OTF or WOFF files. They take precedence over remote fonts. |
 | `remoteFonts` | `boolean \| { endpoints?, timeout? }`, on by default. Downloads Noto font subsets at build time for characters no other font draws. The characters on cards are sent to the font service; set `false` to stay offline. |
+| `logo` | Image before the site title in the built-in template: a public path such as `/logo.png`, or a URL. |
 | `exclude` | Globs matched against the page `sourcePath`. |
 
 ## Documentation

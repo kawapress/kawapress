@@ -20,7 +20,7 @@ export default nagi({
     mermaidPlugin(),
     fileTreePlugin(),
     vueReplPlugin(),
-    ogImagePlugin({ hostname: 'https://kawapress.dev' }),
+    ogImagePlugin({ hostname: 'https://kawapress.dev', logo: '/kawapress-logo.png' }),
     lastUpdatedPlugin({
       editLink: {
         pattern: 'https://github.com/kawapress/kawapress/edit/main/:path',

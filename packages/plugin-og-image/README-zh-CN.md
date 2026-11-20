@@ -46,6 +46,7 @@ export default defineConfig({
 | `template` | Vue 单文件组件的路径，相对站点根目录。 |
 | `fonts` | `{ name, path, weight?, style? }[]`，TTF、OTF 或 WOFF 文件。优先于远程字体。 |
 | `remoteFonts` | `boolean \| { endpoints?, timeout? }`，默认开启。构建时下载 Noto 字体子集，绘制其他字体都没有的字符。卡片上的文字会发送给字体服务，设为 `false` 保持离线。 |
+| `logo` | 内置模板站点名前的图片：public 目录下的路径（如 `/logo.png`）或网址。 |
 | `exclude` | 匹配页面 `sourcePath` 的 glob。 |
 
 ## 文档
