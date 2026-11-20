@@ -145,9 +145,9 @@ function renderDemo(
   }
 
   const file = resolveFile(env, options, attributes.src)
-  const title = attributes.title ? markdown.renderInline(attributes.title, env) : ''
+  const title = attributes.title ? markdown.renderInline(attributes.title, { ...env }) : ''
   const description = attributes.description
-    ? markdown.renderInline(attributes.description, env)
+    ? markdown.renderInline(attributes.description, { ...env })
     : ''
 
   if (env.ssgMarkdown) {
@@ -203,9 +203,9 @@ function renderPlayground(
   }
   const initialProps = parseInitialProps(attributes.props)
   const file = resolveFile(env, options, componentPath)
-  const title = attributes.title ? markdown.renderInline(attributes.title, env) : ''
+  const title = attributes.title ? markdown.renderInline(attributes.title, { ...env }) : ''
   const description = attributes.description
-    ? markdown.renderInline(attributes.description, env)
+    ? markdown.renderInline(attributes.description, { ...env })
     : ''
   const labels = escapeSingleQuoted(JSON.stringify(options.resolveLabels(env.path ?? '/')))
 

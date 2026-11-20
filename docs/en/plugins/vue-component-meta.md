@@ -81,7 +81,7 @@ const emit = defineEmits<{
 
 ## Control inference {#controls}
 
-Each prop gets a control from its type. The controls of the component demo plugin use it to build their inputs:
+Each prop gets a control from its type. The controls of [Component Demo](/en/plugins/vue-component-demo#controls) use it to build their inputs:
 
 | Type | Control |
 | --- | --- |

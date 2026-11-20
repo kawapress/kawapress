@@ -81,7 +81,7 @@ const emit = defineEmits<{
 
 ## 控件推断 {#controls}
 
-每个 prop 会按类型推断出一种控件，组件演示插件的调节面板用它生成输入项：
+每个 prop 会按类型推断出一种控件，[组件演示](/plugins/vue-component-demo#controls)的调节面板用它生成输入项：
 
 | 类型 | 控件 |
 | --- | --- |

@@ -646,6 +646,13 @@ title: Linked
     expect(env.headings).toEqual(['one', 'two', 'three', 'four', 'five', 'six', 'custom-id'])
   })
 
+  it('keeps the page headings when a plugin renders an inline snippet with the page env', async () => {
+    const { env } = await parseMarkdown(md, '## Kept {#kept}', '/inline-snippet')
+    md.renderInline('a **title**', env)
+
+    expect(env.headings).toEqual(['kept'])
+  })
+
   it('skips the permalink KawaPress renders inside headings', async () => {
     const { env } = await parseMarkdown(md, '# Only\n', '/only')
 

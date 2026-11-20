@@ -64,11 +64,41 @@ The source starts collapsed: **Show source** reveals it and **Copy source** copi
 
 <ComponentDemo src="../../components/examples/demos/ButtonCounter.vue" title="Counter" />
 
+## Props controls {#controls}
+
+With the [Component API](/en/plugins/vue-component-meta) plugin also installed, swap `src` for `component` and point it at the component itself to get a playground with controls:
+
+```md
+<ComponentDemo
+  component="../../components/examples/KButton.vue"
+  props='{"label":"Submit"}'
+  title="Button playground"
+/>
+```
+
+<ComponentDemo
+  component="../../components/examples/KButton.vue"
+  props='{"label":"Submit"}'
+  title="Button playground"
+/>
+
+- Each control is inferred by the Component API plugin from the prop's type: a switch for booleans, a number input for numbers, options for literal unions, a JSON input for objects and arrays. Props that cannot be edited, such as functions, are left out.
+- The source snippet below the playground follows the controls, lists only props that differ from their defaults, and can be copied.
+- Events the component emits go to the event log, which keeps the latest 20.
+- When the component changes its own prop through an `update:xxx` event, as with `v-model`, the controls follow.
+- **Reset** restores the initial values.
+
+Initial values come from the `props` attribute, then from the prop defaults; otherwise the prop is not passed. Give required props without a default a value in `props`, which is a JSON object.
+
+The playground shows the component itself, so the snippet always matches the result. To show a particular combination, write a demo file and use `src`.
+
 ## Attributes {#attributes}
 
 | Attribute | Description |
 | --- | --- |
 | `src` | The demo file, relative to the current Markdown file, or a Vite alias such as `@/demos/Basic.vue`. |
+| `component` | A component file, shown as a playground with controls. Needs the Component API plugin; use either this or `src`. |
+| `props` | With `component`: the initial values, as a JSON object. |
 | `title` | Title, with inline Markdown. |
 | `description` | Description, with inline Markdown. |
 | `client-only` | Render the demo in the browser only, see below. |
