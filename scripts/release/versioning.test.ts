@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   filterPublishedChanges,
   findPeerRangeConflicts,
+  findReleaseTag,
   findVersionGroupProblems,
   satisfiesComparators,
 } from './versioning.mjs'
@@ -60,5 +61,23 @@ describe('filterPublishedChanges', () => {
       'packages/plugin-feed/src/__tests__/fixture.md',
       '',
     ], 'packages/plugin-feed')).toEqual(['packages/plugin-feed/src/feed.ts'])
+  })
+})
+
+describe('findReleaseTag', () => {
+  const versions: Record<string, string | undefined> = {
+    'v0.8.0': undefined,
+    'v0.8.3': '0.0.1',
+    'v2026-11-20-plugins': '0.1.0',
+    'v0.8.4': '0.1.0',
+  }
+  const read = async (tag: string) => versions[tag]
+
+  it('returns the earliest tag that has the version, not the latest tag', async () => {
+    expect(await findReleaseTag(Object.keys(versions), '0.1.0', read)).toBe('v2026-11-20-plugins')
+  })
+
+  it('returns undefined when the version was never released', async () => {
+    expect(await findReleaseTag(Object.keys(versions), '0.2.0', read)).toBeUndefined()
   })
 })

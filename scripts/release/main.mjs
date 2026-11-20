@@ -17,7 +17,7 @@ import { logStep, logSuccess, logWarning } from './runtime.mjs'
 import { defaultTag, parseSemver, validateTag } from './semver.mjs'
 import { checkNpmVersion, checkToolchain } from './toolchain.mjs'
 import { printTrustCommands } from './trust.mjs'
-import { findLastReleaseTag, findPeerRangeConflicts, findUnbumpedPackages, findVersionGroupProblems } from './versioning.mjs'
+import { findPeerRangeConflicts, findUnbumpedPackages, findVersionGroupProblems, listReleaseTags } from './versioning.mjs'
 
 /** Modes that write to npm and therefore need a logged-in maintainer when run locally. */
 const publishingModes = new Set(['publish', 'bootstrap'])
@@ -167,12 +167,11 @@ async function prepareRelease(options, packages) {
   for (const [name, version] of bumps)
     console.log(`  ${name} → ${version}`)
 
-  const tag = await findLastReleaseTag()
-  const unbumped = tag ? await findUnbumpedPackages(packages, bumps, tag) : []
+  const unbumped = await findUnbumpedPackages(packages, bumps, await listReleaseTags())
   if (unbumped.length > 0) {
-    logWarning(`${unbumped.length} package(s) changed since ${tag} but keep their version, so this release skips their changes:`)
-    for (const { name, version, files } of unbumped)
-      console.log(`  ${name}@${version}  ${files.length} file(s), e.g. ${files[0]}`)
+    logWarning(`${unbumped.length} package(s) changed since the release of their current version, so this release skips their changes:`)
+    for (const { name, version, tag, files } of unbumped)
+      console.log(`  ${name}@${version} (released in ${tag})  ${files.length} file(s), e.g. ${files[0]}`)
     console.log('  Add them to this release with <name>=<version> if the changes should ship.')
   }
 
