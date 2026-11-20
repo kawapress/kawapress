@@ -5,9 +5,9 @@ import type { ViteAlias } from './resolve'
 import type { DemoTagAttributes } from './tag'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { basename, extname, resolve } from 'node:path'
 import { addPageComponent } from 'kawapress'
-import { COMPONENT_NAME } from './constants'
+import { COMPONENT_NAME, DOC_QUERY, META_PLUGIN_PACKAGE, PLAYGROUND_NAME, PROPS_TABLE_NAME } from './constants'
 import { createDemoQueryId } from './query'
 import { DemoFileError, resolveDemoFile } from './resolve'
 import { DemoTagError, parseDemoTag } from './tag'
@@ -30,6 +30,12 @@ export interface InstallComponentDemoOptions {
   getSite: () => DemoSiteContext
   /** Absolute path of the component that implements the demo block. */
   componentModule: string
+  /** Absolute path of the component that implements the controls playground. */
+  playgroundModule: string
+  /** Absolute path of the component that lists the props in the page `.md`. */
+  propsTableModule: string
+  /** Whether the site installed the meta plugin, read when a playground is rendered. */
+  hasMeta: () => boolean
 }
 
 interface DemoRenderEnv extends PageComponentEnv {
@@ -120,13 +126,19 @@ function renderDemo(
   env: DemoRenderEnv,
   attributes: DemoTagAttributes,
 ): string {
-  if (attributes.component !== undefined) {
+  if (attributes.src !== undefined && attributes.component !== undefined) {
+    throw new DemoTagError('src and component cannot be used together. Use src for a static demo, component for a controls playground.')
+  }
+  if (attributes.src === undefined && attributes.component === undefined) {
     throw new DemoTagError(
-      'the component attribute (controls playground) is not available yet. Use src to show a static demo.',
+      `<${options.tag}> needs a src attribute (static demo, for example src="./demos/Basic.vue") or a component attribute (controls playground, for example component="../src/Button.vue").`,
     )
   }
+  if (attributes.component !== undefined) {
+    return renderPlayground(markdown, options, env, attributes, attributes.component)
+  }
   if (attributes.props !== undefined) {
-    throw new DemoTagError('the props attribute only works together with the component attribute, which is not available yet.')
+    throw new DemoTagError('the props attribute only works together with the component attribute.')
   }
   if (!attributes.src) {
     throw new DemoTagError(`<${options.tag}> needs a src attribute, for example src="./demos/Basic.vue".`)
@@ -173,6 +185,89 @@ function renderDemo(
 }
 
 /**
+ * The controls playground of `component="../src/Button.vue"`: the component
+ * and its `ComponentDoc` (from the meta plugin) are imported by the page, and
+ * the playground component builds the stage, the controls and the snippet.
+ */
+function renderPlayground(
+  markdown: MarkdownExit,
+  options: InstallComponentDemoOptions,
+  env: DemoRenderEnv,
+  attributes: DemoTagAttributes,
+  componentPath: string,
+): string {
+  if (!options.hasMeta()) {
+    throw new DemoTagError(
+      `the component attribute needs ${META_PLUGIN_PACKAGE}. Install it and add vueComponentMetaPlugin() to the plugins of the site config, or use src to show a static demo.`,
+    )
+  }
+  const initialProps = parseInitialProps(attributes.props)
+  const file = resolveFile(env, options, componentPath)
+  const title = attributes.title ? markdown.renderInline(attributes.title, env) : ''
+  const description = attributes.description
+    ? markdown.renderInline(attributes.description, env)
+    : ''
+  const labels = escapeSingleQuoted(JSON.stringify(options.resolveLabels(env.path ?? '/')))
+
+  const id = createHash('sha1').update(file).digest('hex').slice(0, 8)
+  const docName = `KawaPlaygroundDoc_${id}`
+  const docModule = `${file}?${DOC_QUERY}`
+
+  if (env.ssgMarkdown) {
+    // The page .md is rendered into the compiled page, which already imports
+    // the doc and the table from its normal render (see below).
+    return [
+      title && `<p><strong>${title}</strong></p>`,
+      description && `<p>${description}</p>`,
+      `<${PROPS_TABLE_NAME} :doc="${docName}" :labels='${labels}' />`,
+      '',
+    ].filter(Boolean).join('\n')
+  }
+
+  const componentName = `KawaPlayground_${id}`
+  addPageComponent(env, { name: PLAYGROUND_NAME, from: options.playgroundModule })
+  addPageComponent(env, { name: componentName, from: file })
+  // Like the highlighted source of a static demo, the doc is not a component
+  // but the page binds it by name so the template can pass it on.
+  addPageComponent(env, { name: docName, from: docModule })
+  // Only the page .md output renders the table, but it can only use what the
+  // page imported; the table component is a few lines.
+  addPageComponent(env, { name: PROPS_TABLE_NAME, from: options.propsTableModule })
+
+  const props = [
+    `:component="${componentName}"`,
+    `:doc="${docName}"`,
+    `fallback-name="${escapeAttribute(basename(file, extname(file)))}"`,
+    `:initial-props='${escapeSingleQuoted(JSON.stringify(initialProps))}'`,
+    `:labels='${labels}'`,
+  ]
+  return [
+    `<${PLAYGROUND_NAME} ${props.join(' ')}>`,
+    title && `<template #title>${title}</template>`,
+    description && `<template #description>${description}</template>`,
+    `</${PLAYGROUND_NAME}>`,
+    '',
+  ].filter(Boolean).join('\n')
+}
+
+function parseInitialProps(text: string | undefined): Record<string, unknown> {
+  if (text === undefined) {
+    return {}
+  }
+  let value: unknown
+  try {
+    value = JSON.parse(text)
+  }
+  catch (error) {
+    throw new DemoTagError(`the props attribute is not valid JSON (${(error as Error).message}). Write it as props='{"label":"Submit"}'.`)
+  }
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new DemoTagError('the props attribute must be a JSON object, for example props=\'{"label":"Submit"}\'.')
+  }
+  return value as Record<string, unknown>
+}
+
+/**
  * The page `.md` output of the LLMS plugin: title, description and the whole
  * source, no rendered demo.
  */
@@ -208,6 +303,10 @@ function countLines(text: string): number {
 
 function escapeHtml(value: string): string {
   return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+}
+
+function escapeAttribute(value: string): string {
+  return value.replaceAll('&', '&amp;').replaceAll('"', '&quot;')
 }
 
 function escapeSingleQuoted(value: string): string {

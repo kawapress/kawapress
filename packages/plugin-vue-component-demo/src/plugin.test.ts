@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer'
-import { mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { get } from 'node:http'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
@@ -16,6 +16,7 @@ afterEach(async () => {
 })
 
 const PLUGIN_ENTRY = '../../packages/plugin-vue-component-demo/src/index'
+const META_ENTRY = '../../packages/plugin-vue-component-meta/src/index'
 
 const BUTTON = `<script setup lang="ts">
 import { ref } from 'vue'
@@ -103,6 +104,57 @@ title: Demos
     expect(assets.some(name => name.endsWith('.js'))).toBe(true)
   }, 120_000)
 
+  it('prerenders a controls playground for a component, with its props table in the page .md', async () => {
+    const root = await createSite(`
+export default nagi({ title: 'Demo Docs', plugins: [meta(), demo()] })
+`)
+    await copyFile(join(import.meta.dirname, '../test/fixtures/Chip.vue'), join(root, 'Chip.vue'))
+    await writeFile(join(root, 'index.md'), `---
+title: Playground
+---
+
+# Playground
+
+<ComponentDemo component="./Chip.vue" props='{"label":"Pick me"}' title="Chip" description="Tune the **chip**." />
+`)
+
+    await buildSite(root)
+
+    const html = await readFile(join(root, 'dist/index.html'), 'utf8')
+    // The stage renders the component with the initial args.
+    expect(html).toContain('class="chip"')
+    expect(html).toContain('Pick me')
+    // The panel: text, radio group, switch, number; the event log; the live snippet.
+    expect(html).toContain('role="switch"')
+    expect(html).toContain('role="radiogroup"')
+    expect(html).toContain('type="number"')
+    expect(html).toContain('Text of the chip.')
+    expect(html).toContain('Reset')
+    expect(html).toContain('aria-live="polite"')
+    expect(html).toContain('No events yet')
+    expect(html).toContain('class="language-vue"')
+    expect(html).toContain('<strong>chip</strong>')
+    // Server and client agree on the first render, so the page carries no mismatch marker.
+    expect(html).not.toContain('hydration')
+
+    const markdown = await readFile(join(root, 'dist/index.md'), 'utf8')
+    expect(markdown).toContain('**Chip**')
+    expect(markdown).toMatch(/\| Prop\s+\| Type\s+\| Default \| Description\s+\|/)
+    expect(markdown).toContain('label')
+    expect(markdown).toContain('Text of the chip.')
+    expect(markdown).not.toContain('Reset')
+  }, 180_000)
+
+  it('fails the build when a component playground is used without the meta plugin', async () => {
+    const root = await createSite(`
+export default nagi({ title: 'Demo Docs', plugins: [demo()] })
+`)
+    await copyFile(join(import.meta.dirname, '../test/fixtures/Chip.vue'), join(root, 'Chip.vue'))
+    await writeFile(join(root, 'index.md'), '# Broken\n\n<ComponentDemo component="./Chip.vue" />\n')
+
+    await expect(buildSite(root)).rejects.toThrow(/index\.md line 3: the component attribute needs @kawapress\/plugin-vue-component-meta/)
+  }, 120_000)
+
   it('fails the build with the page and the line of a missing demo file', async () => {
     const root = await createSite(`
 export default nagi({ title: 'Demo Docs', plugins: [demo()] })
@@ -172,6 +224,7 @@ import { get } from 'node:http'
 import { join, resolve } from 'node:path'
 import { nagi } from 'kawapress/nagi'
 import demo from '${PLUGIN_ENTRY}'
+import meta from '${META_ENTRY}'
 ${config}`)
   return root
 }
