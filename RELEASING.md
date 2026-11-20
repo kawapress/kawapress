@@ -61,6 +61,8 @@ pnpm release --bootstrap --version 0.0.1
 
 `--bootstrap` 会跳过 lint/typecheck/test/构建（这一步只是占坑，内容马上会被正式版本覆盖），但 tarball 校验一样跑。
 
+新包第一次发布时，npm 会自己在 `0.0.1` 之前加一个 `0.0.0-stage` 版本（说明是 "Temporary package placeholder for staged publishing"），这是 npm 的行为，不是发布脚本发的。它不带 `latest` 标签，不影响安装，不用处理。
+
 ### 4. 配置 trusted publisher
 
 一条命令搞定全部包，重复跑是安全的：
@@ -136,7 +138,7 @@ gh release create v2026-05-30-mermaid --title "0.2.1" --notes-file <正文文件
 - **每个包可以有自己的 README**：在 `packages/<目录>/` 下放 `README.md` 和 `README-zh-CN.md`，发布时原样打进包里。缺哪个就用仓库根目录的 `README.md` / `README.zh-CN.md` 补上，所以没写的包不受影响。中文版必须叫 `README-zh-CN.md`（用短横线）：npm 在包页面上展示第一个匹配 `README.*` 的文件，叫 `README.zh-CN.md` 会排在 `README.md` 前面，把中文版当成主页面。
 - 插件对 `kawapress` 的 peer 依赖写成明确的兼容范围，例如 `"kawapress": "workspace:>=0.8.3 <0.10.0"`，发布后就是 `>=0.8.3 <0.10.0`。核心发新版本时，范围内的插件不用跟着发。核心的新版本超出某个插件的范围时，`release:prepare` 会报错：确认插件和新核心兼容后，放宽它的范围，并给这个插件也升一个版本。只有插件用到了核心新增的 API 时，才提高范围的下限。
 - 其余包之间的依赖仍用 `workspace:^`，发布后变成 `^<对方当时的版本>`。例如 `preset-nagi` 依赖的内置插件发了新的小版本（0.x 阶段 `^` 不跨小版本），要让 nagi 用上它，就要给核心版本组也发一个版本。
-- `release:prepare` 会列出「自上一个发布 tag 以来改过、却没有升版本号」的包（测试文件的改动不算）。这只是提醒：这些改动这次不会发出去，需要的话把它们也写进这次的版本号列表。
+- `release:prepare` 会列出「当前版本发布以后又改过、却没有升版本号」的包（测试文件的改动不算）。每个包和发布它当前版本的那个 tag 比较，而不是和最近一个 tag 比较，因为一次发布只发升了版本号的包。这只是提醒：这些改动这次不会发出去，需要的话把它们也写进这次的版本号列表。
 
 `release.yml` 里有两个 job：
 

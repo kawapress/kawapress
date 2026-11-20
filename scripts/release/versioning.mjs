@@ -82,31 +82,47 @@ export function findPeerRangeConflicts(packages, bumps) {
 /** Files that change a package's published contents; tests do not. */
 const TEST_FILE_RE = /(?:^|\/)(?:__tests__\/|[^/]+\.(?:test|spec)\.[cm]?[jt]sx?$)/
 
-/** The most recent release tag reachable from HEAD, or `undefined`. */
-export async function findLastReleaseTag() {
-  const result = await run('git', ['describe', '--tags', '--abbrev=0', '--match', 'v*'], { allowFailure: true, capture: true })
-  return result.exitCode === 0 ? result.stdout.trim() || undefined : undefined
+/** Release tags reachable from HEAD, oldest first. */
+export async function listReleaseTags() {
+  const { stdout } = await run('git', ['tag', '--list', 'v*', '--merged', 'HEAD', '--sort=creatordate'], { capture: true })
+  return stdout.split('\n').map(tag => tag.trim()).filter(Boolean)
 }
 
 /**
- * Packages whose published files changed since `tag` while their version did not,
- * and that this release does not bump either. Their changes would stay unpublished.
+ * The tag that released a package at `version`: the earliest tag whose manifest
+ * already has it. `readVersion(tag)` returns the version at that tag, or `undefined`
+ * when the package did not exist yet.
  */
-export async function findUnbumpedPackages(packages, bumps, tag) {
+export async function findReleaseTag(tags, version, readVersion) {
+  for (const tag of tags) {
+    if (await readVersion(tag) === version)
+      return tag
+  }
+  return undefined
+}
+
+/**
+ * Packages whose published files changed since the release of their current version,
+ * and that this release does not bump. Their changes would stay unpublished.
+ * Each package is compared with its own release, not with the latest tag, because
+ * a release only ships the packages it bumps.
+ */
+export async function findUnbumpedPackages(packages, bumps, tags) {
   const unbumped = []
   for (const { manifest, relativeDirectory } of packages) {
     if (bumps.has(manifest.name))
       continue
-    const previous = await run('git', ['show', `${tag}:${relativeDirectory}/package.json`], { allowFailure: true, capture: true })
-    // Not released at that tag yet: the first release of a new package is checked by bootstrap.
-    if (previous.exitCode !== 0)
-      continue
-    if (JSON.parse(previous.stdout).version !== manifest.version)
+    const tag = await findReleaseTag(tags, manifest.version, async (candidate) => {
+      const result = await run('git', ['show', `${candidate}:${relativeDirectory}/package.json`], { allowFailure: true, capture: true })
+      return result.exitCode === 0 ? JSON.parse(result.stdout).version : undefined
+    })
+    // The current version is not released yet, so the next publish ships everything.
+    if (!tag)
       continue
     const { stdout } = await run('git', ['diff', '--name-only', tag, 'HEAD', '--', relativeDirectory], { capture: true })
     const changed = filterPublishedChanges(stdout.split('\n'), relativeDirectory)
     if (changed.length > 0)
-      unbumped.push({ name: manifest.name, version: manifest.version, files: changed })
+      unbumped.push({ name: manifest.name, version: manifest.version, tag, files: changed })
   }
   return unbumped
 }

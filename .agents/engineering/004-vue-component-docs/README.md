@@ -1,6 +1,6 @@
 # 004 Vue 组件文档：demo 与 meta
 
-- 状态：in_progress（集成分支 `feat/vue-component-docs`：meta、demo 静态示例、调节面板均已合入，文档页已上线；待合入 main 与发布）
+- 状态：done（PR #96 合入 main，`v0.8.4` 发布 plugin-vue-component-meta、plugin-vue-component-demo 0.1.0）
 - 关联规格：`.agents/specs/plugin-vue-component-meta/`、`.agents/specs/plugin-vue-component-demo/`；并行设计 `.agents/specs/core-plugin-pages/`（typedoc 的前置，不在本单元实施）
 - 相关规则：`.agents/rules/parallel-delivery.md`、`.agents/rules/plugin-naming.md`
 
