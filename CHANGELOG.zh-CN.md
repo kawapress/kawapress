@@ -10,7 +10,7 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 - **`@kawapress/plugin-file-tree` 0.1.0：在 Markdown 里画文件树。** ```` ```tree ```` 代码块会渲染成目录树，带 Catppuccin 文件图标；`#` 后面写说明，`**名字**` 高亮，`...` 表示省略，目录名后加 `(collapsed)` 默认折叠。折叠用原生 `<details>`，不需要 JavaScript。
 - **`@kawapress/plugin-analytics` 0.1.0：一个插件接入 Google Analytics、Plausible、Umami 和 Cloudflare Web Analytics。** 可以只选一家，也可以同时启用几家；站内跳转也会上报页面浏览。`kawapress dev` 时默认不上报，设置 `dev: true` 才会注入统计脚本。
-- **`@kawapress/plugin-feed` 0.1.0：RSS、Atom 和 JSON 订阅源。** `include` 匹配到、并在 Frontmatter 里写了 `date` 的页面会进入订阅源；每种语言各一份，每个页面的 `<head>` 里都有供阅读器自动发现的 `<link>`。
+- **`@kawapress/plugin-feed` 0.1.0：RSS、Atom 和 JSON 订阅源。** `include` 匹配到、并在 Frontmatter 里写了带引号的 `date` 的页面会进入订阅源；每种语言各一份，每个页面的 `<head>` 里都有供阅读器自动发现的 `<link>`。
 - **`@kawapress/plugin-og-image` 0.1.0：为每个页面生成分享卡片。** 用 satori 按 Vue 模板为每个页面绘制 1200×630 的 PNG，并写入指向它的 `og:image` 与 `twitter:image`。内置的 Figtree 字体没有的字，比如中文、日文、韩文，会在构建时下载 Noto 字体子集来绘制并缓存；设置 `remoteFonts: false` 可以完全离线构建，改用 `fonts` 提供字体文件。`logo` 会显示在站点名前面，也可以用自定义模板替换内置模板。
 - **`@kawapress/plugin-vue-repl` 0.1.0：可运行的 Vue 示例。** ```` ```vue repl ```` 代码块先展示代码，点击后在内嵌的 `@vue/repl` 编辑器里运行，并提供「在 Vue Playground 中打开」的链接。编辑器跟随页面的明暗模式。
 
