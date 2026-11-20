@@ -29,8 +29,9 @@
     border-left: 1px solid var(--kawa-c-divider);
   }
 
+  /* The theme also spaces out sibling `li`s (`li + li`); the tree keeps its rows tight. */
   .kawa-file-tree__item {
-    margin: 0;
+    margin: 0 !important;
     padding: 0;
     list-style: none;
   }
@@ -52,6 +53,7 @@
     align-items: center;
     gap: 0.45rem;
     min-width: max-content;
+    min-height: 1.7em; /* a row without text, such as `...`, is as tall as the others */
     margin: 0 !important; /* the theme gives `summary` a block margin */
     padding: 0 0.25rem;
     border-radius: 0.25rem;
@@ -105,8 +107,7 @@
     font-size: 0.8125rem;
   }
 
-  .kawa-file-tree__item--ellipsis .kawa-file-tree__name {
-    padding-left: 0.2rem;
-    color: var(--kawa-c-text-3);
+  .kawa-file-tree__ellipsis {
+    color: var(--kawa-c-text-2);
   }
 }

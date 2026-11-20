@@ -3,6 +3,9 @@ import type { TreeNode } from './parse'
 import { renderIcon, resolveFileIconName, resolveFolderIconName } from './icons'
 import { parseTree, TreeSyntaxError } from './parse'
 
+/** Three dots in the icon column: a text `…` is too small in a monospace font. */
+const ELLIPSIS_ICON = '<svg class="kawa-file-tree__icon kawa-file-tree__ellipsis" viewBox="0 0 16 16"><title>…</title><circle cx="2.75" cy="8" r="1.75" fill="currentColor"/><circle cx="8" cy="8" r="1.75" fill="currentColor"/><circle cx="13.25" cy="8" r="1.75" fill="currentColor"/></svg>'
+
 interface TreeRenderEnv {
   path?: string
 }
@@ -27,7 +30,7 @@ function renderNodes(nodes: readonly TreeNode[]): string {
 
 function renderNode(node: TreeNode): string {
   if (node.kind === 'ellipsis') {
-    return `<li class="kawa-file-tree__item kawa-file-tree__item--ellipsis">${renderRow(node, '<span class="kawa-file-tree__name">…</span>', false)}</li>\n`
+    return `<li class="kawa-file-tree__item kawa-file-tree__item--ellipsis"><span class="kawa-file-tree__row">${ELLIPSIS_ICON}${renderComment(node)}</span></li>\n`
   }
 
   const name = `<span class="${nameClass(node)}">${escapeHtml(node.name)}${node.kind === 'directory' ? '/' : ''}</span>`
