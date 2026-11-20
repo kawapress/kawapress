@@ -65,6 +65,7 @@
   "devDependencies": {
     "happy-dom": "catalog:dev",
     "kawapress": "workspace:*",
+    "markdown-exit": "catalog:markdown",
     "typescript": "catalog:dev",
     "vite": "catalog:node",
     "vue": "catalog:frontend"

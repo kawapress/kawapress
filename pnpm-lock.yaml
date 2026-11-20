@@ -1038,6 +1038,9 @@ importers:
       kawapress:
         specifier: workspace:*
         version: link:../kawapress
+      markdown-exit:
+        specifier: catalog:markdown
+        version: 1.3.0
       typescript:
         specifier: catalog:dev
         version: 6.0.3

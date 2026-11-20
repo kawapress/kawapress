@@ -168,35 +168,63 @@
 }
 
 .nagi-doc table {
-  display: block;
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Markdown tables come wrapped: a quiet card with a rounded border that scrolls sideways when wide. */
+.nagi-doc .nagi-table {
   margin: 1.25rem 0;
   overflow-x: auto;
-}
-
-.nagi-doc tr {
+  border: 1px solid var(--nagi-c-divider);
+  border-radius: 0.75rem;
   background: var(--nagi-c-bg);
-  border-top: 1px solid var(--nagi-c-divider);
 }
 
-.nagi-doc tr:nth-child(2n) {
-  background: var(--nagi-c-bg-soft);
+.nagi-doc > table {
+  margin: 1.25rem 0;
 }
 
 .nagi-doc :where(th, td) {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--nagi-c-divider);
+  padding: 0.625rem 1rem;
+  border: 0;
+  text-align: start;
+  vertical-align: top;
 }
 
 .nagi-doc th {
   color: var(--nagi-c-text-2);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  text-align: left;
-  background: var(--nagi-c-bg-soft);
+  white-space: nowrap;
+  background: transparent;
+  border-bottom: 1px solid var(--nagi-c-divider);
 }
 
 .nagi-doc td {
-  font-size: 0.875rem;
+  color: var(--nagi-c-text-1);
+}
+
+.nagi-doc tbody tr:not(:last-child) > td {
+  border-bottom: 1px solid var(--nagi-c-divider);
+}
+
+.nagi-doc tbody tr {
+  transition: background-color 120ms;
+}
+
+.nagi-doc tbody tr:hover {
+  background: color-mix(in oklab, var(--nagi-c-bg-soft) 70%, transparent);
+}
+
+/* Long union types wrap at spaces; names and short values stay on one line. */
+.nagi-doc :where(td) > code {
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .nagi-doc hr {

@@ -13,6 +13,7 @@ All notable changes to KawaPress are listed here. The format follows [Keep a Cha
 
 ### Changed
 
+- **nagi tables are quieter.** Markdown tables sit in a card with a rounded border that scrolls sideways when wide; the header is muted text over one line, rows are separated by thin lines, and the column lines and zebra stripes are gone. *Theme authors*: each Markdown table is now wrapped in `<div class="nagi-table">`.
 - **Plugins declare which `kawapress` versions they work with.** The peer dependency on `kawapress` is now `>=0.8.3 <0.10.0` instead of following the core's exact minor version, so a new core release no longer requires a new release of every plugin.
 - **Every official plugin carries the npm keywords `kawapress` and `kawapress-plugin`**, and `@kawapress/preset-nagi` carries `kawapress-preset`. Community plugins can use the same keywords to be found on npm.
 
