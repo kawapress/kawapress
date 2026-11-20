@@ -32,6 +32,14 @@
       "import": "./src/KawaComponentDemo.vue",
       "default": "./src/KawaComponentDemo.vue"
     },
+    "./playground": {
+      "import": "./src/KawaComponentPlayground.vue",
+      "default": "./src/KawaComponentPlayground.vue"
+    },
+    "./props-table": {
+      "import": "./src/DemoPropsTable.vue",
+      "default": "./src/DemoPropsTable.vue"
+    },
     "./package.json": "./package.json"
   },
   "files": [

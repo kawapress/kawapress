@@ -30,6 +30,7 @@ function pageEnv(overrides: Partial<PageEnv> = {}): PageEnv {
 async function setup(
   options: VueComponentDemoPluginOptions = {},
   alias?: Record<string, string> | { find: string | RegExp, replacement: string }[],
+  meta = false,
 ) {
   const host = await setupGeneratorPlugins(
     { locales: LOCALES, plugins: [vueComponentDemoPlugin(options)] },
@@ -38,7 +39,8 @@ async function setup(
   const markdown = createMarkdownExit({ html: true })
   markdown.options.highlight = code => `<pre class="shiki"><code>${code.replaceAll('<', '&lt;')}</code></pre>`
   await host.runMarkdown(markdown)
-  const config: UserConfig = { resolve: { alias } }
+  // The meta plugin shows up as its Vite plugin, which is how the demo plugin finds it.
+  const config: UserConfig = { resolve: { alias }, plugins: meta ? [{ name: 'kawapress:vue-component-meta' }] : [] }
   await host.runVite(config)
   return { markdown, config }
 }
@@ -95,12 +97,75 @@ describe('component demo markdown', () => {
     )).rejects.toThrow(/\/test\/page\.md line 3: cannot find the demo file "\.\/fixtures\/Missing\.vue"/)
   })
 
-  it('explains that the controls playground is not available yet', async () => {
+  it('fails a playground with a message that names the meta plugin when it is not installed', async () => {
     const { markdown } = await setup()
 
-    await expect(markdown.renderAsync('<ComponentDemo component="./Button.vue" />\n', pageEnv()))
+    await expect(markdown.renderAsync('Intro\n\n<ComponentDemo component="./fixtures/ButtonBasic.vue" />\n', pageEnv()))
       .rejects
-      .toThrow(/line 1: the component attribute \(controls playground\) is not available yet/)
+      .toThrow(/\/test\/page\.md line 3: the component attribute needs @kawapress\/plugin-vue-component-meta/)
+  })
+
+  it('rewrites component= to the playground and imports the component and its doc', async () => {
+    const { markdown } = await setup({}, undefined, true)
+    const env = pageEnv()
+
+    const html = await markdown.renderAsync(
+      '<ComponentDemo component="./fixtures/ButtonBasic.vue" props=\'{"label":"It&#39;s"}\' title="**T**" description="D" />\n',
+      env,
+    )
+
+    expect(html).toMatch(/^<KawaComponentPlayground :component="KawaPlayground_(\w+)" :doc="KawaPlaygroundDoc_\1" fallback-name="ButtonBasic"/)
+    expect(html).toContain(':initial-props=\'{"label":"It&#39;s"}\'')
+    expect(html).toContain('<template #title><strong>T</strong></template>')
+    expect(html).toContain('<template #description>D</template>')
+    const imports = Object.fromEntries(env.pageComponents!.map(entry => [entry.name.replace(/_\w+$/, ''), entry.from]))
+    expect(imports.KawaPlayground).toBe(BUTTON)
+    expect(imports.KawaPlaygroundDoc).toBe(`${BUTTON}?component-doc`)
+    expect(imports.KawaComponentPlayground).toMatch(/KawaComponentPlayground\.vue$/)
+    expect(imports.KawaDemoPropsTable).toMatch(/DemoPropsTable\.vue$/)
+    expect(env.pageComponents).toHaveLength(4)
+  })
+
+  it('refuses src together with component, and neither of them', async () => {
+    const { markdown } = await setup({}, undefined, true)
+    const render = (source: string) => markdown.renderAsync(source, pageEnv())
+
+    await expect(render('<ComponentDemo src="./a.vue" component="./b.vue" />\n'))
+      .rejects
+      .toThrow(/line 1: src and component cannot be used together/)
+    await expect(render('<ComponentDemo title="x" />\n'))
+      .rejects
+      .toThrow(/line 1: <ComponentDemo> needs a src attribute .* or a component attribute/)
+  })
+
+  it('refuses props that are not a JSON object', async () => {
+    const { markdown } = await setup({}, undefined, true)
+    const render = (props: string) => markdown.renderAsync(
+      `<ComponentDemo component="./fixtures/ButtonBasic.vue" props='${props}' />\n`,
+      pageEnv(),
+    )
+
+    await expect(render('{label: 1}')).rejects.toThrow(/line 1: the props attribute is not valid JSON/)
+    await expect(render('[1]')).rejects.toThrow(/the props attribute must be a JSON object/)
+    await expect(markdown.renderAsync('<ComponentDemo src="./fixtures/ButtonBasic.vue" props="{}" />\n', pageEnv()))
+      .rejects
+      .toThrow(/props attribute only works together with the component attribute/)
+  })
+
+  it('writes the props table component for the page .md output of a playground', async () => {
+    const { markdown } = await setup({}, undefined, true)
+    const env = pageEnv({ ssgMarkdown: true })
+
+    const html = await markdown.renderAsync(
+      '<ComponentDemo component="./fixtures/ButtonBasic.vue" title="Basic" description="A button." />\n',
+      env,
+    )
+
+    expect(html).toContain('<p><strong>Basic</strong></p>')
+    expect(html).toContain('<p>A button.</p>')
+    expect(html).toMatch(/<KawaDemoPropsTable :doc="KawaPlaygroundDoc_\w+" :labels=/)
+    // The page imported the table and the doc already; the page .md render adds nothing.
+    expect(env.pageComponents).toBeUndefined()
   })
 
   it('rejects unusable tags with a message that names the problem', async () => {

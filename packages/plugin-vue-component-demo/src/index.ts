@@ -8,7 +8,7 @@ import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import process from 'node:process'
 import { definePlugin } from 'kawapress'
-import { DEFAULT_TAG, PLUGIN_NAME } from './constants'
+import { DEFAULT_TAG, META_VITE_PLUGIN_NAME, PLUGIN_NAME } from './constants'
 import { resolveComponentDemoLabels } from './labels'
 import { installComponentDemo } from './markdown'
 import { createComponentDemoVitePlugins } from './vite-plugin'
@@ -25,7 +25,9 @@ export { installComponentDemo }
 
 const TAG_RE = /^[A-Z][\w-]*$/i
 const DEFAULT_LOCALE_LANGUAGES: ComponentDemoLocaleLanguages = { root: 'en' }
-const COMPONENT_MODULE = resolveComponentModule()
+const COMPONENT_MODULE = resolveComponentModule('demo')
+const PLAYGROUND_MODULE = resolveComponentModule('playground')
+const PROPS_TABLE_MODULE = resolveComponentModule('props-table')
 
 export function vueComponentDemoPlugin(
   options: VueComponentDemoPluginOptions = {},
@@ -70,6 +72,10 @@ export function vueComponentDemoPlugin(
             alias: viteConfig.resolve?.alias as ViteAlias,
           }),
           componentModule: COMPONENT_MODULE,
+          playgroundModule: PLAYGROUND_MODULE,
+          propsTableModule: PROPS_TABLE_MODULE,
+          // Read per tag too: the meta plugin may add its Vite plugin after this one ran.
+          hasMeta: () => hasVitePlugin(viteConfig, META_VITE_PLUGIN_NAME),
         })
       })
     },
@@ -77,6 +83,15 @@ export function vueComponentDemoPlugin(
 }
 
 export default vueComponentDemoPlugin
+
+function hasVitePlugin(config: UserConfig, name: string): boolean {
+  const walk = (plugins: unknown): boolean => (
+    Array.isArray(plugins)
+      ? plugins.some(walk)
+      : typeof plugins === 'object' && plugins !== null && (plugins as { name?: unknown }).name === name
+  )
+  return walk(config.plugins)
+}
 
 function resolveLocaleLanguages(
   locales: Record<string, LocaleConfig> | undefined,
@@ -90,8 +105,8 @@ function resolveLocaleLanguages(
  * Absolute path of the module that default-exports the page component, so Vite
  * resolves it no matter which package the site installed.
  */
-function resolveComponentModule(): string {
-  const specifier = `${PLUGIN_NAME}/demo`
+function resolveComponentModule(entry: string): string {
+  const specifier = `${PLUGIN_NAME}/${entry}`
   try {
     return createRequire(import.meta.url).resolve(specifier)
   }
