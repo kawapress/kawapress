@@ -1,13 +1,13 @@
 ---
 title: 组件 API
-description: 构建时从 Vue 组件源码读出 Props、事件、插槽与公开接口，渲染成随源码更新的 API 表格，并提供给组件演示的调节面板。
+description: 构建时从 Vue 组件源码读出 Props、事件、插槽与组件实例公开接口，渲染成随源码更新的 API 表格，并提供给组件演示的调节面板。
 ---
 
 # 组件 API
 
 组件库文档里最费力、也最容易过时的是 API 表格：组件加了一个 prop，表格常常忘了改。
 
-`@kawapress/plugin-vue-component-meta` 在构建时用 [vue-component-meta](https://github.com/vuejs/language-tools/tree/master/packages/component-meta) 读组件源码，把 Props、事件、插槽与公开接口渲染成表格。它借助 TypeScript 类型检查器，导入的类型、`withDefaults` 的默认值和 JSDoc 说明都能读到。组件改了，表格跟着变。
+`@kawapress/plugin-vue-component-meta` 在构建时用 [vue-component-meta](https://github.com/vuejs/language-tools/tree/master/packages/component-meta) 读组件源码，把 Props、事件、插槽与组件实例公开接口渲染成表格。它借助 TypeScript 类型检查器，导入的类型、`withDefaults` 的默认值和 JSDoc 说明都能读到。组件改了，表格跟着变。
 
 ## 安装 {#install}
 

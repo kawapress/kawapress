@@ -8,7 +8,7 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ### 新增
 
-- **`@kawapress/plugin-vue-component-meta` 0.1.0：从组件源码生成 API 表格。** `<ComponentApi src="./Button.vue" />` 渲染 Vue 组件的 Props、事件、插槽与公开接口，由 `vue-component-meta` 借助 TypeScript 检查器在构建时读出，导入的类型、`withDefaults` 默认值和 JSDoc 都能读到。表格在开发时热更新，页面 `.md` 里输出为 Markdown 表格；`import doc from './Button.vue?component-doc'` 把同样的数据交给其他插件。
+- **`@kawapress/plugin-vue-component-meta` 0.1.0：从组件源码生成 API 表格。** `<ComponentApi src="./Button.vue" />` 渲染 Vue 组件的 Props、事件、插槽与组件实例公开接口，由 `vue-component-meta` 借助 TypeScript 检查器在构建时读出，导入的类型、`withDefaults` 默认值和 JSDoc 都能读到。表格在开发时热更新，页面 `.md` 里输出为 Markdown 表格；`import doc from './Button.vue?component-doc'` 把同样的数据交给其他插件。
 - **`@kawapress/plugin-vue-component-demo` 0.1.0：真实渲染的组件示例。** `<ComponentDemo src="./demos/Basic.vue" />` 在页面里渲染独立的示例文件并附上高亮源码，需要浏览器的示例加上 `client-only`。同时安装组件 API 插件时，`<ComponentDemo component="./Button.vue" />` 展示组件本身，附带由 prop 类型生成的调节面板、事件日志和实时源码片段。
 
 ### 变更

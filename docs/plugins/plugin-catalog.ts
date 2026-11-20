@@ -220,7 +220,7 @@ export const pluginCatalog: Record<string, PluginCatalogEntry> = {
     category: 'vue',
     docs: '/plugins/vue-component-meta',
     description: {
-      zhCN: '从组件源码读出 Props、事件、插槽与公开接口，渲染成随源码更新的 API 表格。',
+      zhCN: '从组件源码读出 Props、事件、插槽与组件实例公开接口，渲染成随源码更新的 API 表格。',
       en: 'Reads props, events, slots and exposed members from component source into API tables that stay in sync.',
     },
   },
