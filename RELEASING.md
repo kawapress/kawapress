@@ -1,10 +1,15 @@
 # 发布 KawaPress
 
-KawaPress 有 21 个公开包，每个包有自己的版本号，各发各的。一次发布由 `scripts/release.mjs` 把全部包打包、校验，然后只发布「npm 上还没有这个版本」的包，其余的原样跳过，按依赖顺序发布。所以要发哪个包，只需要提高它自己的版本号。
+KawaPress 有 26 个公开包，分两类：
+
+- **核心版本组**：`kawapress`、`create-kawapress`、`@kawapress/preset-nagi`。三个包互相依赖，实际上是一个产品，始终使用同一个版本号，一起发布。
+- **插件**：其余每个插件有自己的版本号，有改动时单独发布，不跟着核心或别的插件升版本。
+
+一次发布由 `scripts/release.mjs` 把全部包打包、校验，然后只发布「npm 上还没有这个版本」的包，其余的原样跳过，按依赖顺序发布。所以要发哪个包，只需要提高它自己的版本号。
 
 真正的发布在 GitHub Actions 里跑，走 npm 的 trusted publishing（OIDC）：工作流不需要、也不应该保存任何 npm token，npm 从 GitHub 的短期身份令牌里认出「这是 `kawapress/kawapress` 的 `release.yml`，跑在 `npm` 环境里」，然后才允许发布，并自动带上 provenance（来源证明）。推送 `v*` tag 之后全程自动，不需要人工介入。
 
-发布成功后，同一个工作流还会把 19 个带 `@kawapress/` 前缀的包镜像到 GitHub Packages（`npm.pkg.github.com`），这样仓库页面右侧的 Packages 列表里能看到它们。认证用工作流自带的 `GITHUB_TOKEN`（job 权限 `packages: write`），不需要额外配置任何 token。GitHub 要求包的 scope 和仓库所有者同名，所以不带 scope 的 `kawapress` 和 `create-kawapress` 不会出现在那里。镜像只用来展示，用户仍然从 npmjs.com 安装；已经存在的版本会被跳过，重跑是安全的。
+发布成功后，同一个工作流还会把带 `@kawapress/` 前缀的包镜像到 GitHub Packages（`npm.pkg.github.com`），这样仓库页面右侧的 Packages 列表里能看到它们。认证用工作流自带的 `GITHUB_TOKEN`（job 权限 `packages: write`），不需要额外配置任何 token。GitHub 要求包的 scope 和仓库所有者同名，所以不带 scope 的 `kawapress` 和 `create-kawapress` 不会出现在那里。镜像只用来展示，用户仍然从 npmjs.com 安装；已经存在的版本会被跳过，重跑是安全的。
 
 下面分成两部分：**只做一次的准备**，和**每次发版的固定动作**。
 
@@ -81,10 +86,10 @@ npm 要求这类账号级操作必须做两步验证，这一步脚本无法代�
 
 ### 5. 第一次 CI 发布成功之后，关掉 token 发布
 
-把 21 个包的发布权限都改成「必须两步验证，不接受绕过两步验证的 token」（网页上的 Require two-factor authentication and disallow bypass 2fa tokens）：
+把全部包的发布权限都改成「必须两步验证，不接受绕过两步验证的 token」（网页上的 Require two-factor authentication and disallow bypass 2fa tokens）：
 
 ```sh
-pnpm release:lock            # 先打印 21 条命令，不改任何东西
+pnpm release:lock            # 先打印每个包一条命令，不改任何东西
 pnpm release:lock --apply    # 真正修改；第一次会在浏览器里做两步验证
 ```
 
@@ -127,13 +132,15 @@ gh release create v2026-05-30-mermaid --title "0.2.1" --notes-file <正文文件
 - 包名必须写完整的 npm 名（`@kawapress/plugin-mermaid`、`kawapress`）。目录名等简写一律拒绝，避免以后重名时发错包。
 - 新版本必须高于该包当前的版本。
 - **tag 只负责启动工作流，不表示版本号**：任何以 `v` 开头、没用过的名字都行，例如 `v2026-05-30`、`v0.3.0`。每次发布用一个新 tag。发布哪些包、发哪个版本，由已提交的各 `package.json` 决定。
-- 同时发布 `kawapress` 时必须带上 `create-kawapress`，因为 `create-kawapress` 里的 `kawapressVersion` 记着新建站点要装的核心版本。`release:prepare` 会自动把它改成 `kawapress` 的新版本，并要求你同时给 `create-kawapress` 一个新版本。
+- 核心版本组的三个包必须一起写、写同一个版本，否则 `release:prepare` 报错。`create-kawapress` 里的 `kawapressVersion` 记着新建站点要装的核心版本，`release:prepare` 会自动把它改成 `kawapress` 的新版本。
 - **每个包可以有自己的 README**：在 `packages/<目录>/` 下放 `README.md` 和 `README-zh-CN.md`，发布时原样打进包里。缺哪个就用仓库根目录的 `README.md` / `README.zh-CN.md` 补上，所以没写的包不受影响。中文版必须叫 `README-zh-CN.md`（用短横线）：npm 在包页面上展示第一个匹配 `README.*` 的文件，叫 `README.zh-CN.md` 会排在 `README.md` 前面，把中文版当成主页面。
-- 包与包之间的依赖用 `workspace:^`，发布后变成 `^<对方当时的版本>`。所以插件只要不跨过核心的大版本（0.x 阶段是不跨过小版本），就不用跟着核心一起发版。
+- 插件对 `kawapress` 的 peer 依赖写成明确的兼容范围，例如 `"kawapress": "workspace:>=0.8.3 <0.10.0"`，发布后就是 `>=0.8.3 <0.10.0`。核心发新版本时，范围内的插件不用跟着发。核心的新版本超出某个插件的范围时，`release:prepare` 会报错：确认插件和新核心兼容后，放宽它的范围，并给这个插件也升一个版本。只有插件用到了核心新增的 API 时，才提高范围的下限。
+- 其余包之间的依赖仍用 `workspace:^`，发布后变成 `^<对方当时的版本>`。例如 `preset-nagi` 依赖的内置插件发了新的小版本（0.x 阶段 `^` 不跨小版本），要让 nagi 用上它，就要给核心版本组也发一个版本。
+- `release:prepare` 会列出「自上一个发布 tag 以来改过、却没有升版本号」的包（测试文件的改动不算）。这只是提醒：这些改动这次不会发出去，需要的话把它们也写进这次的版本号列表。
 
 `release.yml` 里有两个 job：
 
-- `verify`：跑 lint / typecheck / test / 构建文档，再打 21 个 tarball 并逐个校验（README、不含测试文件、`workspace:`/`catalog:` 都换成了真实范围、导出目标存在），然后 `npm publish --dry-run` 一遍。它没有任何发布权限，也不需要 token。
+- `verify`：跑 lint / typecheck / test / 构建文档，再给每个包打 tarball 并逐个校验（README、不含测试文件、`workspace:`/`catalog:` 都换成了真实范围、导出目标存在），然后 `npm publish --dry-run` 一遍。它没有任何发布权限，也不需要 token。
 - `publish`：`verify` 通过后自动启动，跑在 `npm` 环境里，同一个 tag、同一套校验，真实发布。
 
 ### 版本号已经在 npm 上时
@@ -189,6 +196,8 @@ pnpm release --publish     # 会要求手输 publish 确认
 
 - **`CHANGELOG.md` 与 `CHANGELOG.zh-CN.md`**：仓库里的长期记录，格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，按版本倒序，每个版本写日期（`YYYY-MM-DD`）。
 - **GitHub Release**：正文直接取自上面那个版本的一节。Release 的 tag 要用实际推送的那个 tag，标题用版本号。
+
+每次发布写一节，标题用发布日期加主要的包和版本，例如 `## 2026-12-01 — kawapress 0.9.0, plugin-feed 0.1.1`；只发了一个插件时，标题就是那个插件和版本。节首用一个列表写清这次发布了哪些包、各自什么版本。每条变化前面注明属于哪个包，例如「**plugin-feed**：……」，核心版本组的变化不用注明。
 
 一节更新日志按这个顺序写，没有内容的小节整节省略：
 

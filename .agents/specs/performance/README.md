@@ -48,7 +48,7 @@
 这一条落实 0.1 决策“路由路径清单可以进入浏览器，页面组件与 pageData 按需加载”。
 
 - 进入浏览器的页面表只携带每个页面的加载函数，不携带标题、layout 或其他摘要。完整 pageData 只随页面组件模块加载（页面模块的 `__pageData` 导出），`usePageData()` 返回当前页面的完整数据。
-- 页面标题与 layout 属于需要它们的主题，不属于 Core 的路由数据；nagi 用自己的虚拟模块提供自动侧边栏数据。Core 只用 `kawapress/generator` 的页面发现与页面摘要读取能力提供读取手段。方案见 `router-plan.md` 第二节。
+- 页面标题与 layout 属于需要它们的主题，不属于 Core 的路由数据；nagi 用自己的虚拟模块提供自动侧边栏数据。Core 只用 `kawapress/generator` 的页面发现与页面摘要读取能力提供读取手段。方案见 `.agents/specs/router/` 第二节。
 
 ### 2.3 dev 不在首个请求时编译全站
 
@@ -69,7 +69,7 @@
 
 ### 2.5 页面表只写一次、单独成文件
 
-页面表按路由路径为键，来自产物清单，与首屏 modulepreload 使用同一个依赖计算函数；实现见 `router-plan.md` 2.2。
+页面表按路由路径为键，来自产物清单，与首屏 modulepreload 使用同一个依赖计算函数；实现见 `.agents/specs/router/` 2.2。
 
 - 每个 Markdown 页面是浏览器构建的独立 input，页面 CSS 按页拆分，因此页面表中每页只有自己的 chunk 内容哈希与额外依赖，文件名由路由与哈希算出。
 - 页面表作为带内容哈希的独立文件输出，由 HTML 引用；页面表里没有任何可被静态分析的 `import()`，所以没有 Vite 预加载依赖表。
@@ -119,7 +119,7 @@ overlayscrollbars 约 9 KB gzip，每页都加载。
 
 docs 首页首屏 JS 为 68.8 KB gzip（`app` 66.3 KB、页面清单 1.8 KB、入口 0.2 KB）。当时“每多一页”未达标：差距来自页面清单中每页的加载函数与 Vite 动态导入的预加载依赖表（500 页时约 4.8 KB gzip，每页都重复列出启动时早已加载的 `app` chunk 与其 CSS），由第三轮解决。
 
-第三轮（`router-plan.md`：Core 自建路由、页面表、页面作为构建入口，并修复 `NODE_ENV` 未设置时生产构建使用 Vue 开发版编译器的问题）结果（`bench/results/2026-10-27-b704cf4.md`，3 次中位数）：
+第三轮（`.agents/specs/router/`：Core 自建路由、页面表、页面作为构建入口，并修复 `NODE_ENV` 未设置时生产构建使用 Vue 开发版编译器的问题）结果（`bench/results/2026-10-27-b704cf4.md`，3 次中位数）：
 
 | 指标 | KawaPress | VitePress |
 |---|---|---|

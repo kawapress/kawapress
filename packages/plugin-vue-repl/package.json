@@ -1,0 +1,61 @@
+{
+  "name": "@kawapress/plugin-vue-repl",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Editable, runnable Vue examples for KawaPress Markdown, powered by @vue/repl",
+  "license": "MIT",
+  "homepage": "https://kawapress.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kawapress/kawapress.git",
+    "directory": "packages/plugin-vue-repl"
+  },
+  "bugs": {
+    "url": "https://github.com/kawapress/kawapress/issues"
+  },
+  "keywords": [
+    "kawapress",
+    "kawapress-plugin"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./runtime-plugin": {
+      "types": "./src/runtime-plugin.ts",
+      "import": "./src/runtime-plugin.ts",
+      "default": "./src/runtime-plugin.ts"
+    },
+    "./repl": {
+      "import": "./src/VueRepl.vue",
+      "default": "./src/VueRepl.vue"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "README-zh-CN.md",
+    "src/**/!(*.test.*)"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "kawapress": "workspace:>=0.8.3 <0.10.0",
+    "vue": "catalog:frontend"
+  },
+  "dependencies": {
+    "@mdit/plugin-container": "catalog:markdown",
+    "@vue/repl": "catalog:frontend"
+  },
+  "devDependencies": {
+    "happy-dom": "catalog:dev",
+    "markdown-exit": "catalog:markdown",
+    "vue": "catalog:frontend"
+  }
+}

@@ -9,10 +9,13 @@
   },
   "devDependencies": {
     "@kawapress/plugin-comments": "workspace:*",
+    "@kawapress/plugin-file-tree": "workspace:*",
     "@kawapress/plugin-image-zoom": "workspace:*",
     "@kawapress/plugin-last-updated": "workspace:*",
     "@kawapress/plugin-mathjax": "workspace:*",
     "@kawapress/plugin-mermaid": "workspace:*",
+    "@kawapress/plugin-og-image": "workspace:*",
+    "@kawapress/plugin-vue-repl": "workspace:*",
     "kawapress": "workspace:*"
   }
 }

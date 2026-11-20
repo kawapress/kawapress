@@ -160,10 +160,10 @@ export const pluginSidebars = defineLocalizedSidebars({
       items: [
         {
           text: {
-            zhCN: '总览',
-            en: 'Overview',
+            zhCN: '插件市场',
+            en: 'Plugin Market',
           },
-          link: '/plugins/overview',
+          link: '/plugins/',
         },
         {
           text: {
@@ -206,6 +206,41 @@ export const pluginSidebars = defineLocalizedSidebars({
             en: 'Algolia Search',
           },
           link: '/plugins/algolia-search',
+        },
+        {
+          text: {
+            zhCN: '文件树',
+            en: 'File Tree',
+          },
+          link: '/plugins/file-tree',
+        },
+        {
+          text: {
+            zhCN: '网站统计',
+            en: 'Analytics',
+          },
+          link: '/plugins/analytics',
+        },
+        {
+          text: {
+            zhCN: '订阅源',
+            en: 'Feed',
+          },
+          link: '/plugins/feed',
+        },
+        {
+          text: {
+            zhCN: '分享卡片',
+            en: 'OG Image',
+          },
+          link: '/plugins/og-image',
+        },
+        {
+          text: {
+            zhCN: 'Vue 演练场',
+            en: 'Vue REPL',
+          },
+          link: '/plugins/vue-repl',
         },
       ],
     },

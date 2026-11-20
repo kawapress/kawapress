@@ -13,6 +13,10 @@
   "bugs": {
     "url": "https://github.com/kawapress/kawapress/issues"
   },
+  "keywords": [
+    "kawapress",
+    "kawapress-plugin"
+  ],
   "exports": {
     ".": {
       "types": "./src/index.ts",
@@ -33,7 +37,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "peerDependencies": {
-    "kawapress": "workspace:^"
+    "kawapress": "workspace:>=0.8.3 <0.10.0"
   },
   "dependencies": {
     "@types/markdown-it-emoji": "catalog:markdown",

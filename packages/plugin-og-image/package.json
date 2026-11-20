@@ -1,0 +1,60 @@
+{
+  "name": "@kawapress/plugin-og-image",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Per-page social share images (og:image) for KawaPress",
+  "license": "MIT",
+  "homepage": "https://kawapress.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kawapress/kawapress.git",
+    "directory": "packages/plugin-og-image"
+  },
+  "bugs": {
+    "url": "https://github.com/kawapress/kawapress/issues"
+  },
+  "keywords": [
+    "kawapress",
+    "kawapress-plugin"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "README-zh-CN.md",
+    "src/**/!(*.test.*)"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "kawapress": "workspace:>=0.8.3 <0.10.0",
+    "vue": "catalog:frontend"
+  },
+  "dependencies": {
+    "@fontsource/figtree": "catalog:node",
+    "@resvg/resvg-js": "catalog:node",
+    "@types/picomatch": "catalog:dev",
+    "consola": "catalog:node",
+    "opentype.js": "catalog:node",
+    "picomatch": "catalog:node",
+    "satori": "catalog:node",
+    "satori-html": "catalog:node",
+    "undici": "catalog:node"
+  },
+  "devDependencies": {
+    "kawapress": "workspace:*",
+    "typescript": "catalog:dev",
+    "vite": "catalog:node",
+    "vue": "catalog:frontend"
+  }
+}

@@ -43,7 +43,7 @@ KawaPress 期望成为一个更好的 VitePress，是由 Vue 社区成员自主�
 
 ### 2.2 路由
 
-路由由 Core 自带，不依赖 vue-router，实现细节与验收见 `router-plan.md`：
+路由由 Core 自带，不依赖 vue-router，实现细节与验收见 `.agents/specs/router/`：
 
 - 路由只做“公开路径 → 页面”的查表，页面表是纯数据，页面由一个统一加载函数取回。
 - 浏览器拿下地址栏的 URL 与历史记录，站内链接由一个全局点击拦截器交给路由；SSR 每次渲染只查表并加载一个页面。
@@ -53,7 +53,7 @@ KawaPress 期望成为一个更好的 VitePress，是由 Vue 社区成员自主�
 
 0.1 不提供插件虚拟页面 API，也不提供 `addPage()`。
 
-非 Markdown 内容源、动态路由、RSS、归档页等能力留到后续内容层与路由方案中统一设计。sitemap 由独立插件提供，见 `plugin-sitemap-plan.md`。
+非 Markdown 内容源、动态路由、RSS、归档页等能力留到后续内容层与路由方案中统一设计。sitemap 由独立插件提供，见 `.agents/specs/plugin-sitemap/`。
 
 ## 三、生成侧与运行侧
 
@@ -668,7 +668,7 @@ interface KawaPressConfig {
 }
 ```
 
-`head` 与 `deadLinks` 的规则见 `0.2-core-plan.md` 第一、二节。
+`head` 与 `deadLinks` 的规则见 `.agents/specs/core-extensions/` 第一、二节。
 
 `srcExclude` 是相对 `srcDir` 的 glob 列表（picomatch 语法，匹配点开头的路径），命中的 Markdown 文件不是页面：不生成路由与构建入口，不进入搜索索引与 nagi 自动侧边栏。它只决定"哪些文件是页面"，文件仍可被 include 或 Data Loader 读取。只接受相对路径字符串组成的数组，其他取值在配置加载时报错。
 
@@ -711,7 +711,7 @@ interface PageData {
 }
 ```
 
-Frontmatter 必须位于 Markdown 文件最前面，支持三横线包围的 YAML 或花括号包围的 JSON 对象。它是开放的、严格 JSON 可序列化的数据对象：Core 保留所有键值，不建立通用 schema；字段 schema 与构建校验仍留到 0.3。Core 只赋予 `title`、`description` 与 `titleTemplate` 页面元数据语义：字符串 `title` 优先于第一个 h1，否则回退 h1；标题的纯文本是作者写在标题行上的文字去掉 Markdown 格式：强调、加粗、删除线与链接的标记消失而文字保留（图片同样只保留 alt 文字），行内代码保留内容去掉反引号，行内 HTML 标签去掉而标签之间的文字保留（`<kbd>Ctrl</kbd>` 读作 `Ctrl`，`<Badge text="beta" />` 不留下任何文字），公式、表情短代码等其他扩展语法按源码原样保留，自定义 ID 后缀与永久链接符号不进入标题，空白折叠并去除首尾；该纯文本标题同时用于 `pageData.title`、`pageData.headers` 的标题与纯解析页面摘要、搜索索引，且不随站点安装了哪些 Markdown 插件而变；字符串 `description` 生成唯一的 description meta，页面没有时依次回退当前 locale 与站点配置的 `description`（两者在配置加载时必须为字符串）；`titleTemplate` 可以是字符串模板，其中的 `%s` 替换为页面标题，或为 `false` 以只使用页面标题。其他值保持原样供主题、插件或用户代码读取。Core 在 SSR 与浏览器导航中统一生成 title 与 description；frontmatter `head` 进入 `pageData.head`，规则见 `0.2-core-plan.md` 第一节。页面级 `dir` 和 VitePress 的 `$frontmatter` 模板全局不进入 0.1，用户使用 `usePageData()` 读取当前页面数据。
+Frontmatter 必须位于 Markdown 文件最前面，支持三横线包围的 YAML 或花括号包围的 JSON 对象。它是开放的、严格 JSON 可序列化的数据对象：Core 保留所有键值，不建立通用 schema；字段 schema 与构建校验仍留到 0.3。Core 只赋予 `title`、`description` 与 `titleTemplate` 页面元数据语义：字符串 `title` 优先于第一个 h1，否则回退 h1；标题的纯文本是作者写在标题行上的文字去掉 Markdown 格式：强调、加粗、删除线与链接的标记消失而文字保留（图片同样只保留 alt 文字），行内代码保留内容去掉反引号，行内 HTML 标签去掉而标签之间的文字保留（`<kbd>Ctrl</kbd>` 读作 `Ctrl`，`<Badge text="beta" />` 不留下任何文字），公式、表情短代码等其他扩展语法按源码原样保留，自定义 ID 后缀与永久链接符号不进入标题，空白折叠并去除首尾；该纯文本标题同时用于 `pageData.title`、`pageData.headers` 的标题与纯解析页面摘要、搜索索引，且不随站点安装了哪些 Markdown 插件而变；字符串 `description` 生成唯一的 description meta，页面没有时依次回退当前 locale 与站点配置的 `description`（两者在配置加载时必须为字符串）；`titleTemplate` 可以是字符串模板，其中的 `%s` 替换为页面标题，或为 `false` 以只使用页面标题。其他值保持原样供主题、插件或用户代码读取。Core 在 SSR 与浏览器导航中统一生成 title 与 description；frontmatter `head` 进入 `pageData.head`，规则见 `.agents/specs/core-extensions/` 第一节。页面级 `dir` 和 VitePress 的 `$frontmatter` 模板全局不进入 0.1，用户使用 `usePageData()` 读取当前页面数据。
 
 `PageData.path` 始终是公开路由路径，不是磁盘绝对路径。核心使用同一个 Markdown page loader 生成页面组件与 pageData，保证 Generator Plugin 的 `pageData()` 修改只执行一次。进入浏览器的页面表只携带每页的加载函数，不携带标题、layout 或其他摘要：标题属于需要它的主题，不属于 Core 的路由数据。题目与 layout 的读取能力由 `kawapress/generator` 提供：`listMarkdownPages()` 给出页面文件，`createPageSummaryReader()` 读出作者写下的 `PageSummary`（`title` 与可选的 `layout`），都不渲染页面、不执行 `pageData()`。`kawapress/client` 只公开当前页面数据：
 
@@ -792,6 +792,7 @@ docs
 - 全仓库使用 TypeScript 6。
 - Vue 代码使用 Composition API、`<script setup>` 与 TypeScript。
 - 依赖版本通过具名 pnpm catalogs 管理，禁止裸 `catalog:`。
+- 版本号：`kawapress`、`create-kawapress`、`@kawapress/preset-nagi` 是核心版本组，同号同发；其余插件各自独立计版本、有改动才发布。插件对 `kawapress` 的 peer 写成明确的比较范围（如 `workspace:>=0.8.3 <0.10.0`），只在用到新核心 API 时提高下限；`release:prepare` 校验版本组、peer 范围，并提醒改了源码却没升版本的包。更新日志保留根目录中英文两份，按发布分节并列出本次各包版本，不设分包 CHANGELOG。
 - 0.1 官方包直接发布 TypeScript、Vue SFC 与 CSS 源码，不执行独立的 package build；CLI 源码入口由 Jiti 加载，站点配置及其 Generator Plugin 模块图由 Vite `runnerImport()` 加载并收集本地配置依赖，网站运行侧源码由 Vite 加载。
 - 源码发布包使用标准 package exports：`types`、`import` 与 `default` 均指向源码，不使用自定义 `source` condition，也不使用旧式 `module` 字段或 condition。
 - 第三方插件可以发布源码或预编译产物；KawaPress 不要求插件声明 `source` condition。预编译包将 `types` 指向声明文件，并将 `import`、`default` 指向 ESM 产物。
@@ -846,7 +847,7 @@ docs
 
 ### 0.2：文档站日常体验
 
-已随 0.1.0 一并发布：`create-kawapress` 脚手架、站点与页面 `head`、死链检查、`kawapress preview`、sitemap、最后更新时间、评论与图片缩放插件，见 `0.2-core-plan.md`、`plugin-sitemap-plan.md` 与 7.10。
+已随 0.1.0 一并发布：`create-kawapress` 脚手架、站点与页面 `head`、死链检查、`kawapress preview`、sitemap、最后更新时间、评论与图片缩放插件，见 `.agents/specs/core-extensions/`、`.agents/specs/plugin-sitemap/` 与 7.10。
 
 ### 0.3：内容与生态
 

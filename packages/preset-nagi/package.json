@@ -13,6 +13,10 @@
   "bugs": {
     "url": "https://github.com/kawapress/kawapress/issues"
   },
+  "keywords": [
+    "kawapress",
+    "kawapress-preset"
+  ],
   "exports": {
     ".": {
       "types": "./src/index.ts",

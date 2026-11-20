@@ -1,9 +1,12 @@
 import process from 'node:process'
 import commentsPlugin from '@kawapress/plugin-comments'
+import fileTreePlugin from '@kawapress/plugin-file-tree'
 import imageZoomPlugin from '@kawapress/plugin-image-zoom'
 import lastUpdatedPlugin from '@kawapress/plugin-last-updated'
 import mathjaxPlugin from '@kawapress/plugin-mathjax'
 import mermaidPlugin from '@kawapress/plugin-mermaid'
+import ogImagePlugin from '@kawapress/plugin-og-image'
+import vueReplPlugin from '@kawapress/plugin-vue-repl'
 import { nagi } from 'kawapress/nagi'
 import { guideSidebars, pluginSidebars } from './sidebar'
 
@@ -15,6 +18,9 @@ export default nagi({
     imageZoomPlugin(),
     mathjaxPlugin(),
     mermaidPlugin(),
+    fileTreePlugin(),
+    vueReplPlugin(),
+    ogImagePlugin({ hostname: 'https://kawapress.dev', logo: '/kawapress-logo.png' }),
     lastUpdatedPlugin({
       editLink: {
         pattern: 'https://github.com/kawapress/kawapress/edit/main/:path',
@@ -39,7 +45,7 @@ export default nagi({
     socialLinks: [{ icon: 'github', link: 'https://github.com/kawapress/kawapress' }],
     nav: [
       { text: '指南', link: '/guide/what-is-kawapress', activeMatch: '/guide' },
-      { text: '插件', link: '/plugins/plugin-system', activeMatch: '/plugins' },
+      { text: '插件', link: '/plugins/', activeMatch: '/plugins' },
     ],
     sidebar: {
       '/guide/': guideSidebars.zhCN,
@@ -58,7 +64,7 @@ export default nagi({
       themeConfig: {
         nav: [
           { text: 'Guide', link: '/en/guide/what-is-kawapress', activeMatch: '/en/guide' },
-          { text: 'Plugins', link: '/en/plugins/plugin-system', activeMatch: '/en/plugins' },
+          { text: 'Plugins', link: '/en/plugins/', activeMatch: '/en/plugins' },
         ],
         sidebar: {
           '/en/guide/': guideSidebars.en,

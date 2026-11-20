@@ -2,9 +2,22 @@
 
 All notable changes to KawaPress are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/). Before 1.0, a change to the second number (`0.2` → `0.3`) can contain breaking changes.
 
-The 21 public packages are released together and share one version number. [简体中文](https://github.com/kawapress/kawapress/blob/main/CHANGELOG.zh-CN.md)
+`kawapress`, `create-kawapress` and `@kawapress/preset-nagi` share one version and are released together; every other plugin has its own version and is released when it changes. Up to 0.8.3, all packages shared one version. Each release section lists the packages and versions it published. [简体中文](https://github.com/kawapress/kawapress/blob/main/CHANGELOG.zh-CN.md)
 
 ## [Unreleased]
+
+### Added
+
+- **`@kawapress/plugin-file-tree` 0.1.0: file trees in Markdown.** A ```` ```tree ```` fence becomes a folder tree with Catppuccin file icons, comments after `#`, highlighted entries in `**bold**`, `...` for omitted items and folders collapsed with `(collapsed)`. Folding uses the native `<details>` element, so the tree works without JavaScript.
+- **`@kawapress/plugin-analytics` 0.1.0: one plugin for Google Analytics, Plausible, Umami and Cloudflare Web Analytics.** Pick a provider, or several at once; page views are reported on every client-side navigation. Nothing is reported during `kawapress dev` unless `dev: true` is set.
+- **`@kawapress/plugin-feed` 0.1.0: RSS, Atom and JSON feeds.** Pages matched by `include` that have a quoted `date` in their frontmatter become feed items, with one feed per locale and an autodiscovery `<link>` in every page head.
+- **`@kawapress/plugin-og-image` 0.1.0: a share image for every page.** Each page gets a 1200×630 PNG drawn from a Vue template with satori, and the `og:image` and `twitter:image` tags that point to it. Characters the built-in Figtree font lacks, such as Chinese, Japanese or Korean text, are drawn with Noto font subsets downloaded at build time and cached; set `remoteFonts: false` to stay offline and bring your own `fonts`. A `logo` shows before the site title, and a custom template can replace the built-in one.
+- **`@kawapress/plugin-vue-repl` 0.1.0: runnable Vue examples.** A ```` ```vue repl ```` fence shows the code and runs it in an embedded `@vue/repl` editor on demand, with a link to open it in the Vue Playground. The editor follows the page's light or dark appearance.
+
+### Changed
+
+- **Plugins declare which `kawapress` versions they work with.** The peer dependency on `kawapress` is now `>=0.8.3 <0.10.0` instead of following the core's exact minor version, so a new core release no longer requires a new release of every plugin.
+- **Every official plugin carries the npm keywords `kawapress` and `kawapress-plugin`**, and `@kawapress/preset-nagi` carries `kawapress-preset`. Community plugins can use the same keywords to be found on npm.
 
 ## [0.8.3] - 2026-11-19
 

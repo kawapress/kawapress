@@ -1,19 +1,33 @@
 # KawaPress
 
-KawaPress 是一个全新的、以 Vue 为核心的静态站点生成器，目标是在扩展性和开发体验上超越 VitePress。
+## 1. 项目定调
 
-## 开发计划
+KawaPress 是以 Vue 为核心的静态站点生成器，目标是在扩展性和开发体验上超越 VitePress。pnpm monorepo：`packages/` 下是核心 `kawapress`、默认 Preset `preset-nagi`、脚手架 `create-kawapress` 与各官方插件；`docs/` 是官方文档站，同时承担 dogfooding。
 
-KawaPress 的整体发展计划用 GitHub Project 管理（[KawaPress Development Plan](https://github.com/users/ShenQingchuan/projects/2)），不绑定具体版本，以 issue 追踪驱动。issue 与 PR 使用英文编写。
+开发计划用 GitHub Project 管理（[KawaPress Development Plan](https://github.com/users/ShenQingchuan/projects/2)），以 issue 驱动，交付状态以它为准。issue、PR、commit 使用英文。
 
-发布到 npm 的完整流程（一次准备 + 每次发版动作）见 [RELEASING.md](./RELEASING.md)。
+## 2. 验证与闭环
 
-## 决策与方案文档
+- 单元测试：`pnpm test`，只跑某个包：`pnpm vitest run packages/plugin-mermaid`
+- 静态检查：`pnpm lint`、`pnpm typecheck`
+- E2E：`pnpm test:e2e`（文档站生产构建 + `kawapress preview`，任何控制台 error 或 hydration 警告即失败）
+- 文档站：`pnpm dev` 本地预览；`pnpm build` 生产构建，改动插件或核心后必须用文档站验证真实行为
+- 发布：见 [RELEASING.md](./RELEASING.md)。推送 `v*` tag 即触发 npm 发布
 
-产品与架构方案统一放在 `.agent-work/decisions/`。
+## 3. 上下文指引
 
-KawaPress 0.1 的唯一决策来源是 `.agent-work/decisions/mvp-0.1-product-plan.md`。开始任何 0.1 设计或编码工作之前必须完整阅读，并且不得违背其中的决策。后续确认的 0.1 决策直接合入这份文档。
+按需查阅，不要提前全量加载：
 
-面向后续版本、尚未纳入 0.1 的产品或架构方案使用独立文档。方案只记录当前有效结论、约束和待确认事项，不记录讨论过程、研究草稿或已被替代的设计。方案正式纳入版本计划后，应合入对应版本的唯一决策文档并删除重复内容。
+- 稳定规约：`.agents/specs/`。`core-product/` 是核心产品与架构的决策来源，改动核心、nagi 或插件 API 之前必须读相关章节，不得违背；新确认的核心决策合入这份文档。各官方插件的规约在 `plugin-<name>/`
+- 工程实施：`.agents/engineering/`，进行中的单元见其 `README.md` 导航
+- 项目规则：`.agents/rules/`
+- 背景资料与调研结论：`.agents/docs/`
+- 项目专属技能：`.agents/skills/`
 
-调研材料放在 `.agent-work/research/`，只用于支撑方案或决策。结论写入 `.agent-work/decisions/` 后立即删除对应调研材料，除非用户明确要求保留。
+规约只记录当前有效结论、约束和待确认事项，不记录讨论过程或已被替代的设计。调研只为支撑规约，结论写进 spec 后删除调研草稿，除非用户要求保留。
+
+## 4. 红线
+
+1. 未经用户在对话中明确同意，不推送 `v*` tag、不执行任何 `pnpm release` 发布命令。
+2. 不改写 `main` 的已推送历史，不强推。
+3. 官方文档按正式发布后的真实用法编写，不暴露 `workspace:*`、未发布版本号等开发期状态。

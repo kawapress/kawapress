@@ -33,13 +33,13 @@ description: 按扩展位置编写 KawaPress 插件，使用生成侧与运行�
 
 一个 KawaPress 插件通常作为一个标准的 npm 包交付。如果它同时需要参与构建和在浏览器运行，建议使用以下目录结构：
 
-```text
-@acme/kawapress-plugin-notes
-├─ package.json
-└─ src
-   ├─ index.ts           默认入口：Generator Plugin（生成侧）
-   ├─ runtime-plugin.ts  运行入口：Runtime Plugin（运行侧）
-   └─ NotesBadge.vue     组件与样式等资源
+```tree
+@acme/kawapress-plugin-notes/
+  package.json
+  src/
+    index.ts           # 默认入口：Generator Plugin（生成侧）
+    runtime-plugin.ts  # 运行入口：Runtime Plugin（运行侧）
+    NotesBadge.vue     # 组件与样式等资源
 ```
 
 在 `package.json` 中公开这两个入口：
@@ -660,6 +660,7 @@ it('renders a localized note title', async () => {
 - 只有存在 Runtime Plugin 时才公开 `./runtime-plugin`。
 - `files` 只包含发布需要的源码，并排除测试文件。
 - `kawapress` 声明为 `peerDependencies`，避免站点中出现第二份核心包。
+- 包名使用 `kawapress-plugin-<名字>` 或 `@scope/kawapress-plugin-<名字>`，并在 `keywords` 中加上 `kawapress-plugin`，这样用户能从 [插件市场](/plugins/#community-plugins) 找到它。
 - 包内包含许可证文件和说明文档。
 
 ## 调试与常见错误 {#debugging}

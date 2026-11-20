@@ -14,7 +14,7 @@ test('the top bar switches between the guide and the plugins', async ({ page }) 
   await expect(page.locator('.nagi-sidebar--desktop')).not.toContainText('Mermaid 图表')
 
   await plugins.click()
-  await expect(page).toHaveURL(new RegExp(`${sitePath('/plugins/plugin-system')}$`))
+  await expect(page).toHaveURL(new RegExp(`${sitePath('/plugins')}/?$`))
   await expect(plugins).toHaveAttribute('aria-current', 'page')
   await expect(guide).not.toHaveAttribute('aria-current', 'page')
   await expect(page.locator('.nagi-sidebar--desktop')).toContainText('Mermaid 图表')
@@ -33,7 +33,7 @@ test('the English bar links to the English sections', async ({ page }) => {
   const nav = page.getByRole('navigation', { name: 'Main navigation' })
   await expect(nav.getByRole('link', { name: 'Guide' })).toHaveAttribute('aria-current', 'page')
   await expect(nav.getByRole('link', { name: 'Plugins' }))
-    .toHaveAttribute('href', sitePath('/en/plugins/plugin-system'))
+    .toHaveAttribute('href', sitePath('/en/plugins/'))
 })
 
 test('on a narrow screen the links move into the menu', async ({ page }) => {

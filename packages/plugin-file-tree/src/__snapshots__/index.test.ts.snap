@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`tree fence > matches the HTML snapshot 1`] = `
+"<div class="kawa-file-tree" v-pre>
+<ul class="kawa-file-tree__list">
+<li class="kawa-file-tree__item kawa-file-tree__item--directory"><details open><summary class="kawa-file-tree__row"><span class="kawa-file-tree__icons"><span class="kawa-file-tree__icon-open"><svg/></span><span class="kawa-file-tree__icon-closed"><svg/></span></span><span class="kawa-file-tree__name">docs/</span></summary>
+<ul class="kawa-file-tree__list">
+<li class="kawa-file-tree__item kawa-file-tree__item--directory"><details><summary class="kawa-file-tree__row"><span class="kawa-file-tree__icons"><span class="kawa-file-tree__icon-open"><svg/></span><span class="kawa-file-tree__icon-closed"><svg/></span></span><span class="kawa-file-tree__name">guide/</span></summary>
+<ul class="kawa-file-tree__list">
+<li class="kawa-file-tree__item kawa-file-tree__item--file"><span class="kawa-file-tree__row"><svg/><span class="kawa-file-tree__name kawa-file-tree__name--highlight">routing.md</span><span class="kawa-file-tree__comment">the file to edit</span></span></li>
+</ul>
+</details></li>
+<li class="kawa-file-tree__item kawa-file-tree__item--file"><span class="kawa-file-tree__row"><svg/><span class="kawa-file-tree__name">package.json</span></span></li>
+<li class="kawa-file-tree__item kawa-file-tree__item--ellipsis"><span class="kawa-file-tree__row"><svg/></span></li>
+<li class="kawa-file-tree__item kawa-file-tree__item--directory"><span class="kawa-file-tree__row"><svg/><span class="kawa-file-tree__name">empty/</span></span></li>
+</ul>
+</details></li>
+</ul>
+</div>
+"
+`;
