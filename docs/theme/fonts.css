@@ -1,0 +1,15 @@
+/* nagi uses weights 400–750; 650 and 750 resolve to the nearest heavier face. */
+@import '@fontsource/figtree/400.css';
+@import '@fontsource/figtree/400-italic.css';
+@import '@fontsource/figtree/500.css';
+@import '@fontsource/figtree/600.css';
+@import '@fontsource/figtree/700.css';
+@import '@fontsource/figtree/800.css';
+
+/* Figtree only covers Latin, so CJK text falls through to the system Chinese fonts. */
+:root {
+  --nagi-font-family-base:
+    Figtree, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Noto Sans CJK SC", "Source Han Sans SC", system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+}

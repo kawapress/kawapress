@@ -8,6 +8,7 @@
     "preview": "kawapress preview"
   },
   "devDependencies": {
+    "@fontsource/figtree": "catalog:node",
     "@kawapress/plugin-comments": "workspace:*",
     "@kawapress/plugin-file-tree": "workspace:*",
     "@kawapress/plugin-image-zoom": "workspace:*",
