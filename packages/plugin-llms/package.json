@@ -48,6 +48,7 @@
   },
   "peerDependencies": {
     "kawapress": "workspace:>=0.8.3 <0.10.0",
+    "vite": "catalog:node",
     "vue": "catalog:frontend"
   },
   "dependencies": {

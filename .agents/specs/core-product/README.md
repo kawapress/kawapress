@@ -116,6 +116,8 @@ export default nagi({
 
 Runtime Plugin 解析必须支持 Preset 内置插件：当插件包不是站点的直接依赖时，KawaPress 继续从已解析的 Preset/Plugin 包依赖图中查找其 package exports，不要求站点重复声明 Preset 已经携带的依赖。
 
+插件包与 Preset 包发布的源码导入的每个外部包都必须写进 `dependencies` 或 `peerDependencies`，不能靠 `devDependencies` 或 `kawapress` 的依赖图间接解析。必须与 `kawapress` 共享同一实例的包（`vite`、`markdown-exit`、`vue`）声明为 `peerDependencies`，版本范围与 `kawapress` 使用同一 catalog；它们不重新从 `kawapress` 导出。`scripts/published-types.test.ts` 对未声明的导入直接失败。
+
 ```json
 {
   "name": "kawa-analytics",
