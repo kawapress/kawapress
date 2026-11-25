@@ -14,6 +14,7 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 ### 修复
 
 - **插件在严格的依赖布局下也能正常安装。** 官方插件与 `@kawapress/preset-nagi` 的源码导入了 `vite`、`markdown-exit` 或 `vue` 时，现在会把它们声明为 peer 依赖，版本范围与 `kawapress` 一致。此前这些包是借 `kawapress` 自己的依赖解析到的，在 `hoist=false`、Yarn PnP 等严格布局下会找不到。包管理器会自动安装缺少的 peer，并与 `kawapress` 共用同一份，只安装 `kawapress` 的站点不受影响。
+- **nagi 表格的列不再被挤碎。** Markdown 表格的每一列至少保留 `10em` 宽，文字不会再一行只剩一两个字；列加起来比页面宽时，表格用 nagi 的滚动条横向滚动。*主题作者*：表格现在包在 `<div class="nagi-table"><div class="nagi-table__viewport">` 里。
 
 ## [0.8.4] - 2026-11-20
 

@@ -14,6 +14,7 @@ All notable changes to KawaPress are listed here. The format follows [Keep a Cha
 ### Fixed
 
 - **Plugins install under strict package layouts.** Official plugins and `@kawapress/preset-nagi` now declare `vite`, `markdown-exit` and `vue` as peer dependencies when their sources import them, with the same ranges as `kawapress`. Before, they resolved these through `kawapress`'s own dependencies, which fails with `hoist=false`, Yarn PnP and other strict layouts. Package managers install missing peers automatically and share them with `kawapress`, so sites that only install `kawapress` see no change.
+- **nagi table columns stay readable.** Every column of a Markdown table keeps at least `10em`, so text no longer breaks into one or two characters per line; when the columns need more room than the page, the table scrolls sideways with the nagi scrollbar. *Theme authors*: the table now sits in `<div class="nagi-table"><div class="nagi-table__viewport">`.
 
 ## [0.8.4] - 2026-11-20
 
