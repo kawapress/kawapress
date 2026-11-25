@@ -280,6 +280,9 @@ importers:
 
   docs:
     devDependencies:
+      '@fontsource/figtree':
+        specifier: catalog:node
+        version: 5.3.0
       '@kawapress/plugin-comments':
         specifier: workspace:*
         version: link:../packages/plugin-comments

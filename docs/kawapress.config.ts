@@ -16,6 +16,7 @@ export default nagi({
   title: 'KawaPress',
   description: '由 Vite 和 Vue 驱动的静态站点生成器。',
   base: process.env.KAWAPRESS_BASE,
+  runtimePlugin: './theme/runtime-plugin.ts',
   plugins: [
     imageZoomPlugin(),
     mathjaxPlugin(),
