@@ -58,9 +58,12 @@ test('the doc scroll area gets overlay scrollbars after hydration', async ({ pag
 
   const area = page.locator(docScrollArea)
   await expect(area).toHaveAttribute('data-overlayscrollbars', 'host')
-  await expect(area.locator('.os-scrollbar-vertical')).toHaveClass(/os-theme-nagi/)
+  // Nested scroll areas such as Markdown tables carry scrollbars of their own,
+  // so only the direct children of the doc scroll area belong to it.
+  const scrollbar = area.locator(':scope > .os-scrollbar-vertical')
+  await expect(scrollbar).toHaveClass(/os-theme-nagi/)
 
-  const handle = await area.locator('.os-scrollbar-vertical .os-scrollbar-handle').evaluate((element) => {
+  const handle = await scrollbar.locator('.os-scrollbar-handle').evaluate((element) => {
     const track = window.getComputedStyle(element.parentElement!)
     const styles = window.getComputedStyle(element)
     return {
@@ -108,4 +111,23 @@ test('the outline follows the enhanced doc scroll area', async ({ page }) => {
   await expect(viewport).toHaveJSProperty('scrollTop', 0)
   // The area keeps the enhanced node across the navigation.
   await expect(page.locator(docScrollArea)).toHaveAttribute('data-overlayscrollbars', 'host')
+})
+
+test('a wide Markdown table scrolls sideways with overlay scrollbars', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.goto(sitePath(routing))
+
+  const table = page.locator('.nagi-doc .nagi-table').first()
+  await expect(table).toHaveAttribute('data-overlayscrollbars', 'host')
+  await expect(table.locator(':scope > .os-scrollbar-horizontal')).toHaveClass(/os-theme-nagi/)
+
+  const scrolled = await table.locator('.nagi-table__viewport').evaluate((element) => {
+    element.scrollLeft = 40
+    return {
+      overflow: element.scrollWidth - element.clientWidth,
+      scrollLeft: element.scrollLeft,
+    }
+  })
+  expect(scrolled.overflow).toBeGreaterThan(0)
+  expect(scrolled.scrollLeft).toBe(40)
 })

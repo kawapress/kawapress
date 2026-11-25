@@ -176,20 +176,34 @@
   line-height: 1.6;
 }
 
-/* Markdown tables come wrapped: a quiet card with a rounded border that scrolls sideways when wide. */
+/*
+ * Markdown tables come wrapped: a quiet card with a rounded border whose
+ * viewport scrolls sideways when the columns need more room than the page.
+ */
 .nagi-doc .nagi-table {
   margin: 1.25rem 0;
-  overflow-x: auto;
   border: 1px solid var(--nagi-c-divider);
   border-radius: 0.75rem;
   background: var(--nagi-c-bg);
+  overflow: hidden;
+}
+
+.nagi-doc .nagi-table__viewport:not([data-overlayscrollbars-viewport]) {
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .nagi-doc > table {
   margin: 1.25rem 0;
 }
 
+/*
+ * Every column keeps room for a few words, so text never breaks into a stack
+ * of one or two characters. When the columns add up to more than the page,
+ * the table grows past it and the wrapper scrolls.
+ */
 .nagi-doc :where(th, td) {
+  min-width: 10em;
   padding: 0.625rem 1rem;
   border: 0;
   text-align: start;

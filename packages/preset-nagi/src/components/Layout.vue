@@ -4,6 +4,7 @@ import { RouterView, usePageData, useSite } from 'kawapress/client'
 import { computed, getCurrentInstance, nextTick, provide, shallowRef, useTemplateRef, watch } from 'vue'
 import { createAppearanceInitializerScript } from '../appearance'
 import { nagiDocScrollKey } from '../composables/docScroll'
+import { useMarkdownTableScroll } from '../composables/tableScroll'
 import { useNagiThemeConfig } from '../composables/useNagiThemeConfig'
 import { resolveCustomLayout } from '../custom-layout'
 import { resolveFaviconLinks } from '../favicon'
@@ -44,6 +45,8 @@ const sidebarOpen = shallowRef(false)
 const outlineOpen = shallowRef(false)
 const outlineAsideCollapsed = shallowRef(false)
 const docScroll = useTemplateRef<InstanceType<typeof OsScroll>>('docScroll')
+
+useMarkdownTableScroll()
 
 provide(nagiDocScrollKey, () => docScroll.value?.getScrollElement() ?? null)
 
