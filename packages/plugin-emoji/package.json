@@ -37,7 +37,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "peerDependencies": {
-    "kawapress": "workspace:>=0.8.3 <0.10.0"
+    "kawapress": "workspace:>=0.8.3 <0.10.0",
+    "markdown-exit": "catalog:markdown"
   },
   "dependencies": {
     "@types/markdown-it-emoji": "catalog:markdown",

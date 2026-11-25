@@ -3,8 +3,9 @@
  * config also type-checks every module those sources import. Types that only
  * the monorepo root installs (a root `@types/*` devDependency) pass our own
  * typecheck and fail in every consumer. This test reads each published source
- * file and checks that every dependency it imports brings its types along:
- * the dependency ships them, or the package also depends on its `@types/*`.
+ * file and checks that every package it imports is declared as a dependency or
+ * peer dependency, and that it brings its types along: the dependency ships
+ * them, or the package also depends on its `@types/*`.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { isBuiltin } from 'node:module'
@@ -122,11 +123,13 @@ describe('published package types', () => {
     for (const file of sources) {
       for (const [, specifier] of readFileSync(file, 'utf8').matchAll(SPECIFIER_RE)) {
         const name = packageNameOf(specifier)
-        // Imports that are no dependency of this package resolve through `kawapress`;
-        // see kawapress/kawapress#84 for how those should be declared.
-        if (!name || name === manifest.name || !declared.has(name) || locallyDeclared.has(specifier))
+        if (!name || name === manifest.name || locallyDeclared.has(specifier))
           continue
-        if (!shipsTypes(dir, name) && !declared.has(typesPackageOf(name)))
+        // A devDependency only exists inside this monorepo; consumers resolve the import
+        // through their own install. Packages shared with `kawapress` belong in peerDependencies.
+        if (!declared.has(name))
+          problems.push(`${relative(ROOT, file)}: ${name} is not declared; add it to the dependencies or peerDependencies of ${manifest.name}`)
+        else if (!shipsTypes(dir, name) && !declared.has(typesPackageOf(name)))
           problems.push(`${relative(ROOT, file)}: ${name} has no types; add ${typesPackageOf(name)} to the dependencies of ${manifest.name}`)
       }
     }

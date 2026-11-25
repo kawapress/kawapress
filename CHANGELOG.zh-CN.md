@@ -11,6 +11,10 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - **插件声明自己兼容的 `kawapress` 版本范围。** 插件对 `kawapress` 的 peer 依赖改为 `>=0.8.3 <0.10.0`，不再绑定核心当前的小版本；核心发新版本时，不再需要所有插件跟着发版。
 - **所有官方插件都带上 npm 关键词 `kawapress` 与 `kawapress-plugin`**，`@kawapress/preset-nagi` 带 `kawapress-preset`。社区插件使用同样的关键词，就能在 npm 上被搜到。
 
+### 修复
+
+- **插件在严格的依赖布局下也能正常安装。** 官方插件与 `@kawapress/preset-nagi` 的源码导入了 `vite`、`markdown-exit` 或 `vue` 时，现在会把它们声明为 peer 依赖，版本范围与 `kawapress` 一致。此前这些包是借 `kawapress` 自己的依赖解析到的，在 `hoist=false`、Yarn PnP 等严格布局下会找不到。包管理器会自动安装缺少的 peer，并与 `kawapress` 共用同一份，只安装 `kawapress` 的站点不受影响。
+
 ## [0.8.4] - 2026-11-20
 
 本次发布：`kawapress` 0.8.4、`create-kawapress` 0.8.4、`@kawapress/preset-nagi` 0.8.4、`@kawapress/plugin-vue-component-meta` 0.1.0、`@kawapress/plugin-vue-component-demo` 0.1.0。

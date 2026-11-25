@@ -42,7 +42,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "peerDependencies": {
-    "kawapress": "workspace:>=0.8.3 <0.10.0"
+    "kawapress": "workspace:>=0.8.3 <0.10.0",
+    "vite": "catalog:node"
   },
   "devDependencies": {
     "kawapress": "workspace:*",

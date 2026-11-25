@@ -55,6 +55,8 @@
   },
   "peerDependencies": {
     "kawapress": "workspace:>=0.8.3 <0.10.0",
+    "markdown-exit": "catalog:markdown",
+    "vite": "catalog:node",
     "vue": "catalog:frontend"
   },
   "devDependencies": {

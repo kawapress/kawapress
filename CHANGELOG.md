@@ -11,6 +11,10 @@ All notable changes to KawaPress are listed here. The format follows [Keep a Cha
 - **Plugins declare which `kawapress` versions they work with.** The peer dependency on `kawapress` is now `>=0.8.3 <0.10.0` instead of following the core's exact minor version, so a new core release no longer requires a new release of every plugin.
 - **Every official plugin carries the npm keywords `kawapress` and `kawapress-plugin`**, and `@kawapress/preset-nagi` carries `kawapress-preset`. Community plugins can use the same keywords to be found on npm.
 
+### Fixed
+
+- **Plugins install under strict package layouts.** Official plugins and `@kawapress/preset-nagi` now declare `vite`, `markdown-exit` and `vue` as peer dependencies when their sources import them, with the same ranges as `kawapress`. Before, they resolved these through `kawapress`'s own dependencies, which fails with `hoist=false`, Yarn PnP and other strict layouts. Package managers install missing peers automatically and share them with `kawapress`, so sites that only install `kawapress` see no change.
+
 ## [0.8.4] - 2026-11-20
 
 Published: `kawapress` 0.8.4, `create-kawapress` 0.8.4, `@kawapress/preset-nagi` 0.8.4, `@kawapress/plugin-vue-component-meta` 0.1.0, `@kawapress/plugin-vue-component-demo` 0.1.0.
