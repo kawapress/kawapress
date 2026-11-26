@@ -74,10 +74,11 @@ export { default as SsgMarkdownRoot } from ${JSON.stringify(SSG_MD_ROOT_COMPONEN
       if (!id.endsWith('.md')) {
         return
       }
+      const pluginSourcePath = pluginPageSourcePath(id)
       const page = options.getPages().find(candidate => (
-        candidate.file === undefined
-          ? pluginPageSourcePath(id) === candidate.sourcePath
-          : candidate.file === id
+        pluginSourcePath === undefined
+          ? candidate.file === id
+          : candidate.sourcePath === pluginSourcePath
       ))
       if (!page) {
         throw new Error(

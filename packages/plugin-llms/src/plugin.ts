@@ -60,7 +60,7 @@ export function llmsPlugin(
         markdown = compiler
       })
       api.pageArtifact((page) => {
-        pageArtifacts.set(page.file ?? page.sourcePath, page)
+        pageArtifacts.set(page.sourcePath, page)
       })
       api.vite((config) => {
         installSsgMarkdownEnvironment(config)
