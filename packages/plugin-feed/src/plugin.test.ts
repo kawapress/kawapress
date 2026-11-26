@@ -53,7 +53,44 @@ const localesConfig = `
   },
 `
 
+const pluginPagesSource = `
+import { definePlugin } from 'kawapress'
+
+const pluginPages = definePlugin({
+  name: 'plugin-pages',
+  setup(api) {
+    api.pages(() => [
+      { path: '/changelog/v1', sourcePath: '@changelog/v1.md', markdown: '---\\ntitle: Release 1\\ndate: "2026-05-01"\\n---\\n# Release 1\\n\\nFirst release notes.\\n' },
+      { path: '/en/changelog/v1', sourcePath: '@changelog/en/v1.md', markdown: '---\\ntitle: Release 1 EN\\ndate: "2026-05-02"\\n---\\n# Release 1 EN\\n' },
+      { path: '/changelog/draft', sourcePath: '@changelog/draft.md', markdown: '---\\ndate: "2026-06-01"\\n---\\n# Draft\\n' },
+    ])
+  },
+})
+`
+
 describe('feed plugin', () => {
+  it('feeds plugin pages by their sourcePath and puts them in the locale of their route', async () => {
+    const config = siteConfig(
+      `{ hostname: 'https://example.com', include: ['@changelog/**/*.md'], exclude: ['@changelog/draft.md'], formats: ['json'] }`,
+      localesConfig,
+    )
+      .replace('plugins: [feed(', 'plugins: [pluginPages, feed(')
+      .replace(`import { nagi }`, `${pluginPagesSource}\nimport { nagi }`)
+    const root = await createSite(config, {
+      'index.md': '# Home\n',
+      'en/index.md': '# Home\n',
+    })
+
+    await buildSite(root)
+
+    const rootJson = JSON.parse(await readFile(join(root, 'dist/feed.json'), 'utf8'))
+    expect(rootJson.items.map((item: { title: string }) => item.title)).toEqual(['Release 1'])
+    expect(rootJson.items[0].url).toBe('https://example.com/docs/changelog/v1')
+    const enJson = JSON.parse(await readFile(join(root, 'dist/en/feed.json'), 'utf8'))
+    expect(enJson.items.map((item: { title: string }) => item.title)).toEqual(['Release 1 EN'])
+    expect(await readFile(join(root, 'dist/changelog/v1.html'), 'utf8')).toContain('type="application/feed+json"')
+  }, 120_000)
+
   it('writes every format per locale, under the base, and links them from page heads', async () => {
     const warn = vi.spyOn(consola, 'warn')
     const root = await createSite(

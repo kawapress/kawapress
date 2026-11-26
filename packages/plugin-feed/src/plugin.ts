@@ -4,7 +4,7 @@ import type { FeedChannel } from './render'
 import type { FeedAuthor, FeedFormat, FeedPluginOptions } from './types'
 import { consola } from 'consola'
 import { definePlugin, resolveLocaleIndex } from 'kawapress'
-import { listMarkdownPages, resolveMarkdownPageScope } from 'kawapress/generator'
+import { listSitePages } from 'kawapress/generator'
 import { resolveFeedHostname } from './hostname'
 import { createFeedItems, createPageMatcher, sortAndLimit } from './items'
 import { FEED_FILES, FEED_MIME_TYPES, renderFeed } from './render'
@@ -50,7 +50,7 @@ export function feedPlugin(options: FeedPluginOptions) {
       const resolved = site!
       const localeKeys = Object.keys(resolved.locales)
       const found = new Set<string>()
-      const pages = await listMarkdownPages(resolveMarkdownPageScope(resolved))
+      const pages = await listSitePages(resolved)
       await Promise.all(pages.map(async (page) => {
         if (!matches(page.sourcePath)) {
           return

@@ -73,6 +73,21 @@ describe('og-image plugin', () => {
     await expect(access(join(root, 'dist/.kawapress'))).rejects.toThrow()
   }, 120_000)
 
+  it('renders cards for plugin pages and matches exclude against their sourcePath', async () => {
+    const root = await createSite({
+      pluginOptions: `{ hostname: 'https://example.com', exclude: ['@typedoc/hidden.md'], remoteFonts: false }`,
+      withPluginPages: true,
+    })
+    await writeFile(join(root, 'index.md'), '# Home\n')
+
+    await buildSite(root)
+
+    expect(await listFiles(join(root, 'dist/og'))).toEqual(['api/core.png', 'index.png'])
+    expect(await readFile(join(root, 'dist/api/core.html'), 'utf8'))
+      .toContain('<meta property="og:image" content="https://example.com/og/api/core.png">')
+    expect(await readFile(join(root, 'dist/api/hidden.html'), 'utf8')).not.toContain('og:image')
+  }, 120_000)
+
   it('renders a custom Vue template with local images and warns about missing glyphs', async () => {
     const warn = vi.spyOn(consola, 'warn').mockImplementation(() => {})
     const root = await createSite({
@@ -152,23 +167,34 @@ defineProps<{ title: string, siteTitle: string, lang: string }>()
   }, 120_000)
 })
 
-function configSource(pluginOptions: string, extra = ''): string {
+function configSource(pluginOptions: string, extra = '', withPluginPages = false): string {
   return `
+import { definePlugin } from 'kawapress'
 import { nagi } from 'kawapress/nagi'
 import ogImage from '${PLUGIN_ENTRY}'
+
+const pluginPages = definePlugin({
+  name: 'plugin-pages',
+  setup(api) {
+    api.pages(() => [
+      { path: '/api/core', sourcePath: '@typedoc/core.md', markdown: '# Core API\\n' },
+      { path: '/api/hidden', sourcePath: '@typedoc/hidden.md', markdown: '# Hidden API\\n' },
+    ])
+  },
+})
 
 export default nagi({
   title: 'Kawa Docs',
 ${extra}
-  plugins: [ogImage(${pluginOptions})],
+  plugins: [ogImage(${pluginOptions})${withPluginPages ? ', pluginPages' : ''}],
 })
 `
 }
 
-async function createSite(options: { pluginOptions: string, config?: string }): Promise<string> {
+async function createSite(options: { pluginOptions: string, config?: string, withPluginPages?: boolean }): Promise<string> {
   const root = await mkdtemp(join(process.cwd(), 'docs/kawapress-og-image-'))
   temporaryDirectories.push(root)
-  await writeFile(join(root, 'kawapress.config.ts'), configSource(options.pluginOptions, options.config))
+  await writeFile(join(root, 'kawapress.config.ts'), configSource(options.pluginOptions, options.config, options.withPluginPages))
   return root
 }
 
