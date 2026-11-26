@@ -1,6 +1,6 @@
-# 插件页面（草案）
+# 插件页面
 
-状态：draft，待用户确认「待定问题」后转为正式规约，并更新 `core-product` 里「0.1 不提供 `addPage()`」的条目。
+状态：已确认，待实施。核心 API 摘要见 `core-product` 的 Generator Plugin API 一节。
 
 让 Generator Plugin 向站点添加不来自 `srcDir` 里 Markdown 文件的页面。第一个使用者是 `plugin-typedoc`（每个模块、每个符号一页），之后可服务 changelog 页、归档页、OpenAPI 等。
 
@@ -31,13 +31,47 @@ interface PluginPage {
 }
 ```
 
+- `api.pages()` 与 `api.invalidatePages()` 是正式的公开插件 API，不加 `experimental` 前缀，按 0.x 的常规兼容规则演进。
 - 只支持 Markdown 源码。插件要用组件时在 Markdown 里写组件，由 `addPageComponent` 引入；不提供「直接给一个 Vue 组件当页面」的入口，保持一条编译管线。
 - 「动态路由」在 SSG 下展开为具体路径：插件返回的就是全部路径，不引入参数路由。
 - 开发时插件调用 `api.invalidatePages()` 通知页面集合变化，核心重新收集并整页刷新；单个页面内容变化走普通 HMR。
 
+### 页面标识
+
+- `path` 是公开路由：以 `/` 开头、不含 `base` 的站内路径，结尾的 `/` 表示目录首页。页面所在语言由路径前缀按 `locales` 判断，与普通页面一致。
+- `sourcePath` 不以 `/` 开头、以 `.md` 结尾，建议用插件名做第一段（如 `@typedoc/core/define-plugin.md`），因此不会与 Markdown 文件的 `sourcePath`（以 `/` 开头）重名；同一站点内插件页面的 `sourcePath` 必须唯一，重复时报错指出两个插件。
+- `pagePath` 由路由推出：`/x/` 为 `/x/index.md`，`/x/y` 为 `/x/y.md`，llms 的每页 `.md` 输出用它。
+
+### 读取全站页面
+
+`kawapress/generator` 导出两个函数，取代插件各自调用 `listMarkdownPages`：
+
+```ts
+/** 先是 Markdown 文件页面（顺序同 listMarkdownPages），再是插件页面（按插件顺序与各插件返回的顺序）；路由冲突时报错并指出两边来源。 */
+listSitePages(site: ResolvedSiteConfig): Promise<SitePage[]>
+
+/** 页面集合变化（Markdown 文件增删、任一插件调用 invalidatePages()）时通知，返回取消函数。只在开发服务器中触发。 */
+onSitePagesChange(site: ResolvedSiteConfig, listener: () => void): () => void
+
+interface SitePage {
+  origin: 'file' | 'plugin'
+  /** 仅文件页面有。 */
+  file?: string
+  sourcePath: string
+  pagePath: string
+  routePath: string
+  /** 当前的 Markdown 源码：文件页面读磁盘（展开 include），插件页面取插件给出的源码。 */
+  readSource: () => Promise<string>
+}
+```
+
+- 两个函数以 `configResolved()` 拿到的同一个 `ResolvedSiteConfig` 对象为键找到站点；传入其他对象时报错，说明应使用 `configResolved()` 的结果。
+- 插件页面在全部 `configResolved()` 之后、第一次需要页面列表时收集；`pages()` handler 按插件顺序执行一次，开发期在 `invalidatePages()` 后重新执行。
+- `listMarkdownPages`、`resolveMarkdownPageScope`、`isMarkdownPage` 继续导出，供只关心磁盘文件的场景使用（如判断改动的文件是不是页面）。
+
 ### 核心改动
 
-1. **统一页面列表**：`listSitePages()` 合并 Markdown 文件与插件页面，统一检查路由冲突（冲突时报出两边来源），并导出给 nagi、搜索、feed 使用，取代它们各自的 `listMarkdownPages` 调用。
+1. **统一页面列表**：核心内部的页面表、构建入口、dead link 注册表都改用 `listSitePages()`；nagi、搜索、feed 改用它和 `onSitePagesChange()`。
 2. **虚拟模块 id**：插件页面用不含 `\0`、以 `.md` 结尾的 id（如 `/@kawapress-page/<sourcePath>`），让 `@vitejs/plugin-vue` 接受它，并在客户端 manifest 中有稳定的键，预渲染能找到对应 chunk。
 3. **编译**：`markdownPlugin.load` 对插件页面从注册表取源码；`page-loader` 接受显式的 `routePath`、`sourcePath`，不再从文件路径推导；插件页面不支持 `<!--@include-->`。
 4. **构建入口与预渲染**：插件页面进入 `createPageInputs` 与 dead link 注册表，其余流程不变。
@@ -55,11 +89,9 @@ interface PluginPage {
 | feed、og-image 的 include/exclude | 匹配 `sourcePath`，插件页面用自己的 `sourcePath` 参与匹配。 |
 | `rewrites` | 不作用于插件页面。 |
 
-## 待定问题（需要用户决定）
+## 发布
 
-1. 插件页面是否只允许 Markdown 源码（本草案的建议），还是也允许直接给一个 Vue 组件？
-2. `api.pages()` 是否放进 0.x 的公开插件 API，还是先标记为实验性（`api.experimental.pages()`），待 typedoc 验证后再转正？
-3. 已发布插件（last-updated、sitemap、search、feed、og-image、llms）适配插件页面，是否随核心一起在同一个版本发出？
+核心与已发布插件（last-updated、sitemap、search、feed、og-image、llms）以及 nagi 对插件页面的适配在同一批发布中发出：用户升级后，插件页面立即出现在侧边栏、搜索、sitemap、feed、llms 输出中，不存在只有核心支持的中间状态。各插件仍按自己的版本号升级，不跟随核心版本号。只有用到核心新导出（如 `listSitePages`）的插件才把 `kawapress` peer 范围提高到这次的核心版本；只读取 `origin`、`file` 的插件在旧核心上把缺少 `origin` 视为文件页面，peer 范围不变。
 
 ## 验收
 
