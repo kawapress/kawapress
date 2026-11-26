@@ -1,8 +1,8 @@
 import type { MarkdownItContainerOptions } from '@mdit/plugin-container'
 import type { PageFrontmatter } from 'kawapress'
-import type { MarkdownPageScope } from 'kawapress/generator'
+import type { MarkdownPageScope, SitePage } from 'kawapress/generator'
 import type { MarkdownExit, Token } from 'markdown-exit'
-import type { Plugin } from 'vite'
+import type { ModuleNode, Plugin, ViteDevServer } from 'vite'
 import type { SearchDocument } from './search'
 import { installToc } from '@kawapress/plugin-toc'
 import { frontmatterPlugin } from '@mdit-vue/plugin-frontmatter'
@@ -17,7 +17,7 @@ import {
   stringifyJson,
   useMarkdownItPlugin,
 } from 'kawapress'
-import { isMarkdownPage, listMarkdownPages, readMarkdownSource } from 'kawapress/generator'
+import { isMarkdownPage, readMarkdownSource } from 'kawapress/generator'
 import { createMarkdownExit } from 'markdown-exit'
 import anchorPlugin from 'markdown-it-anchor'
 import { createSearchIndex } from './search'
@@ -46,8 +46,12 @@ export interface SearchCalloutOptions {
 }
 
 interface SearchIndexPluginOptions {
-  /** The site's pages, from `resolveMarkdownPageScope()`. */
+  /** The site's Markdown files, from `resolveMarkdownPageScope()`. */
   scope: MarkdownPageScope
+  /** Every page of the site, Markdown files and plugin pages, from `listSitePages()`. */
+  listPages: () => Promise<SitePage[]>
+  /** Calls the listener when the set or the source of the site's pages changed, from `onSitePagesChange()`. */
+  onPagesChange: (listener: () => void) => () => void
   locales: string[]
   localeLanguages?: Record<string, string | undefined>
   callouts?: SearchCalloutOptions
@@ -160,15 +164,31 @@ export function searchIndexPlugin(
   const dependencies = new Set<string>()
 
   function getIndexes(): Promise<Record<string, string>> {
-    return cachedIndexes ??= loadSearchIndexes(
-      scope,
+    return cachedIndexes ??= options.listPages().then(pages => loadSearchIndexes(
+      pages,
+      scope.sourceRoot,
       localeIndexes,
       {
         localeLanguages: options.localeLanguages,
         callouts: options.callouts,
         dependencies,
       },
-    )
+    ))
+  }
+
+  /** Drops the built indexes and replaces the modules that carry them. */
+  function invalidateIndexes(server: ViteDevServer): ModuleNode[] {
+    cachedIndexes = undefined
+    indexVersion++
+    const modules = [
+      server.moduleGraph.getModuleById(RESOLVED_MODULE_ID),
+      ...[...resolvedIndexModules].map(id => server.moduleGraph.getModuleById(id)),
+    ].filter(module => module !== undefined)
+
+    for (const module of modules) {
+      server.moduleGraph.invalidateModule(module)
+    }
+    return modules
   }
 
   return {
@@ -205,43 +225,39 @@ export function searchIndexPlugin(
         path: 'searchIndex',
       })}`
     },
+    configureServer(server) {
+      // Added and removed pages and plugin pages are in no module the browser
+      // knows about, so the page list reports them. The core reloads the page
+      // when the set of pages changes, which loads the rebuilt indexes.
+      const stop = options.onPagesChange(() => {
+        invalidateIndexes(server)
+      })
+      server.httpServer?.once('close', stop)
+    },
     handleHotUpdate(context) {
       if (!isMarkdownPage(context.file, scope) && !dependencies.has(context.file)) {
         return
       }
 
-      cachedIndexes = undefined
-      indexVersion++
-      const modules = [
-        context.server.moduleGraph.getModuleById(RESOLVED_MODULE_ID),
-        ...[...resolvedIndexModules].map(id => (
-          context.server.moduleGraph.getModuleById(id)
-        )),
-      ].filter(module => module !== undefined)
-
-      for (const module of modules) {
-        context.server.moduleGraph.invalidateModule(module)
-      }
+      const modules = invalidateIndexes(context.server)
       return [...new Set([...context.modules, ...modules])]
     },
   }
 }
 
 export async function loadSearchIndexes(
-  scope: MarkdownPageScope,
+  pages: SitePage[],
+  sourceRoot: string,
   locales: string[],
   options: LoadSearchIndexesOptions = {},
 ): Promise<Record<string, string>> {
   const localeIndexes = Object.fromEntries(locales.map(locale => (
     [locale, createSearchIndex()]
   )))
-  const pages = await listMarkdownPages(scope)
 
-  for (const { file, routePath: route } of pages) {
-    const { source, dependencies } = readMarkdownSource({ file, sourceRoot: scope.sourceRoot })
-    for (const dependency of dependencies) {
-      options.dependencies?.add(dependency)
-    }
+  for (const page of pages) {
+    const { routePath: route } = page
+    const source = await readPageSource(page, sourceRoot, options.dependencies)
     const locale = resolveLocaleIndex(route, locales)
     const index = localeIndexes[locale]
     if (index) {
@@ -260,6 +276,25 @@ export async function loadSearchIndexes(
   return Object.fromEntries(Object.entries(localeIndexes).map(([locale, index]) => (
     [locale, JSON.stringify(index)]
   )))
+}
+
+/**
+ * File pages are read with their includes so the files they pull in are
+ * watched; a plugin page is the Markdown its plugin returned.
+ */
+async function readPageSource(
+  page: SitePage,
+  sourceRoot: string,
+  dependencies: Set<string> | undefined,
+): Promise<string> {
+  if (page.file === undefined) {
+    return page.readSource()
+  }
+  const read = readMarkdownSource({ file: page.file, sourceRoot })
+  for (const dependency of read.dependencies) {
+    dependencies?.add(dependency)
+  }
+  return read.source
 }
 
 export function createSearchDocuments(
