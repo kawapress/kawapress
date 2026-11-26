@@ -115,6 +115,7 @@ async function readPage(
     headers: [],
   }
   await host.runPageData(pageData, {
+    origin: 'file',
     file: join(root, sourceFile),
     sourcePath: `/${sourceFile}`,
   })

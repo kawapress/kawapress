@@ -51,6 +51,9 @@ export function lastUpdatedPlugin(
       })
 
       api.pageData(async (pageData, { file }) => {
+        if (file === undefined) {
+          return
+        }
         const sourceFile = resolve(file)
         const dates = await loadTimestamps()
         const lastUpdated = dates.get(sourceFile)

@@ -8,11 +8,12 @@ import vue from '@vitejs/plugin-vue'
 import { mergeConfig } from 'vite'
 import { createMarkdownPageLoader } from '../../compiler/page-loader'
 import { createDataLoaderContext } from '../data/context'
+import { resolveMarkdownPageScope } from '../pages'
 import { runtimeDependencySpecifiers } from '../runtime-dependencies'
 import { dataLoaderPlugin } from './plugins/data'
 import { devDeadLinksPlugin } from './plugins/dev-dead-links'
 import { markdownPlugin } from './plugins/markdown'
-import { createPageRouteIndex, virtualPagesPlugin } from './plugins/pages'
+import { virtualPagesPlugin } from './plugins/pages'
 import { virtualRuntimePluginsPlugin } from './plugins/runtime-plugins'
 import { virtualSitePlugin } from './plugins/site'
 
@@ -157,11 +158,11 @@ function createBasePlugins(
   pageLoader: MarkdownPageLoader,
 ): Plugin[] {
   const dataLoaderContext = createDataLoaderContext(root, siteConfig)
-  const pageRoutes = createPageRouteIndex(pageLoader, siteConfig.publicDir)
+  const registry = siteConfig.pageRegistry
 
   return [
     dataLoaderPlugin(dataLoaderContext),
-    markdownPlugin(pageLoader),
+    markdownPlugin(pageLoader, registry),
     vue({
       include: [
         /\.vue$/,
@@ -173,10 +174,8 @@ function createBasePlugins(
       siteRuntimePlugin: siteConfig.runtimePlugin,
     }),
     virtualPagesPlugin({
-      srcDir: siteConfig.srcDir,
-      publicDir: siteConfig.publicDir,
-      pageLoader,
-      pageRoutes,
+      scope: resolveMarkdownPageScope(siteConfig),
+      registry,
     }),
     virtualSitePlugin({
       title: siteConfig.title,
@@ -196,7 +195,7 @@ function createBasePlugins(
     }),
     devDeadLinksPlugin({
       pageLoader,
-      pageRoutes,
+      registry,
       deadLinks: siteConfig.deadLinks,
     }),
   ]

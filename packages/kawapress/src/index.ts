@@ -25,6 +25,10 @@ export type {
   PageBuildArtifact,
   PageDataContext,
   PageDataHandler,
+  PageOrigin,
+  PluginPage,
+  PluginPagesContext,
+  PluginPagesHandler,
   RuntimePlugin,
   RuntimePluginAPI,
   RuntimePluginHandler,
@@ -77,3 +81,4 @@ export type {
 } from './core/site'
 export { KAWA_DEFAULT_TOKENS, KAWA_LAYER_ORDER, KAWA_TOKEN_NAMES } from './core/tokens'
 export type { KawaTokenName } from './core/tokens'
+export type { SitePage } from './generator/site-pages'

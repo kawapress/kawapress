@@ -5,6 +5,7 @@ import type { LlmsPluginOptions } from './types'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { pluginPageSourcePath } from 'kawapress/generator'
 import { isRunnableDevEnvironment, normalizePath } from 'vite'
 import { createLlmsArtifacts } from './artifacts'
 import {
@@ -73,7 +74,11 @@ export { default as SsgMarkdownRoot } from ${JSON.stringify(SSG_MD_ROOT_COMPONEN
       if (!id.endsWith('.md')) {
         return
       }
-      const page = options.getPages().find(candidate => candidate.file === id)
+      const page = options.getPages().find(candidate => (
+        candidate.file === undefined
+          ? pluginPageSourcePath(id) === candidate.sourcePath
+          : candidate.file === id
+      ))
       if (!page) {
         throw new Error(
           `KawaPress LLMS: no page artifact was recorded for ${JSON.stringify(id)}.`,

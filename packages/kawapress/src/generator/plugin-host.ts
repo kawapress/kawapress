@@ -23,13 +23,9 @@ export async function setupGeneratorPlugins(
   options: ResolveSiteConfigOptions = {},
 ): Promise<GeneratorPluginHost> {
   const {
-    plugins: _plugins,
-    vite: _vite,
-    runtimePlugin: _runtimePlugin,
-    deadLinks: _deadLinks,
     pluginRunner,
-    ...site
+    resolvedSite,
   } = await resolveSiteConfig(config, options)
   const { runConfig: _runConfig, runConfigResolved: _runConfigResolved, ...hooks } = pluginRunner
-  return { site, ...hooks }
+  return { site: resolvedSite, ...hooks }
 }

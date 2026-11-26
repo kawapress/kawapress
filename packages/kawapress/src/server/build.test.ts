@@ -396,4 +396,39 @@ export default {
       )
     }
   }, 300_000)
+
+  it('prerenders the pages a plugin adds, with a chunk of their own', async () => {
+    await createSite(`import { definePlugin } from 'kawapress'
+
+const pages = definePlugin({
+  name: 'local-pages',
+  setup(api) {
+    api.pages(({ command }) => [
+      { path: '/api/core', sourcePath: '@local/core.md', markdown: '# Core API\\n\\nBuilt by the ' + command + ' command.\\n' },
+      { path: '/zh/api/', sourcePath: '@local/zh/index.md', markdown: '---\\ntitle: 接口\\n---\\n\\n# 接口\\n' },
+    ])
+  },
+})
+
+export default {
+  title: 'Plugin Pages Test',
+  plugins: [pages],
+}
+`)
+    await buildWithoutNodeEnv()
+
+    const core = await readFile(join(siteDirectory, 'dist/api/core.html'), 'utf8')
+    expect(core).toContain('<title>Core API | Plugin Pages Test</title>')
+    const zh = await readFile(join(siteDirectory, 'dist/zh/api.html'), 'utf8')
+    expect(zh).toContain('<title>接口 | Plugin Pages Test</title>')
+    const table = await readPageTable()
+    expect(Object.keys(table).sort()).toEqual([
+      '/',
+      '/api/core',
+      '/guide/one',
+      '/guide/styled',
+      '/zh/api',
+    ])
+    expect(await readClientFile(await pageChunkOf('/api/core'))).toContain('Built by the build command.')
+  }, 300_000)
 })

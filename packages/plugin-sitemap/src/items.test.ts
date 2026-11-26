@@ -6,6 +6,7 @@ function page(routePath: string, frontmatter: Record<string, unknown> = {}, file
   const sourcePath = `${routePath === '/' ? '/index' : routePath}.md`
   return {
     source: '',
+    origin: 'file',
     file,
     sourcePath,
     pagePath: sourcePath,

@@ -1,6 +1,6 @@
 import type { ViteDevServer } from 'vite'
 import type { MarkdownPageLoader } from '../../../compiler/page-loader'
-import type { PageRouteIndex } from './pages'
+import type { RegisteredSitePage, SitePageRegistry } from '../../site-pages'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { createLinkRegistry } from '../../../compiler/link-registry'
@@ -30,15 +30,22 @@ function createHarness(options: {
   const pageLoader = {
     sourceRoot: ROOT,
     registry,
+    resolveFilePage: () => ({
+      origin: 'file',
+      file: FILE,
+      sourcePath: '/guide.md',
+      pagePath: '/guide.md',
+      routePath: '/guide',
+    }),
   } as unknown as MarkdownPageLoader
-  const pageRoutes: PageRouteIndex = {
-    routes: async () => options.routes ?? ['/guide', '/other'],
-    invalidate() {},
-  }
+  const sitePages = (options.routes ?? ['/guide', '/other']).map(routePath => ({ routePath }))
+  const pageRegistry = {
+    list: async () => sitePages as RegisteredSitePage[],
+  } as unknown as SitePageRegistry
   const warn = vi.fn()
   const plugin = devDeadLinksPlugin({
     pageLoader,
-    pageRoutes,
+    registry: pageRegistry,
     deadLinks: options.deadLinks ?? { level: 'warn', ignore: [] },
   })
   const server = { config: { logger: { warn } } } as unknown as ViteDevServer
@@ -105,6 +112,30 @@ describe('devDeadLinksPlugin', () => {
     expect(warn).not.toHaveBeenCalled()
   })
 
+  it('finds the route of a plugin page by its module id', async () => {
+    const links = createLinkRegistry()
+    links.set({
+      route: '/api/a',
+      source: '@test/a.md',
+      headings: [],
+      links: [{ href: './gone', target: '/api/gone', line: 2 }],
+    })
+    const warn = vi.fn()
+    const plugin = devDeadLinksPlugin({
+      pageLoader: { sourceRoot: ROOT, registry: links } as unknown as MarkdownPageLoader,
+      registry: {
+        list: async () => [{ origin: 'plugin', sourcePath: '@test/a.md', routePath: '/api/a' }],
+      } as unknown as SitePageRegistry,
+      deadLinks: { level: 'warn', ignore: [] },
+    })
+    ;(plugin.configureServer as (server: ViteDevServer) => void)({ config: { logger: { warn } } } as unknown as ViteDevServer)
+
+    await (plugin.transform as (code: string, id: string) => Promise<void>)('', '/@kawapress-page/@test/a.md')
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0]![0]).toContain('@test/a.md:2')
+  })
+
   it('does nothing outside the dev server', async () => {
     const registry = createLinkRegistry()
     registry.set({
@@ -116,7 +147,7 @@ describe('devDeadLinksPlugin', () => {
     const warn = vi.fn()
     const plugin = devDeadLinksPlugin({
       pageLoader: { sourceRoot: ROOT, registry } as unknown as MarkdownPageLoader,
-      pageRoutes: { routes: async () => ['/guide'], invalidate() {} },
+      registry: { list: async () => [{ routePath: '/guide' }] } as unknown as SitePageRegistry,
       deadLinks: { level: 'warn', ignore: [] },
     })
     const transform = plugin.transform as (code: string, id: string) => Promise<void>
