@@ -75,6 +75,8 @@ The date must be quoted. An unquoted YAML date is parsed as a `Date` object, but
 
 The `lastUpdated` value in frontmatter takes effect only when the site sets `lastUpdated: true`.
 
+Pages that other plugins add have no git history. They get a `<lastmod>` only when their frontmatter gives a `lastUpdated` date.
+
 ## Transform Items {#transform-items}
 
 `transformItems` receives all entries before the file is written. It can add, remove, or change entries. When it returns `undefined`, the original entries are kept:

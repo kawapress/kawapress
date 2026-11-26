@@ -122,6 +122,8 @@ editLink: false
 
 只写其中一个就只关掉那一项。两项都关掉时，页面底部不会多出任何元素。
 
+其他插件添加的页面没有源文件，不读 git 记录，默认不显示这两项。需要时，在这类页面的 frontmatter 里写 `lastUpdated: '2026-03-04'`（日期字符串）和 `editLink: 'https://example.com/edit/page'`（完整网址）。
+
 ## 关于 git 历史 {#git-history}
 
 - 时间只来自 git 提交记录，不读文件修改时间。文件最后一次修改时间和最后一次提交时间常常不同。

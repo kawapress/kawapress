@@ -122,6 +122,8 @@ editLink: false
 
 Setting just one hides just that part. With both off, the page footer gains no extra element.
 
+Pages that other plugins add have no source file and no git history, so they show neither by default. To show them, give the page frontmatter `lastUpdated: '2026-03-04'` (a date string) and `editLink: 'https://example.com/edit/page'` (a full URL).
+
 ## About Git History {#git-history}
 
 - Only git history is read, never file modification times. The two are often different.
