@@ -51,9 +51,15 @@ declare module 'kawapress' {
   }
 
   interface PageFrontmatter {
-    /** `false` hides the last updated time of this page. */
+    /**
+     * `false` hides the last updated time of this page. A page a plugin adds
+     * has no git history, so it shows a time only when this is a date string.
+     */
     lastUpdated?: boolean | string
-    /** `false` hides the edit link of this page. */
-    editLink?: boolean
+    /**
+     * `false` hides the edit link of this page. A page a plugin adds has no
+     * source file, so it shows an edit link only when this is an absolute URL.
+     */
+    editLink?: boolean | string
   }
 }
