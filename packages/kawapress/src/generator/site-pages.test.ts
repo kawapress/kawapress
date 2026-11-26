@@ -149,6 +149,15 @@ describe('listSitePages', () => {
     )
   })
 
+  it('finds the site from a second copy of the module, as when the config runs in its own module graph', async () => {
+    const host = await setup([pagesPlugin('@test/pages', () => [page('/api/a', '@test/a.md')])])
+    vi.resetModules()
+    const other = await import('./site-pages')
+
+    expect(other.listSitePages).not.toBe(listSitePages)
+    expect((await other.listSitePages(host.site)).map(item => item.routePath)).toContain('/api/a')
+  })
+
   it('is not available inside configResolved()', async () => {
     let site: ResolvedSiteConfig | undefined
     let early: Promise<unknown> | undefined

@@ -61,7 +61,15 @@ export interface SitePageRegistryOptions {
   command: PluginPagesContext['command']
 }
 
-const registries = new WeakMap<ResolvedSiteConfig, SitePageRegistry>()
+/**
+ * The config file and the plugins run in a module graph of their own, apart
+ * from the one the CLI and the dev server were started in, so this module can
+ * be loaded twice. The table is shared through the global object so both
+ * copies find the registry of the site a plugin received.
+ */
+const REGISTRIES_KEY = Symbol.for('kawapress.sitePageRegistries')
+const registries = ((globalThis as Record<symbol, unknown>)[REGISTRIES_KEY] ??= new WeakMap()) as
+WeakMap<ResolvedSiteConfig, SitePageRegistry>
 
 /** Makes `site` the key `listSitePages()` and `onSitePagesChange()` find `registry` by. */
 export function registerSitePages(site: ResolvedSiteConfig, registry: SitePageRegistry): void {
