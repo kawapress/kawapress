@@ -124,7 +124,7 @@ export default defineConfig({
 
 ### 生成侧 API 总览 {#generator-api}
 
-生成侧提供七个方法，均在 `definePlugin` 的 `setup(api)` 中调用。同一个插件内可以按需调用一个或多个方法；多个插件按在 `plugins` 数组中的顺序串行执行。
+生成侧提供八个注册方法，另有开发期用的 `api.invalidatePages()`，均在 `definePlugin` 的 `setup(api)` 中调用。同一个插件内可以按需调用一个或多个方法；多个插件按在 `plugins` 数组中的顺序串行执行。
 
 一个典型的生成侧插件完整骨架如下：
 
@@ -145,16 +145,19 @@ export default function myGeneratorPlugin() {
       // 3. 扩展 Markdown 解析器
       api.markdown((markdown) => { /* ... */ })
 
-      // 4. 增强页面元数据
-      api.pageData((pageData, { file, sourcePath }) => { /* ... */ })
+      // 4. 向站点添加不来自 Markdown 文件的页面
+      api.pages(() => [/* ... */])
 
-      // 5. 监听每个页面的产物
+      // 5. 增强页面元数据
+      api.pageData((pageData, { origin, file, sourcePath }) => { /* ... */ })
+
+      // 6. 监听每个页面的产物
       api.pageArtifact((pageArtifact) => { /* ... */ })
 
-      // 6. 注入 Vite 插件或选项
+      // 7. 注入 Vite 插件或选项
       api.vite((vite) => { /* ... */ })
 
-      // 7. 整站构建完成后生成额外静态文件
+      // 8. 整站构建完成后生成额外静态文件
       api.buildArtifacts(async (context) => { /* ... */ })
     },
   })
@@ -240,6 +243,58 @@ api.markdown((markdown) => {
 
 写 Markdown 的人不需要声明任何东西。组件只在真正用到的页面上加载，没写这个围栏的页面不会为它多下载一个字节。页面自己写的 `<script setup>` 会被保留，导入追加在同一个块里；页面只有普通 `<script>` 或者完全没有脚本时，KawaPress 会补一个 `lang` 相同的 `<script setup>`。
 
+### `api.pages()` 与 `api.invalidatePages()` {#pages}
+
+`pages()` 让插件向站点添加不来自 Markdown 文件的页面，例如按接口清单生成的 API 文档、更新日志或归档页。插件页面和普通页面走同一条编译管线：Frontmatter、标题、组件、代码高亮和 `addPageComponent()` 都照常工作。
+
+```ts
+// 在 setup(api) 中：
+api.pages(async ({ command }) => {
+  const modules = await loadModules()
+  return modules.flatMap(module => [
+    {
+      path: `/api/${module.name}`,
+      sourcePath: `@acme/${module.name}.md`,
+      markdown: `# ${module.name}\n\n${module.description}\n`,
+    },
+    {
+      path: `/zh/api/${module.name}`,
+      sourcePath: `@acme/zh/${module.name}.md`,
+      markdown: `# ${module.name}\n\n${module.descriptionZh}\n`,
+    },
+  ])
+})
+```
+
+handler 接收 `{ command }`，值是 `'dev'` 或 `'build'`，返回页面数组，每项有三个字段：
+
+| 字段 | 含义 |
+| --- | --- |
+| `path` | 页面路由，以 `/` 开头、不含 `base`。结尾的 `/` 表示目录首页：`/api/` 是 `/api/index.md`，`/api/core` 是 `/api/core.md`。带语言前缀的路径归属那个语言，规则和普通页面一致 |
+| `markdown` | Markdown 源码。不支持 `<!--@include-->` |
+| `sourcePath` | 页面来源的标识，不以 `/` 开头、以 `.md` 结尾，同一个站点内必须唯一。建议用插件名作第一段，这样不会和 Markdown 文件的 `sourcePath`（以 `/` 开头）或别的插件重名 |
+
+`pages()` 不接受 Vue 组件作为页面。需要组件时在 Markdown 里写组件，用 [`addPageComponent()`](#page-components) 引入。SSG 下没有动态路由：插件返回的就是站点的全部路径。
+
+KawaPress 在全部 `configResolved()` 之后、第一次需要页面列表时执行各插件的 `pages()`，按插件顺序各执行一次。下面几种情况会直接报错，信息里写明冲突的两边：
+
+- `path` 不以 `/` 开头，或 `sourcePath` 以 `/` 开头、不以 `.md` 结尾；
+- 两个页面的 `sourcePath` 相同，会同时指出两个插件的名字；
+- 插件页面和 Markdown 文件页面、或两个插件页面落在同一条路由上。
+
+插件页面没有源文件，所以不显示编辑链接和最后更新时间，`rewrites` 也不作用于它们。想显示更新时间，可以在页面的 Frontmatter 里写 `lastUpdated`。
+
+开发服务器运行时，页面内容来自数据源（比如监听的文件）。数据变了就调用 `api.invalidatePages()`：KawaPress 会重新执行 `pages()`；页面集合变了就整页刷新浏览器，只是某个页面的内容变了就只热更新这一页。构建时调用它不会有任何效果。
+
+```ts
+// 在 setup(api) 中：
+api.pages(() => readEntries())
+
+watch(entriesFile, () => api.invalidatePages())
+```
+
+需要读取整站页面（文件页面加插件页面）的插件，用 [`listSitePages()`](#page-list-and-title)。
+
 ### `api.pageData()` {#page-data}
 
 `pageData()` 在每个页面的 `pageData` 生成之后调用。handler 接收当前页面的可修改数据：
@@ -262,16 +317,19 @@ api.pageData((pageData) => {
 
 请改用字符串，例如 `'2026-10-08'`，再在需要时自行解析。
 
-handler 的第二个参数告诉你当前页面来自哪个文件：`file` 是 Markdown 源文件的绝对路径，`sourcePath` 是相对 `srcDir` 的路径，例如 `/guide/intro.md`。需要读取文件信息（比如 git 提交时间）时使用它，不要从路由反推文件名，因为 `/guide` 既可能来自 `guide.md`，也可能来自 `guide/index.md`。
+handler 的第二个参数告诉你当前页面来自哪里：`origin` 是 `'file'`（`srcDir` 里的 Markdown 文件）或 `'plugin'`（某个插件用 [`api.pages()`](#pages) 添加的页面）；`file` 是 Markdown 源文件的绝对路径，只有文件页面才有；`sourcePath` 是页面来源的标识，文件页面是相对 `srcDir` 的路径，例如 `/guide/intro.md`，插件页面是插件自己给的值。需要读取文件信息（比如 git 提交时间）时使用 `file`，并先判断它是否存在，不要从路由反推文件名，因为 `/guide` 既可能来自 `guide.md`，也可能来自 `guide/index.md`。
 
 ```ts
 // 在 setup(api) 中：
 api.pageData((pageData, { file, sourcePath }) => {
   pageData.frontmatter.source = sourcePath
+  if (file !== undefined) {
+    // 只有文件页面有源文件，可以读取它的信息
+  }
 })
 ```
 
-这两个值只在生成侧使用，不会发送到浏览器。需要在页面上显示时，像上面这样把需要的部分写进 `pageData`。
+这几个值只在生成侧使用，不会发送到浏览器。需要在页面上显示时，像上面这样把需要的部分写进 `pageData`。
 
 需要注意，在 `pageData()` 中修改的 `title` 只影响该页面自己的数据，不会进入用于导航的页面摘要：页面摘要描述的是作者在 Frontmatter 或第一个一级标题里写下的标题。
 
@@ -441,6 +499,33 @@ const { title, layout } = reader.read(source, page.file)
 同一个文件、同样的内容会直接用上次的结果，反复读整站很便宜。主题自动生成侧边栏时就是这样读标题的。
 
 开发服务器把改动的文件报成绝对路径，判断它是不是页面用 `isMarkdownPage()`，换回路由路径用 `markdownFileToRoutePath()`。
+
+`listMarkdownPages()` 只列出磁盘上的 Markdown 文件。要拿到整站页面，包括其他插件通过 [`api.pages()`](#pages) 添加的页面，使用 `listSitePages()`，参数是 `configResolved()` 收到的那个站点配置对象：
+
+```ts
+import { listSitePages, onSitePagesChange } from 'kawapress/generator'
+
+let site: ResolvedSiteConfig
+
+api.configResolved((resolved) => {
+  site = resolved
+})
+
+api.vite(async () => {
+  // 先是 Markdown 文件页面（顺序同 listMarkdownPages），再是插件页面（按插件顺序）
+  const pages = await listSitePages(site)
+  for (const page of pages) {
+    // page.origin 是 'file' 或 'plugin'；只有文件页面有 page.file
+    const source = await page.readSource() // 当前的 Markdown 源码
+    console.log(page.routePath, source.length)
+  }
+})
+
+// 开发时：Markdown 文件增删，或任一插件调用 invalidatePages() 时触发，返回取消函数
+const stop = onSitePagesChange(site, () => { /* 重新读取 listSitePages(site) */ })
+```
+
+`listSitePages()` 和 `onSitePagesChange()` 不能在 `configResolved()` 里调用，因为这时还没有收集完插件页面；在 `vite()`、`pageData()` 或之后的钩子里调用。两个页面落在同一条路由上时，`listSitePages()` 会报错并指出两边的来源。
 
 ## 站点自己的 Vite 与运行侧配置 {#site-runtime}
 
