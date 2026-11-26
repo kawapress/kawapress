@@ -67,6 +67,8 @@ interface SitePage {
 
 - 两个函数以 `configResolved()` 拿到的同一个 `ResolvedSiteConfig` 对象为键找到站点；传入其他对象时报错，说明应使用 `configResolved()` 的结果。
 - 插件页面在全部 `configResolved()` 之后、第一次需要页面列表时收集；`pages()` handler 按插件顺序执行一次，开发期在 `invalidatePages()` 后重新执行。
+- `pluginPageSourcePath(id)` 从模块 id（请求形式 `/@kawapress-page/<sourcePath>` 或解析后位于站点根目录下的形式）读出插件页面的 `sourcePath`，不是插件页面时返回 `undefined`；需要在 Vite 钩子里识别插件页面的插件（如 llms）用它，不自行比较字符串。
+- 站点表挂在 `globalThis`（`Symbol.for('kawapress.sitePageRegistries')`）上：配置与插件在独立的模块图里执行，核心模块可能被加载两次，两份副本必须找到同一个站点。
 - `listMarkdownPages`、`resolveMarkdownPageScope`、`isMarkdownPage` 继续导出，供只关心磁盘文件的场景使用（如判断改动的文件是不是页面）。
 
 ### 核心改动
@@ -81,7 +83,7 @@ interface SitePage {
 | 能力 | 规则 |
 | --- | --- |
 | `PageDataContext.file` | 改为可选；插件页面没有 `file`，新增 `origin: 'file' \| 'plugin'`。读 `file` 的 `pageData` 处理器必须先判断。 |
-| 最后更新时间、编辑链接 | 插件页面默认不显示；插件可以在 frontmatter 里给 `lastUpdated`、`editLink`。 |
+| 最后更新时间、编辑链接 | 插件页面默认不显示，也不查 git；插件可以在 frontmatter 里给 `lastUpdated`（可被 `Date.parse` 解析的日期字符串，无效时报错）与 `editLink`（源码的绝对 URL）。 |
 | sitemap `lastmod` | 用 frontmatter 的 `lastUpdated`，没有就省略。 |
 | llms / 页面 `.md` | 用插件提供的 Markdown 源码，与普通页面一致。 |
 | 搜索 | 通过统一页面列表拿到源码后建索引。 |

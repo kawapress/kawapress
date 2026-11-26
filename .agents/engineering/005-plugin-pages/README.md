@@ -39,3 +39,10 @@
 - 页面身份等同文件路径的假设分散在很多地方，漏改会表现为插件页面在某处静默缺失；以验收路径逐项检查。
 - 插件页面的模块 id 必须能被 `@vitejs/plugin-vue` 接受，并在客户端 manifest 中有稳定的键，否则预渲染找不到页面 chunk。
 - 单文件 500 行上限：`compiler/page-loader`、`generator/vite/plugins/pages.ts` 等扩展时需要拆分。
+
+## 交付记录
+
+- 插件页面的模块 id 请求形式为 `/@kawapress-page/<sourcePath>`，解析成站点根目录下不存在的路径，客户端 manifest 的键因此与文件页面同为相对根目录的形式，预渲染不需要特殊处理。
+- 真实构建暴露的问题：CLI 与配置运行在两个模块图里，站点表最初是模块内的 `WeakMap`，插件拿到的站点在另一份副本里找不到；改为挂在 `globalThis`。单元测试发现不了，必须用文档站构建验证。
+- 发布时提高 `kawapress` peer 下限的包：preset-nagi、plugin-search、plugin-feed（`listSitePages`、`onSitePagesChange`），plugin-llms（`pluginPageSourcePath`）。plugin-last-updated、plugin-sitemap、plugin-og-image 保持原范围，但 last-updated 与 sitemap 有用户可见的变化，需要升版本。
+- 已知局限：开发时只改插件页面正文，搜索结果要刷新浏览器后才更新。
