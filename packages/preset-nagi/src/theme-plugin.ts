@@ -1,6 +1,6 @@
 import type { KawaPressPlugin, ResolvedSiteConfig } from 'kawapress'
 import { definePlugin } from 'kawapress'
-import { resolveMarkdownPageScope, useRuntimeDependencies } from 'kawapress/generator'
+import { listSitePages, onSitePagesChange, resolveMarkdownPageScope, useRuntimeDependencies } from 'kawapress/generator'
 import { nagiSidebarMetaPlugin } from './sidebar-meta-plugin'
 import { nagiSocialIconsPlugin } from './social-icons-plugin'
 import { installTableWrapper } from './tables'
@@ -21,9 +21,12 @@ export function nagiThemePlugin(): KawaPressPlugin {
       api.vite((config) => {
         if (!site)
           throw new Error('nagi: the site config is not resolved yet.')
+        const resolved = site
         config.plugins ??= []
         config.plugins.push(nagiSidebarMetaPlugin({
           scope: resolveMarkdownPageScope(site),
+          listPages: () => listSitePages(resolved),
+          onPagesChange: listener => onSitePagesChange(resolved, listener),
           themeConfig: site.themeConfig,
           locales: site.locales,
         }))

@@ -1,8 +1,9 @@
-import type { MarkdownPageScope } from 'kawapress/generator'
+import type { MarkdownPageScope, SitePage } from 'kawapress/generator'
 import type { NagiSidebarMetaPluginOptions } from './sidebar-meta-plugin'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { listMarkdownPages, readMarkdownSource } from 'kawapress/generator'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   nagiSidebarMetaPlugin,
@@ -31,10 +32,50 @@ function siteScope(): MarkdownPageScope {
   return { sourceRoot: join(siteDirectory, 'src'), publicDir: join(siteDirectory, 'src/public') }
 }
 
+/** What `listSitePages()` and `onSitePagesChange()` give: the Markdown files plus the plugin pages of the test. */
+function sitePages(pluginPages: SitePage[] = [], scope: MarkdownPageScope = siteScope()): {
+  listPages: () => Promise<SitePage[]>
+  onPagesChange: (listener: () => void) => () => void
+  notify: () => void
+} {
+  const listeners = new Set<() => void>()
+  return {
+    listPages: async () => {
+      const files = await listMarkdownPages(scope)
+      return [
+        ...files.map(page => ({
+          origin: 'file' as const,
+          file: page.file,
+          sourcePath: page.sourcePath,
+          pagePath: page.pagePath,
+          routePath: page.routePath,
+          readSource: async () => readMarkdownSource({ file: page.file, sourceRoot: scope.sourceRoot }).source,
+        })),
+        ...pluginPages,
+      ]
+    },
+    onPagesChange: (listener) => {
+      listeners.add(listener)
+      return () => listeners.delete(listener)
+    },
+    notify: () => listeners.forEach(listener => listener()),
+  }
+}
+
+function pluginPage(routePath: string, markdown: string): SitePage {
+  return {
+    origin: 'plugin',
+    sourcePath: `@test${routePath}.md`,
+    pagePath: `${routePath}.md`,
+    routePath,
+    readSource: async () => markdown,
+  }
+}
+
 async function renderModule(
   options: Partial<NagiSidebarMetaPluginOptions> = {},
 ): Promise<{ sidebarMeta: unknown, sidebarPages: Record<string, unknown>, source: string }> {
-  const plugin = nagiSidebarMetaPlugin({ scope: siteScope(), ...options })
+  const plugin = nagiSidebarMetaPlugin({ scope: siteScope(), ...sitePages([], options.scope), ...options })
   const load = plugin.load as (id: string) => Promise<string | undefined>
   const source = await load(RESOLVED_ID) ?? ''
   const module = await import(
@@ -149,7 +190,66 @@ describe('the automatic sidebar page list', () => {
   })
 })
 
+describe('plugin pages in the automatic sidebar', () => {
+  it('lists a plugin page like a file page at its route, titled by its own source', async () => {
+    await writePage('guide/a.md', '# A\n')
+
+    const { sidebarPages } = await renderModule(sitePages([
+      pluginPage('/api/core', '---\ntitle: Core API\n---\n\n# Heading\n'),
+      pluginPage('/api/home', '---\nlayout: home\n---\n\n# Home\n'),
+    ]))
+
+    expect(sidebarPages).toEqual({
+      '/guide/a': { title: 'A' },
+      '/api/core': { title: 'Core API' },
+    })
+  })
+
+  it('leaves plugin pages out where a hand-written sidebar covers the route', async () => {
+    await writePage('guide/a.md', '# A\n')
+    const { sidebarPages } = await renderModule({
+      ...sitePages([pluginPage('/api/core', '# Core\n')]),
+      themeConfig: { sidebar: { '/api/': [{ text: 'API', items: [] }] } },
+    })
+
+    expect(sidebarPages).toEqual({ '/guide/a': { title: 'A' } })
+  })
+})
+
 describe('dev updates of the module', () => {
+  it('replaces the module when a plugin page appears', async () => {
+    await writePage('guide/a.md', '# A\n')
+    const pages = sitePages()
+    const plugin = nagiSidebarMetaPlugin({ scope: siteScope(), ...pages, listPages: () => pages.listPages() })
+    await (plugin.load as (id: string) => Promise<string | undefined>)(RESOLVED_ID)
+    const server = createFakeServer()
+    ;(plugin.configureServer as (server: unknown) => void)(server.server)
+    const added = sitePages([pluginPage('/api/core', '# Core\n')])
+    pages.listPages = added.listPages
+
+    pages.notify()
+    await new Promise(resolve => setTimeout(resolve, 20))
+
+    expect(server.invalidated).toBe(1)
+    expect(server.sends).toEqual([{ type: 'full-reload' }])
+  })
+
+  it('keeps the module when a plugin page only changes its body', async () => {
+    await writePage('guide/a.md', '# A\n')
+    const pages = sitePages([pluginPage('/api/core', '# Core\n\nOne.\n')])
+    const plugin = nagiSidebarMetaPlugin({ scope: siteScope(), ...pages, listPages: () => pages.listPages() })
+    await (plugin.load as (id: string) => Promise<string | undefined>)(RESOLVED_ID)
+    const server = createFakeServer()
+    ;(plugin.configureServer as (server: unknown) => void)(server.server)
+    pages.listPages = sitePages([pluginPage('/api/core', '# Core\n\nTwo.\n')]).listPages
+
+    pages.notify()
+    await new Promise(resolve => setTimeout(resolve, 20))
+
+    expect(server.invalidated).toBe(0)
+    expect(server.sends).toEqual([])
+  })
+
   it('replaces the module when a page title changes', async () => {
     await writePage('guide/a.md', '# Old title\n')
     const { plugin, server } = await createLoadedPlugin()
@@ -220,7 +320,7 @@ async function createLoadedPlugin(): Promise<{
   plugin: ReturnType<typeof nagiSidebarMetaPlugin>
   server: ReturnType<typeof createFakeServer>
 }> {
-  const plugin = nagiSidebarMetaPlugin({ scope: siteScope() })
+  const plugin = nagiSidebarMetaPlugin({ scope: siteScope(), ...sitePages() })
   const load = plugin.load as (id: string) => Promise<string | undefined>
   await load(RESOLVED_ID)
   return { plugin, server: createFakeServer() }
