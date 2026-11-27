@@ -218,10 +218,8 @@ import { nagi } from 'kawapress/nagi'
 const typedocLike = definePlugin({
   name: 'typedoc-like',
   setup(api) {
-    api.pages(() => [
-      { path: '/api/core', sourcePath: '@typedoc/core.md', markdown: '---\\ndescription: Core API.\\n---\\n# Core API\\n\\nPlugin page text: {{ 1 + 1 }}.\\n' },
-      { path: '/en/api/core', sourcePath: '@typedoc/en/core.md', markdown: '# English Core API\\n\\nEnglish plugin text.\\n' },
-    ])
+    api.pages('/api/core', () => '---\\ndescription: Core API.\\n---\\n# Core API\\n\\nPlugin page text: {{ 1 + 1 }}.\\n')
+    api.pages('/en/api/core', () => '# English Core API\\n\\nEnglish plugin text.\\n')
   },
 })
 
@@ -255,10 +253,8 @@ import { nagi } from 'kawapress/nagi'
 const typedocLike = definePlugin({
   name: 'typedoc-like',
   setup(api) {
-    api.pages(() => [
-      { path: '/api/core', sourcePath: '@typedoc/core.md', markdown: '---\\ndescription: Core API.\\n---\\n# Core API\\n\\nPlugin page text: {{ 1 + 1 }}.\\n' },
-      { path: '/en/api/core', sourcePath: '@typedoc/en/core.md', markdown: '# English Core API\\n\\nEnglish plugin text.\\n' },
-    ])
+    api.pages('/api/core', () => '---\\ndescription: Core API.\\n---\\n# Core API\\n\\nPlugin page text: {{ 1 + 1 }}.\\n')
+    api.pages('/en/api/core', () => '# English Core API\\n\\nEnglish plugin text.\\n')
   },
 })
 

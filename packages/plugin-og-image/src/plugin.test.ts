@@ -75,7 +75,7 @@ describe('og-image plugin', () => {
 
   it('renders cards for plugin pages and matches exclude against their sourcePath', async () => {
     const root = await createSite({
-      pluginOptions: `{ hostname: 'https://example.com', exclude: ['@typedoc/hidden.md'], remoteFonts: false }`,
+      pluginOptions: `{ hostname: 'https://example.com', exclude: ['plugin-pages/api/hidden.md'], remoteFonts: false }`,
       withPluginPages: true,
     })
     await writeFile(join(root, 'index.md'), '# Home\n')
@@ -176,9 +176,9 @@ import ogImage from '${PLUGIN_ENTRY}'
 const pluginPages = definePlugin({
   name: 'plugin-pages',
   setup(api) {
-    api.pages(() => [
-      { path: '/api/core', sourcePath: '@typedoc/core.md', markdown: '# Core API\\n' },
-      { path: '/api/hidden', sourcePath: '@typedoc/hidden.md', markdown: '# Hidden API\\n' },
+    api.pages('/api/[name]', () => [
+      { name: 'core', markdown: '# Core API\\n' },
+      { name: 'hidden', markdown: '# Hidden API\\n' },
     ])
   },
 })

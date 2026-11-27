@@ -57,12 +57,14 @@ const pluginPagesSource = `
 import { definePlugin } from 'kawapress'
 
 const pluginPages = definePlugin({
-  name: 'plugin-pages',
+  name: '@changelog',
   setup(api) {
-    api.pages(() => [
-      { path: '/changelog/v1', sourcePath: '@changelog/v1.md', markdown: '---\\ntitle: Release 1\\ndate: "2026-05-01"\\n---\\n# Release 1\\n\\nFirst release notes.\\n' },
-      { path: '/en/changelog/v1', sourcePath: '@changelog/en/v1.md', markdown: '---\\ntitle: Release 1 EN\\ndate: "2026-05-02"\\n---\\n# Release 1 EN\\n' },
-      { path: '/changelog/draft', sourcePath: '@changelog/draft.md', markdown: '---\\ndate: "2026-06-01"\\n---\\n# Draft\\n' },
+    api.pages('/changelog/[version]', () => [
+      { version: 'v1', markdown: '---\\ntitle: Release 1\\ndate: "2026-05-01"\\n---\\n# Release 1\\n\\nFirst release notes.\\n' },
+      { version: 'draft', markdown: '---\\ndate: "2026-06-01"\\n---\\n# Draft\\n' },
+    ])
+    api.pages('/en/changelog/[version]', () => [
+      { version: 'v1', markdown: '---\\ntitle: Release 1 EN\\ndate: "2026-05-02"\\n---\\n# Release 1 EN\\n' },
     ])
   },
 })
@@ -71,7 +73,7 @@ const pluginPages = definePlugin({
 describe('feed plugin', () => {
   it('feeds plugin pages by their sourcePath and puts them in the locale of their route', async () => {
     const config = siteConfig(
-      `{ hostname: 'https://example.com', include: ['@changelog/**/*.md'], exclude: ['@changelog/draft.md'], formats: ['json'] }`,
+      `{ hostname: 'https://example.com', include: ['@changelog/**/*.md'], exclude: ['@changelog/changelog/draft.md'], formats: ['json'] }`,
       localesConfig,
     )
       .replace('plugins: [feed(', 'plugins: [pluginPages, feed(')
