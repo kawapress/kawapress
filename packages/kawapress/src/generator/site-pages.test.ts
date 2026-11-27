@@ -1,9 +1,9 @@
-import type { KawaPressPlugin, PluginPage } from '../api/plugin'
+import type { KawaPressPlugin } from '../api/plugin'
+import type { PluginPagesContext } from '../api/plugin-pages'
 import type { ResolvedSiteConfig } from '../core/site'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { consola } from 'consola'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { definePlugin } from '../api/plugin'
 import { setupGeneratorPlugins } from './plugin-host'
@@ -23,23 +23,19 @@ afterEach(async () => {
   await rm(root, { force: true, recursive: true })
 })
 
-function pagesPlugin(name: string, pages: () => PluginPage[]): KawaPressPlugin {
+/** A plugin that calls `pages()` once for each `[route, source]` pair. */
+function pagesPlugin(name: string, ...groups: Array<[string, string | ((context: PluginPagesContext) => unknown)]>): KawaPressPlugin {
   return definePlugin({
     name,
     setup(api) {
-      api.pages(pages)
+      for (const [route, source] of groups) {
+        api.pages(route, source as never)
+      }
     },
   })
 }
 
-function page(path: string, sourcePath: string, markdown = `# ${path}\n`): PluginPage {
-  return { path, sourcePath, markdown }
-}
-
-async function setup(
-  plugins: KawaPressPlugin[],
-  options: { command?: 'dev' | 'build' } = {},
-) {
+async function setup(plugins: KawaPressPlugin[]) {
   return setupGeneratorPlugins({
     srcExclude: ['guide/part.md'],
     locales: {
@@ -47,17 +43,18 @@ async function setup(
       zh: { label: '简体中文', lang: 'zh-CN' },
     },
     plugins,
-  }, { root, ...options })
+  }, { root })
 }
 
 describe('listSitePages', () => {
-  it('lists Markdown files first, then plugin pages in plugin order, for every locale', async () => {
+  it('lists Markdown files first, then plugin pages in plugin order and call order, for every locale', async () => {
     const host = await setup([
-      pagesPlugin('first', () => [
-        page('/api/core', '@first/core.md'),
-        page('/zh/api/core', '@first/zh/core.md'),
-      ]),
-      pagesPlugin('second', () => [page('/changelog/', '@second/changelog.md')]),
+      pagesPlugin(
+        '@first',
+        ['/api/[name]', () => [{ name: 'core', markdown: '# Core\n' }]],
+        ['/zh/api/[name]', () => [{ name: 'core', markdown: '# 核心\n' }]],
+      ),
+      pagesPlugin('@second', ['/changelog/', () => '# Changelog\n']),
     ])
 
     const pages = await listSitePages(host.site)
@@ -65,15 +62,15 @@ describe('listSitePages', () => {
     expect(pages.map(({ readSource: _readSource, ...rest }) => rest)).toEqual([
       { origin: 'file', file: join(root, 'guide/intro.md'), sourcePath: '/guide/intro.md', pagePath: '/guide/intro.md', routePath: '/guide/intro' },
       { origin: 'file', file: join(root, 'index.md'), sourcePath: '/index.md', pagePath: '/index.md', routePath: '/' },
-      { origin: 'plugin', sourcePath: '@first/core.md', pagePath: '/api/core.md', routePath: '/api/core' },
-      { origin: 'plugin', sourcePath: '@first/zh/core.md', pagePath: '/zh/api/core.md', routePath: '/zh/api/core' },
-      { origin: 'plugin', sourcePath: '@second/changelog.md', pagePath: '/changelog/index.md', routePath: '/changelog' },
+      { origin: 'plugin', sourcePath: '@first/api/core.md', pagePath: '/api/core.md', routePath: '/api/core' },
+      { origin: 'plugin', sourcePath: '@first/zh/api/core.md', pagePath: '/zh/api/core.md', routePath: '/zh/api/core' },
+      { origin: 'plugin', sourcePath: '@second/changelog/index.md', pagePath: '/changelog/index.md', routePath: '/changelog' },
     ])
   })
 
   it('reads the current source: includes written out for files, the plugin text for plugin pages', async () => {
     const host = await setup([
-      pagesPlugin('docs', () => [page('/api', '@docs/api.md', '# API\n\n<!--@include: ./x.md-->\n')]),
+      pagesPlugin('docs', ['/api', () => '# API\n\n<!--@include: ./x.md-->\n']),
     ])
 
     const pages = await listSitePages(host.site)
@@ -86,56 +83,44 @@ describe('listSitePages', () => {
     ])
   })
 
-  it('collects plugin pages once for repeated calls', async () => {
-    const handler = vi.fn(() => [page('/api', '@docs/api.md')])
-    const host = await setup([pagesPlugin('docs', handler)])
+  it('runs every group once for repeated calls', async () => {
+    const generate = vi.fn(() => '# API\n')
+    const host = await setup([pagesPlugin('docs', ['/api', generate])])
 
     await listSitePages(host.site)
     await listSitePages(host.site)
 
-    expect(handler).toHaveBeenCalledTimes(1)
-    expect(handler).toHaveBeenCalledWith({ command: 'build' })
+    expect(generate).toHaveBeenCalledTimes(1)
+    expect(generate).toHaveBeenCalledWith(expect.objectContaining({ command: 'build' }))
   })
 
-  it('names both sources when a plugin page takes the route of a Markdown file', async () => {
-    const host = await setup([pagesPlugin('docs', () => [page('/guide/intro', '@docs/intro.md')])])
+  it('names the template when a plugin page takes the route of a Markdown file', async () => {
+    const host = await setup([pagesPlugin('docs', ['/guide/[name]', () => [{ name: 'intro', markdown: '# X\n' }]])])
 
     await expect(listSitePages(host.site)).rejects.toThrow(
-      'KawaPress: "/guide/intro.md" (a Markdown file) and "@docs/intro.md" of plugin "docs" both become the route "/guide/intro".',
+      'KawaPress: "/guide/intro.md" (a Markdown file) and pages("/guide/[name]") of plugin "docs" both produce the route "/guide/intro".',
     )
   })
 
-  it('names both plugins when two plugins use one sourcePath', async () => {
+  it('names both templates when two groups of one plugin share a route', async () => {
     const host = await setup([
-      pagesPlugin('one', () => [page('/a', '@shared/a.md')]),
-      pagesPlugin('two', () => [page('/b', '@shared/a.md')]),
+      pagesPlugin('one', ['/a/[name]', () => [{ name: 'x', markdown: '#\n' }]], ['/a/x', () => '#\n']),
     ])
 
     await expect(listSitePages(host.site)).rejects.toThrow(
-      'KawaPress: plugins "one" and "two" both add a page with the sourcePath "@shared/a.md".',
+      'KawaPress: pages("/a/[name]") of plugin "one" and pages("/a/x") of plugin "one" both produce the route "/a/x".',
     )
   })
 
-  it('names both sources when two plugin pages share a route', async () => {
+  it('names both plugins when two plugins share a route', async () => {
     const host = await setup([
-      pagesPlugin('one', () => [page('/a/', '@one/a.md')]),
-      pagesPlugin('two', () => [page('/a', '@two/a.md')]),
+      pagesPlugin('one', ['/a/', () => '#\n']),
+      pagesPlugin('two', ['/a', () => '#\n']),
     ])
 
     await expect(listSitePages(host.site)).rejects.toThrow(
-      'KawaPress: "@one/a.md" of plugin "one" and "@two/a.md" of plugin "two" both become the route "/a".',
+      'KawaPress: pages("/a/") of plugin "one" and pages("/a") of plugin "two" both produce the route "/a".',
     )
-  })
-
-  it.each([
-    ['a path without a leading slash', page('api', '@p/a.md'), 'must have a path that starts with a single "/", got "api"'],
-    ['a sourcePath with a leading slash', page('/api', '/@p/a.md'), 'must have a sourcePath that does not start with "/" and ends with ".md", got "/@p/a.md"'],
-    ['a sourcePath without .md', page('/api', '@p/a.html'), 'must have a sourcePath that does not start with "/" and ends with ".md", got "@p/a.html"'],
-    ['a markdown that is not a string', { path: '/api', sourcePath: '@p/a.md', markdown: 1 } as unknown as PluginPage, 'must have a markdown string, got number'],
-  ])('rejects %s', async (_name, invalid, message) => {
-    const host = await setup([pagesPlugin('p', () => [invalid])])
-
-    await expect(listSitePages(host.site)).rejects.toThrow(message)
   })
 
   it('rejects a site object that configResolved() did not hand out', async () => {
@@ -150,7 +135,7 @@ describe('listSitePages', () => {
   })
 
   it('finds the site from a second copy of the module, as when the config runs in its own module graph', async () => {
-    const host = await setup([pagesPlugin('@test/pages', () => [page('/api/a', '@test/a.md')])])
+    const host = await setup([pagesPlugin('@test/pages', ['/api/a', () => '#\n'])])
     vi.resetModules()
     const other = await import('./site-pages')
 
@@ -173,88 +158,5 @@ describe('listSitePages', () => {
 
     expect(site).toBeDefined()
     await expect(early).rejects.toThrow('not known inside configResolved()')
-  })
-})
-
-describe('invalidatePages', () => {
-  function createDevPlugin() {
-    const state = { pages: [page('/api/a', '@dev/a.md', '# A\n')], invalidate: () => {} }
-    const handler = vi.fn(() => state.pages)
-    const plugin = definePlugin({
-      name: 'dev',
-      setup(api) {
-        state.invalidate = api.invalidatePages
-        api.pages(handler)
-      },
-    })
-    return { plugin, state, handler }
-  }
-
-  it('collects again and tells every listener while the dev server runs', async () => {
-    const { plugin, state, handler } = createDevPlugin()
-    const host = await setup([plugin], { command: 'dev' })
-    const listener = vi.fn()
-    onSitePagesChange(host.site, listener)
-    expect(await listSitePages(host.site)).toHaveLength(3)
-
-    state.pages = [...state.pages, page('/api/b', '@dev/b.md')]
-    state.invalidate()
-
-    await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1))
-    expect(handler).toHaveBeenCalledTimes(2)
-    expect(handler).toHaveBeenLastCalledWith({ command: 'dev' })
-    expect((await listSitePages(host.site)).map(item => item.sourcePath)).toEqual([
-      '/guide/intro.md',
-      '/index.md',
-      '@dev/a.md',
-      '@dev/b.md',
-    ])
-  })
-
-  it('stops notifying a listener that unsubscribed', async () => {
-    const { plugin, state } = createDevPlugin()
-    const host = await setup([plugin], { command: 'dev' })
-    const kept = vi.fn()
-    const removed = vi.fn()
-    onSitePagesChange(host.site, kept)
-    onSitePagesChange(host.site, removed)()
-    await listSitePages(host.site)
-
-    state.invalidate()
-
-    await vi.waitFor(() => expect(kept).toHaveBeenCalledTimes(1))
-    expect(removed).not.toHaveBeenCalled()
-  })
-
-  it('does nothing in a build', async () => {
-    const { plugin, state, handler } = createDevPlugin()
-    const host = await setup([plugin])
-    const listener = vi.fn()
-    onSitePagesChange(host.site, listener)
-    await listSitePages(host.site)
-
-    state.invalidate()
-    await listSitePages(host.site)
-
-    expect(listener).not.toHaveBeenCalled()
-    expect(handler).toHaveBeenCalledTimes(1)
-  })
-
-  it('logs the error and notifies nobody when the new collection fails', async () => {
-    const { plugin, state } = createDevPlugin()
-    const host = await setup([plugin], { command: 'dev' })
-    const error = vi.spyOn(consola, 'error').mockImplementation(() => {})
-    const listener = vi.fn()
-    onSitePagesChange(host.site, listener)
-    await listSitePages(host.site)
-
-    state.pages = [page('api', '@dev/a.md')]
-    state.invalidate()
-
-    await vi.waitFor(() => expect(error).toHaveBeenCalledTimes(1))
-    expect(error.mock.calls[0]![0]).toBe('KawaPress: collecting plugin pages failed')
-    expect(listener).not.toHaveBeenCalled()
-    state.pages = [page('/api/a', '@dev/a.md')]
-    await expect(listSitePages(host.site)).resolves.toHaveLength(3)
   })
 })

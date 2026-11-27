@@ -5,8 +5,9 @@ import type { PageData } from '../core/extension-points'
 import type { OutletItemInput, OutletName } from '../core/outlet'
 import type { Router } from '../core/router'
 import type { ResolvedSiteConfig, SiteConfig } from '../core/site'
+import type { MaybePromise, RegisterPluginPages } from './plugin-pages'
 
-export type MaybePromise<T> = T | Promise<T>
+export type { MaybePromise } from './plugin-pages'
 
 export type GeneratorPluginHandler<T> = (value: T) => MaybePromise<void>
 
@@ -19,8 +20,8 @@ export interface PageBuildArtifact {
   file?: string
   /**
    * Path of the file relative to srcDir, for example `/packages/a/src/intro.md`.
-   * A plugin page uses the `sourcePath` its plugin gave, for example
-   * `@typedoc/core/define-plugin.md`.
+   * A plugin page uses the `sourcePath` the core generates, `<plugin name><page
+   * path>`, for example `@typedoc/core/define-plugin.md`.
    */
   sourcePath: string
   /**
@@ -51,38 +52,10 @@ export interface PageDataContext {
   file?: string
   /**
    * Source path relative to srcDir, for example `/guide/intro.md`. A plugin
-   * page uses the `sourcePath` its plugin gave.
+   * page has the `<plugin name><page path>` the core generates.
    */
   sourcePath: string
 }
-
-/** A page a plugin adds to the site. It is compiled like a Markdown file. */
-export interface PluginPage {
-  /**
-   * Public route without `base`, starting with `/`, for example
-   * `/api/core/define-plugin`. A trailing `/` is the index page of a
-   * directory. A locale prefix puts the page into that locale.
-   */
-  path: string
-  /** Markdown source. `<!--@include-->` is not supported. */
-  markdown: string
-  /**
-   * Identifier of the page as a source, not starting with `/` and ending with
-   * `.md`, for example `@typedoc/core/define-plugin.md`. It is unique in the
-   * site; start it with the plugin name.
-   */
-  sourcePath: string
-}
-
-/** What `pages()` handlers receive. */
-export interface PluginPagesContext {
-  /** `dev` while serving the site, `build` for `kawapress build`. */
-  command: 'dev' | 'build'
-}
-
-export type PluginPagesHandler = (
-  context: Readonly<PluginPagesContext>,
-) => MaybePromise<readonly PluginPage[]>
 
 export type PageDataHandler = (
   pageData: PageData,
@@ -99,16 +72,13 @@ export interface GeneratorPluginAPI {
   configResolved: (handler: GeneratorPluginHandler<ResolvedSiteConfig>) => void
   markdown: (handler: GeneratorPluginHandler<MarkdownExit>) => void
   /**
-   * Adds pages that do not come from a Markdown file. Runs once after every
-   * `configResolved()`, when the page list is first needed, and again after
-   * `invalidatePages()` while the dev server runs.
+   * Adds a group of pages that do not come from a Markdown file: the route
+   * template first, then where the content comes from, a file template or a
+   * generator function. Groups are collected after every `configResolved()`,
+   * when the page list is first needed. A plugin can call it more than once;
+   * each call is its own group.
    */
-  pages: (handler: PluginPagesHandler) => void
-  /**
-   * Tells the dev server that the pages this plugin returns changed. The
-   * handlers run again and the browser reloads. Does nothing in a build.
-   */
-  invalidatePages: () => void
+  pages: RegisterPluginPages
   pageData: (handler: PageDataHandler) => void
   pageArtifact: (
     handler: GeneratorPluginHandler<Readonly<PageBuildArtifact>>,

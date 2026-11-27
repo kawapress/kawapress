@@ -1,5 +1,6 @@
+import { Buffer } from 'node:buffer'
 import { execFile } from 'node:child_process'
-import { mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises'
+import { access, mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, relative } from 'node:path'
 import process from 'node:process'
@@ -403,10 +404,10 @@ export default {
 const pages = definePlugin({
   name: 'local-pages',
   setup(api) {
-    api.pages(({ command }) => [
-      { path: '/api/core', sourcePath: '@local/core.md', markdown: '# Core API\\n\\nBuilt by the ' + command + ' command.\\n' },
-      { path: '/zh/api/', sourcePath: '@local/zh/index.md', markdown: '---\\ntitle: 接口\\n---\\n\\n# 接口\\n' },
+    api.pages('/api/[name]', ({ command }) => [
+      { name: 'core', markdown: '# Core API\\n\\nBuilt by the ' + command + ' command.\\n' },
     ])
+    api.pages('/zh/api/', () => ({ markdown: '# 接口\\n', frontmatter: { title: '接口' } }))
   },
 })
 
@@ -430,5 +431,31 @@ export default {
       '/zh/api',
     ])
     expect(await readClientFile(await pageChunkOf('/api/core'))).toContain('Built by the build command.')
+  }, 300_000)
+
+  it('resolves the relative images of a page made from a file against the file', async () => {
+    await createSite(`export default {
+  title: 'Plugin Pages Test',
+  srcExclude: ['notes/**'],
+  plugins: [{
+    name: 'local-notes',
+    setup(api) {
+      api.pages('/docs/[...slug]', './notes/[...slug].md')
+    },
+  }],
+}
+`)
+    await mkdir(join(siteDirectory, 'notes/deep'), { recursive: true })
+    await writeFile(join(siteDirectory, 'notes/deep/page.md'), '# Deep\n\n![logo](./logo.png)\n\n<img src="../top.png" alt="top">\n')
+    await writeFile(join(siteDirectory, 'notes/deep/logo.png'), Buffer.alloc(6000, 1))
+    await writeFile(join(siteDirectory, 'notes/top.png'), Buffer.alloc(6000, 2))
+    await buildWithoutNodeEnv()
+
+    const chunk = await readClientFile(await pageChunkOf('/docs/deep/page'))
+    const images = [...chunk.matchAll(/assets\/((?:logo|top)-[\w-]+\.png)/g)].map(match => match[1]!)
+    expect(images.map(image => image.split('-')[0]).sort()).toEqual(['logo', 'top'])
+    for (const image of images) {
+      await expect(access(join(siteDirectory, 'dist/assets', image))).resolves.toBeUndefined()
+    }
   }, 300_000)
 })

@@ -26,14 +26,18 @@ export type {
   PageDataContext,
   PageDataHandler,
   PageOrigin,
-  PluginPage,
-  PluginPagesContext,
-  PluginPagesHandler,
   RuntimePlugin,
   RuntimePluginAPI,
   RuntimePluginHandler,
   RuntimePluginSetup,
 } from './api/plugin'
+export type {
+  PluginPageContent,
+  PluginPagesContext,
+  PluginPagesGenerator,
+  PluginPagesSource,
+  RouteParams,
+} from './api/plugin-pages'
 export { useMarkdownItPlugin } from './compiler/markdown-it-compat'
 export type { MarkdownItPluginHost } from './compiler/markdown-it-compat'
 export { addPageComponent } from './compiler/page-components'

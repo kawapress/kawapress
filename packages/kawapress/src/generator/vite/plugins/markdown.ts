@@ -2,6 +2,7 @@ import type { Plugin } from 'vite'
 import type { MarkdownPageLoader } from '../../../compiler/page-loader'
 import type { SitePageRegistry } from '../../site-pages'
 import { readFile } from 'node:fs/promises'
+import { rewriteRelativeAssetUrls } from '../../../compiler/asset-urls'
 import { assembleVueSfc } from '../../../compiler/markdown'
 import { pluginPageSourcePath, resolvePluginPageId } from '../../plugin-pages'
 
@@ -60,5 +61,9 @@ async function loadPluginPage(
     )
   }
   const { html, env, pageData } = await pageLoader.load(await page.readSource(), page)
-  return assembleVueSfc(html, env, pageData)
+  // Relative assets of a page made from a file start at that file's directory.
+  const template = page.sourceDirectory === undefined
+    ? html
+    : rewriteRelativeAssetUrls(html, page.sourceDirectory)
+  return assembleVueSfc(template, env, pageData)
 }

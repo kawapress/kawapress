@@ -62,6 +62,10 @@ export function virtualPagesPlugin(options: VirtualPagesOptions): Plugin {
           }
         })
       }
+      registry.watchPluginPages({
+        add: paths => server.watcher.add(paths),
+        on: (event, listener) => server.watcher.on(event, listener),
+      })
       unsubscribe = registry.subscribe(change => applyPagesChange(server, root, change))
     },
     closeBundle() {

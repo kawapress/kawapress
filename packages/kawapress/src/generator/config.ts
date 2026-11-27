@@ -36,7 +36,7 @@ const DEFAULT_LOCALES: Record<string, LocaleConfig> = {
 export interface ResolveSiteConfigOptions {
   /** Absolute path of the site root. */
   root?: string
-  /** `dev` when the dev server runs: plugins may then call `invalidatePages()`. Default `build`. */
+  /** `dev` when the dev server runs. Default `build`. */
   command?: 'dev' | 'build'
 }
 

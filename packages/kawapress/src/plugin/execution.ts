@@ -50,44 +50,6 @@ export function createPluginHandlerRegistry<T, C = undefined>(
   }
 }
 
-/** One plugin's answer to a collecting capability such as `pages()`. */
-export interface PluginResult<R> {
-  pluginName: string
-  result: R
-}
-
-/**
- * Ordered handlers of a capability whose handlers return values instead of
- * changing a shared object.
- */
-export interface PluginResultRegistry<C, R> {
-  add: (pluginName: string, handler: (context: C) => MaybePromise<R>) => void
-  /** Runs the handlers one after another and returns their answers in plugin order. */
-  collect: (context: C) => Promise<PluginResult<R>[]>
-}
-
-export function createPluginResultRegistry<C, R>(
-  surface: PluginSurface,
-  capability: string,
-): PluginResultRegistry<C, R> {
-  const handlers: { pluginName: string, handler: (context: C) => MaybePromise<R> }[] = []
-
-  return {
-    add(pluginName, handler) {
-      handlers.push({ pluginName, handler })
-    },
-    async collect(context) {
-      const results: PluginResult<R>[] = []
-      for (const { pluginName, handler } of handlers) {
-        await runPluginHook(surface, pluginName, capability, async () => {
-          results.push({ pluginName, result: await handler(context) })
-        })
-      }
-      return results
-    },
-  }
-}
-
 export async function runPluginSetup(
   surface: PluginSurface,
   pluginName: string,

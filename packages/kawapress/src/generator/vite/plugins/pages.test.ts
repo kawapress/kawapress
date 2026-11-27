@@ -1,5 +1,5 @@
 import type { ViteDevServer } from 'vite'
-import type { KawaPressPlugin, PluginPage } from '../../../api/plugin'
+import type { KawaPressPlugin } from '../../../api/plugin'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -170,70 +170,79 @@ describe('virtualPagesPlugin', () => {
   })
 
   describe('plugin pages', () => {
-    function createPagesPlugin(pages: { current: PluginPage[] }) {
-      let invalidate = () => {}
+    interface Item { id: string, markdown: string }
+
+    /** A group `/api/[id]` whose items come from `pages.json`, read through `read()`. */
+    function createPagesPlugin(items: Item[]) {
+      const file = join(siteDirectory, 'pages.json')
+      const save = (next: Item[]) => writeFile(file, JSON.stringify(next))
       const plugin = definePlugin({
-        name: 'test-pages',
+        name: 'test',
         setup(api) {
-          invalidate = api.invalidatePages
-          api.pages(() => pages.current)
+          api.pages('/api/[id]', async ({ read }) => JSON.parse(await read('pages.json')) as Item[])
         },
       })
-      return { plugin, invalidate: () => invalidate() }
+      return {
+        plugin,
+        ready: () => save(items),
+        /** Writes the new items and tells the dev server the file changed. */
+        async update(next: Item[], server: ReturnType<typeof createFakeDevServer>) {
+          await save(next)
+          await server.emit('change', file)
+        },
+      }
+    }
+
+    async function startPlugin(items: Item[], modules: string[] = []) {
+      const helper = createPagesPlugin(items)
+      await helper.ready()
+      const created = await createPlugin([helper.plugin])
+      const server = createFakeDevServer({ modules: modules.map(id => `${siteDirectory}/@kawapress-page/${id}`) })
+      ;(created.plugin.configResolved as (config: { root: string }) => void)({ root: siteDirectory })
+      ;(created.plugin.configureServer as (server: ViteDevServer) => void)(server as unknown as ViteDevServer)
+      await created.source()
+      return { ...helper, ...created, server }
     }
 
     it('lists plugin pages after the Markdown files, imported by their module id', async () => {
-      const pages = { current: [
-        { path: '/api/', markdown: '# API\n', sourcePath: '@test/api.md' },
-        { path: '/en/api/core', markdown: '# Core\n', sourcePath: '@test/en/core.md' },
-      ] }
-      const { source } = await createPlugin([createPagesPlugin(pages).plugin])
+      const { source } = await createPlugin([definePlugin({
+        name: 'test',
+        setup(api) {
+          api.pages('/api/', () => '# API\n')
+          api.pages('/en/api/[name]', () => [{ name: 'core', markdown: '# Core\n' }])
+        },
+      })])
 
       expect(await source()).toBe([
         'export const pages = {',
         '  "/guide/one": () => import("/src/guide/one.md"),',
         '  "/": () => import("/src/index.md"),',
-        '  "/api": () => import("/@kawapress-page/@test/api.md"),',
-        '  "/en/api/core": () => import("/@kawapress-page/@test/en/core.md"),',
+        '  "/api": () => import("/@kawapress-page/test/api/index.md"),',
+        '  "/en/api/core": () => import("/@kawapress-page/test/en/api/core.md"),',
         '}',
         'export const pageModules = {',
         '  "/guide/one": "/src/guide/one.md",',
         '  "/": "/src/index.md",',
-        '  "/api": "/@kawapress-page/@test/api.md",',
-        '  "/en/api/core": "/@kawapress-page/@test/en/core.md",',
+        '  "/api": "/@kawapress-page/test/api/index.md",',
+        '  "/en/api/core": "/@kawapress-page/test/en/api/core.md",',
         '}',
         '',
       ].join('\n'))
     })
 
-    it('reloads the browser when invalidatePages() changes the set of pages', async () => {
-      const pages = { current: [{ path: '/api', markdown: '# API\n', sourcePath: '@test/api.md' }] }
-      const helper = createPagesPlugin(pages)
-      const { plugin } = await createPlugin([helper.plugin])
-      const server = createFakeDevServer()
-      ;(plugin.configureServer as (server: ViteDevServer) => void)(server as unknown as ViteDevServer)
+    it('reloads the browser when a read file changes the set of pages', async () => {
+      const { update, server } = await startPlugin([{ id: 'one', markdown: '# One\n' }])
 
-      pages.current = [...pages.current, { path: '/api/two', markdown: '# Two\n', sourcePath: '@test/two.md' }]
-      helper.invalidate()
+      await update([{ id: 'one', markdown: '# One\n' }, { id: 'two', markdown: '# Two\n' }], server)
 
       await vi.waitFor(() => expect(server.send).toHaveBeenCalledWith({ type: 'full-reload' }))
       expect(server.invalidateModule).toHaveBeenCalledTimes(1)
     })
 
     it('refreshes a changed page module before the reload that a new page causes', async () => {
-      const pages = { current: [{ path: '/api/a', markdown: '# A\n', sourcePath: '@test/a.md' }] }
-      const helper = createPagesPlugin(pages)
-      const { plugin } = await createPlugin([helper.plugin])
-      const server = createFakeDevServer({ modules: [`${siteDirectory}/@kawapress-page/@test/a.md`] })
-      ;(plugin.configResolved as (config: { root: string }) => void)({ root: siteDirectory })
-      ;(plugin.configureServer as (server: ViteDevServer) => void)(server as unknown as ViteDevServer)
-      await (plugin.load as (this: unknown, id: string) => Promise<string>).call(devContext(), RESOLVED_ID)
+      const { update, server } = await startPlugin([{ id: 'a', markdown: '# A\n' }], ['test/api/a.md'])
 
-      pages.current = [
-        { path: '/api/a', markdown: '# A changed\n', sourcePath: '@test/a.md' },
-        { path: '/api/b', markdown: '# B\n', sourcePath: '@test/b.md' },
-      ]
-      helper.invalidate()
+      await update([{ id: 'a', markdown: '# A changed\n' }, { id: 'b', markdown: '# B\n' }], server)
 
       await vi.waitFor(() => expect(server.send).toHaveBeenCalledWith({ type: 'full-reload' }))
       expect(server.invalidateModule).toHaveBeenCalledTimes(2)
@@ -241,23 +250,23 @@ describe('virtualPagesPlugin', () => {
     })
 
     it('replaces only the page module whose Markdown changed', async () => {
-      const pages = { current: [
-        { path: '/api/a', markdown: '# A\n', sourcePath: '@test/a.md' },
-        { path: '/api/b', markdown: '# B\n', sourcePath: '@test/b.md' },
-      ] }
-      const helper = createPagesPlugin(pages)
-      const { plugin } = await createPlugin([helper.plugin])
-      const server = createFakeDevServer({ modules: [`${siteDirectory}/@kawapress-page/@test/a.md`, `${siteDirectory}/@kawapress-page/@test/b.md`] })
-      ;(plugin.configResolved as (config: { root: string }) => void)({ root: siteDirectory })
-      ;(plugin.configureServer as (server: ViteDevServer) => void)(server as unknown as ViteDevServer)
-      await (plugin.load as (this: unknown, id: string) => Promise<string>).call(devContext(), RESOLVED_ID)
+      const a = { id: 'a', markdown: '# A\n' }
+      const { update, server } = await startPlugin(
+        [a, { id: 'b', markdown: '# B\n' }],
+        ['test/api/a.md', 'test/api/b.md'],
+      )
 
-      pages.current = [pages.current[0]!, { ...pages.current[1]!, markdown: '# B changed\n' }]
-      helper.invalidate()
+      await update([a, { id: 'b', markdown: '# B changed\n' }], server)
 
       await vi.waitFor(() => expect(server.reloadModule).toHaveBeenCalledTimes(1))
-      expect(server.reloadModule).toHaveBeenCalledWith({ id: `${siteDirectory}/@kawapress-page/@test/b.md` })
+      expect(server.reloadModule).toHaveBeenCalledWith({ id: `${siteDirectory}/@kawapress-page/test/api/b.md` })
       expect(server.send).not.toHaveBeenCalled()
+    })
+
+    it('hands the files plugin pages read to the dev server watcher', async () => {
+      const { server } = await startPlugin([{ id: 'a', markdown: '# A\n' }])
+
+      expect(server.watched).toContain(join(siteDirectory, 'pages.json'))
     })
   })
 
@@ -292,6 +301,7 @@ function createFakeDevServer(options: { loaded?: boolean, modules?: string[] } =
   const send = vi.fn()
   const reloadModule = vi.fn()
   const modules = new Set(options.modules ?? [])
+  const watched: string[] = []
 
   return {
     invalidateModule,
@@ -307,7 +317,9 @@ function createFakeDevServer(options: { loaded?: boolean, modules?: string[] } =
         reloadModule,
       },
     },
+    watched,
     watcher: {
+      add: (paths: string[]) => watched.push(...paths),
       on(event: string, handler: (file: string) => void) {
         handlers.set(event, [...handlers.get(event) ?? [], handler])
       },
