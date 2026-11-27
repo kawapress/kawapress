@@ -124,7 +124,7 @@ The factory function validates and normalizes options, while `setup(api)` only w
 
 ### Generator API Overview {#generator-api}
 
-There are eight generator registration methods, plus `api.invalidatePages()` for development, all called inside `setup(api)` of `definePlugin()`. A plugin can register one or multiple methods as needed; plugins execute sequentially in the order listed in `plugins`.
+There are eight generator registration methods, all called inside `setup(api)` of `definePlugin()`. A plugin can register one or multiple methods as needed; plugins execute sequentially in the order listed in `plugins`.
 
 A typical generator plugin skeleton looks like:
 
@@ -146,7 +146,7 @@ export default function myGeneratorPlugin() {
       api.markdown((markdown) => { /* ... */ })
 
       // 4. Add pages that do not come from a Markdown file
-      api.pages(() => [/* ... */])
+      api.pages('/notes/[...slug]', '../notes/[...slug].md')
 
       // 5. Enhance page metadata
       api.pageData((pageData, { origin, file, sourcePath }) => { /* ... */ })
@@ -241,55 +241,103 @@ api.markdown((markdown) => {
 
 Markdown authors declare nothing. The component loads only on the pages that use it, and a page without that fence downloads nothing extra for it. A `<script setup>` the author wrote is kept, and the import is added to the same block. A page with only a plain `<script>`, or with no script at all, gets a `<script setup>` with the same `lang`.
 
-### `api.pages()` and `api.invalidatePages()` {#pages}
+### `api.pages()` {#pages}
 
-`pages()` lets a plugin add pages that do not come from a Markdown file, such as API documentation generated from a manifest, a changelog, or an archive. Plugin pages go through the same compile pipeline as ordinary pages: frontmatter, headings, components, code highlighting and `addPageComponent()` all work.
+`pages()` lets a plugin add pages that do not come from a Markdown file, such as the README of every package in a repository, a changelog with one page per version, or API documentation generated from a manifest. Plugin pages go through the same compile pipeline as ordinary pages: frontmatter, headings, components, code highlighting and `addPageComponent()` all work.
+
+The call has one idea: **write the URL first, then say where the content comes from.**
+
+```ts
+api.pages(urlTemplate, source)
+```
+
+The URL template is a path that starts with `/` and does not include `base`. It can hold parameters: `[name]` stands for one path segment, `[...slug]` for one or more. A parameter must take a whole segment; `/v[version]`, which mixes it with other text, is not allowed. A trailing `/` means the index page of a directory. A URL with a locale prefix belongs to that locale, the same as for ordinary pages.
+
+The source comes in two forms: a file template and a generator function.
+
+#### Scenario 1: map existing files
+
+A string as the second argument is a file template. It starts from the site root (an absolute path works too), and its parameters match the URL template's by name:
 
 ```ts
 // Inside setup(api):
-api.pages(async ({ command }) => {
-  const modules = await loadModules()
-  return modules.flatMap(module => [
-    {
-      path: `/api/${module.name}`,
-      sourcePath: `@acme/${module.name}.md`,
-      markdown: `# ${module.name}\n\n${module.description}\n`,
-    },
-    {
-      path: `/zh/api/${module.name}`,
-      sourcePath: `@acme/zh/${module.name}.md`,
-      markdown: `# ${module.name}\n\n${module.descriptionZh}\n`,
-    },
-  ])
+api.pages('/packages/[name]', '../packages/[name]/README.md')
+api.pages('/notes/[...slug]', '../notes/[...slug].md')
+```
+
+KawaPress turns the parameters into wildcards to find the files. Each file becomes one page whose content is the file, and the parameters in the URL come from the file path. `../packages/core/README.md` becomes `/packages/core`; `../notes/guide/index.md` becomes `/notes/guide/` (a last segment of `index` is the directory index). Finding no file at all is an error.
+
+Relative images and assets in the page resolve against the directory of the source file, the same as for a plain Markdown file: `![logo](./logo.png)` in a `README.md` picks the `logo.png` next to it. Relative `.md` links are not rewritten; when one points at a file that did not become a page, the dead link check reports it.
+
+#### Scenario 2: generate many pages
+
+A function as the second argument returns an array. Each item gives every parameter of the template plus the `markdown` of that page. This one makes a changelog with a page per version, the versions coming from `CHANGELOG.md`:
+
+```ts
+// Inside setup(api):
+api.pages('/changelog/[version]', async ({ read }) => {
+  const releases = parseChangelog(await read('../CHANGELOG.md'))
+  return releases.map(release => ({
+    version: release.version,
+    frontmatter: { lastUpdated: release.date },
+    markdown: `# v${release.version}\n\n${release.body}\n`,
+  }))
 })
 ```
 
-The handler receives `{ command }`, which is `'dev'` or `'build'`, and returns an array of pages with three fields each:
+TypeScript reads the parameter names from the URL template: every item above has to have `version`, and leaving it out is an error in your editor.
+
+The function receives `{ command, read, glob }`:
 
 | Field | Meaning |
 | --- | --- |
-| `path` | The route of the page, starting with `/` and without `base`. A trailing `/` means the index page of a directory: `/api/` is `/api/index.md`, `/api/core` is `/api/core.md`. A path with a locale prefix belongs to that locale, the same as for ordinary pages |
-| `markdown` | The Markdown source. `<!--@include-->` is not supported |
-| `sourcePath` | Identifies the page as a source: it does not start with `/`, ends with `.md`, and is unique in the site. Start it with the plugin name, so it cannot collide with the `sourcePath` of a Markdown file (which starts with `/`) or of another plugin |
+| `command` | `'dev'` or `'build'` |
+| `read(path)` | Reads a text file as UTF-8. A relative path starts from the site root |
+| `glob(pattern)` | Finds files by pattern and returns their absolute paths, sorted. A relative pattern starts from the site root |
 
-`pages()` does not accept a Vue component as a page. When you need a component, write it in the Markdown and import it with [`addPageComponent()`](#page-components). A static site has no dynamic routes: the plugin returns every path of the site.
+Every parameter value is a string: a `[name]` value is not empty and has no `/`; a `[...slug]` value is one or more path segments with no leading or trailing `/`. `frontmatter` is an optional object that KawaPress merges into the frontmatter of the page; a key given there wins over the same key in the Markdown, so you never write YAML by hand. `<!--@include-->` is not supported in the Markdown.
 
-KawaPress runs the `pages()` handlers after every `configResolved()`, when the page list is first needed, once per plugin in plugin order. These cases fail with an error that names both sides:
+#### Scenario 3: a single page
 
-- a `path` that does not start with `/`, or a `sourcePath` that starts with `/` or does not end with `.md`;
-- two pages with the same `sourcePath`, which names both plugins;
-- a plugin page and a Markdown file page, or two plugin pages, on the same route.
-
-A plugin page has no source file, so it shows no edit link and no last-updated time, and `rewrites` does not apply to it. To show an update time, write `lastUpdated` in the frontmatter of the page.
-
-While the dev server runs, the pages come from some data source, for example a file you watch. When the data changes, call `api.invalidatePages()`: KawaPress runs `pages()` again. If the set of pages changed it reloads the browser; if only the content of a page changed, only that page is hot-updated. Calling it during a build does nothing.
+A URL without parameters is one page, and the function can return the Markdown string directly (return `{ markdown, frontmatter }` when you need frontmatter):
 
 ```ts
 // Inside setup(api):
-api.pages(() => readEntries())
-
-watch(entriesFile, () => api.invalidatePages())
+api.pages('/changelog/', async ({ read }) => {
+  const text = await read('../CHANGELOG.md')
+  return `# Changelog\n\n${text}\n`
+})
 ```
+
+Keep the two apart: a **string** as the second argument is a file template, not Markdown content. To give content directly, write a function that returns a string.
+
+#### What updates by itself in dev
+
+Files you read with `read()`, patterns you use with `glob()`, and the file template itself are recorded for that group of pages. Each `pages()` call is a group of its own. While the dev server runs:
+
+- when a file that was read changes, or a file is added or removed and fits a recorded pattern, KawaPress runs only that group again;
+- if the number or URLs of the pages changed it reloads the browser; if only the content of a page changed, only that page is hot-updated;
+- if running again throws, the terminal prints the error and the group keeps its previous pages, so the dev server stays up.
+
+A build runs each group once and watches nothing; a function that throws fails the build.
+
+Data that does not go through `read()` or `glob()` is not tracked, for example a `fetch` of a remote API, or a file you read yourself with `node:fs`. That data is fetched once per build, and in dev it updates only when you restart the dev server. To get automatic updates, read it with `read()` and `glob()`.
+
+#### Page identity and errors
+
+`sourcePath` is generated by KawaPress as `<plugin name><page path>`: a page that plugin `@acme/kawapress-plugin-notes` creates at `/packages/core` has the `sourcePath` `@acme/kawapress-plugin-notes/packages/core.md`. The page path follows from the URL: `/x/` is `/x/index.md`, `/x/y` is `/x/y.md`. It does not start with `/`, so it cannot collide with the `sourcePath` of a Markdown file page. Wherever a `sourcePath` is used, such as the `include` and `exclude` of the feed and OG image plugins, it is matched against this value.
+
+These cases fail with an error that names the plugin and the URL template, and for the result of a function also the index of the item:
+
+- a URL template that does not start with a single `/`, repeats a parameter name, or mixes a parameter with other text in one segment;
+- a file template whose parameters differ from the URL template's;
+- a file template that finds no file;
+- an item of the function's result that misses a parameter or has an invalid value;
+- two groups, or a plugin page and a Markdown file, on the same route; the message names the plugin and template of both sides.
+
+`pages()` does not accept a Vue component as a page. When you need a component, write it in the Markdown and import it with [`addPageComponent()`](#page-components). A plugin page has no source file, so it shows no edit link and no last-updated time, and `rewrites` does not apply to it. To show an update time, give `lastUpdated` in `frontmatter`.
+
+KawaPress runs the groups after every `configResolved()`, when the page list is first needed, once each, in plugin order and call order.
 
 A plugin that needs all pages of the site, files and plugin pages together, uses [`listSitePages()`](#page-list-and-title).
 
@@ -313,7 +361,7 @@ api.pageData((pageData) => {
 
 Use a string such as `'2026-10-08'` instead, and parse it where needed.
 
-The second argument of the handler tells you where the page comes from: `origin` is `'file'` (a Markdown file in `srcDir`) or `'plugin'` (a page some plugin added with [`api.pages()`](#pages)). `file` is the absolute path of the Markdown source and only file pages have one. `sourcePath` identifies the source: the path relative to `srcDir`, such as `/guide/intro.md`, for a file page, and the value the plugin gave for a plugin page. Use `file` when you need information about the file, like its last git commit, and check that it exists first. Do not guess the file from the route: `/guide` can come from either `guide.md` or `guide/index.md`.
+The second argument of the handler tells you where the page comes from: `origin` is `'file'` (a Markdown file in `srcDir`) or `'plugin'` (a page some plugin added with [`api.pages()`](#pages)). `file` is the absolute path of the Markdown source and only file pages have one. `sourcePath` identifies the source: the path relative to `srcDir`, such as `/guide/intro.md`, for a file page, and the `<plugin name><page path>` KawaPress generates for a plugin page, for example `@acme/kawapress-plugin-notes/notes/a.md`. Use `file` when you need information about the file, like its last git commit, and check that it exists first. Do not guess the file from the route: `/guide` can come from either `guide.md` or `guide/index.md`.
 
 ```ts
 api.pageData((pageData, { file, sourcePath }) => {
@@ -511,7 +559,7 @@ api.vite(async () => {
   }
 })
 
-// In dev: runs when a Markdown file is added or removed, or a plugin calls invalidatePages(). Returns a stop function.
+// In dev: runs when a Markdown file is added or removed, or plugin pages are added, removed or edited because a file they depend on changed. Returns a stop function.
 const stop = onSitePagesChange(site, () => { /* read listSitePages(site) again */ })
 ```
 
