@@ -61,26 +61,45 @@ export default {
 
 这段请求在开发或构建时执行，不会在访客的浏览器中重复发送。一次构建里的 SSR 和浏览器包会共用同一份结果。
 
-## 监听本地文件 {#watch-local-files}
+## 读取本地文件 {#read-local-files}
 
-要根据本地文件生成数据，可以添加 `watch`。路径相对于 Loader 文件，支持 glob：
+要根据本地文件生成数据，用 `load()` 收到的 `read()` 和 `glob()`。路径相对于 Loader 文件，也可以写绝对路径：
 
 ```ts
 // catalog.data.ts
-import { readFile } from 'node:fs/promises'
+import { defineLoader } from 'kawapress'
 
-export default {
-  watch: './catalog/*.json',
-  async load(files: string[]) {
+export default defineLoader({
+  async load({ glob, read }) {
+    const files = await glob('./catalog/*.json')
     return Promise.all(files.map(async file => ({
       file,
-      value: JSON.parse(await readFile(file, 'utf8')),
+      value: JSON.parse(await read(file)),
     })))
   },
-}
+})
 ```
 
-`files` 是按路径排序的绝对路径。开发时，匹配文件的新增、修改和删除会重新生成数据并触发热更新。Loader 自己导入的本地辅助文件变化时也会更新。
+`read(path)` 读取 UTF-8 文本，`glob(pattern)` 返回按路径排序的绝对路径。读过谁，就依赖谁：
+
+- 开发时，用 `read()` 读过的文件一改，数据就自动更新。
+- 符合 `glob()` 模式的文件新增或删除，数据也会更新。
+- Loader 自己导入的本地辅助文件变化时同样会更新。
+
+不经过 `read()` 和 `glob()` 的数据，比如 `fetch` 来的内容，或者自己用 `node:fs` 读的文件，不会被追踪，重启开发服务器后才会刷新。
+
+### 从 VitePress 迁移时 {#watch-form}
+
+VitePress 的 `watch` 写法仍然可用。写了 `watch`，`load()` 的第一个参数是匹配到的文件，第二个参数才是上面的 `{ read, glob }`：
+
+```ts
+export default defineLoader({
+  watch: './catalog/*.json',
+  async load(files, { read }) {
+    return Promise.all(files.map(async file => JSON.parse(await read(file))))
+  },
+})
+```
 
 ## 汇总 Markdown 内容 {#collect-markdown-content}
 

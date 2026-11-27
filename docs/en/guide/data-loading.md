@@ -61,26 +61,45 @@ export default {
 
 The request runs during development or production builds, not in each visitor's browser. The SSR and client builds share one result within the same build.
 
-## Watch Local Files {#watch-local-files}
+## Read Local Files {#read-local-files}
 
-Add `watch` when data comes from local files. Patterns are relative to the Loader file and support globs:
+To build data from local files, use the `read()` and `glob()` that `load()` receives. Paths are relative to the Loader file, and absolute paths work too:
 
 ```ts
 // catalog.data.ts
-import { readFile } from 'node:fs/promises'
+import { defineLoader } from 'kawapress'
 
-export default {
-  watch: './catalog/*.json',
-  async load(files: string[]) {
+export default defineLoader({
+  async load({ glob, read }) {
+    const files = await glob('./catalog/*.json')
     return Promise.all(files.map(async file => ({
       file,
-      value: JSON.parse(await readFile(file, 'utf8')),
+      value: JSON.parse(await read(file)),
     })))
   },
-}
+})
 ```
 
-`files` contains absolute paths in stable path order. Creating, changing, or deleting a matched file regenerates the data and triggers hot updates in development. Changes to local helper modules imported by the Loader do the same.
+`read(path)` reads UTF-8 text, and `glob(pattern)` returns absolute paths in stable path order. Whatever you read is tracked:
+
+- In development, editing a file read through `read()` updates the data automatically.
+- Adding or removing a file that matches a `glob()` pattern updates it too.
+- Changes to local helper modules imported by the Loader do the same.
+
+Data that does not go through `read()` or `glob()`, such as `fetch` results or files you read yourself with `node:fs`, is not tracked and refreshes when you restart the dev server.
+
+### Migrating from VitePress {#watch-form}
+
+The VitePress `watch` form still works. With `watch`, the first argument of `load()` is the matched files and the second is the `{ read, glob }` context shown above:
+
+```ts
+export default defineLoader({
+  watch: './catalog/*.json',
+  async load(files, { read }) {
+    return Promise.all(files.map(async file => JSON.parse(await read(file))))
+  },
+})
+```
 
 ## Collect Markdown Content {#collect-markdown-content}
 

@@ -1,15 +1,15 @@
 import type { PluginPageContent, PluginPagesContext, PluginPagesGenerator, PluginPagesSource } from '../api/plugin-pages'
-import type { PageDependencies } from './page-dependencies'
 import type { FileTemplate, RouteTemplate } from './page-template'
 import type { PluginPageRecord } from './plugin-pages'
+import type { TrackedFiles } from './tracked-files'
 import { readFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { markdownPagePathToRoutePath } from '../core/markdown-route'
 import { findDataLoaderFiles } from './data/glob'
-import { createDependencyRecorder } from './page-dependencies'
 import { mergeFrontmatter } from './page-frontmatter'
 import { fillRouteTemplate, parseFileTemplate, parseRouteTemplate } from './page-template'
 import { describePageGroup, generatePluginSourcePath, routeToPagePath } from './plugin-pages'
+import { createFileTracker } from './tracked-files'
 
 /** One `api.pages(route, source)` call of a plugin. */
 export interface PageRegistration {
@@ -22,7 +22,7 @@ export interface PageRegistration {
 export interface PageGroupRun {
   records: PluginPageRecord[]
   /** What the execution read, also when it failed. */
-  dependencies: PageDependencies
+  dependencies: TrackedFiles
   /** Why the execution failed; `records` is empty then. */
   error?: unknown
 }
@@ -54,7 +54,7 @@ export function createPageGroup(registration: PageRegistration, root: string): P
     template: route,
     label,
     async run(command) {
-      const recorder = createDependencyRecorder(root)
+      const recorder = createFileTracker(root)
       try {
         const records = typeof source === 'string'
           ? await expandFileTemplate(context, fileTemplate!, recorder)
@@ -77,7 +77,7 @@ interface GroupContext {
 async function expandFileTemplate(
   group: GroupContext,
   fileTemplate: FileTemplate,
-  recorder: ReturnType<typeof createDependencyRecorder>,
+  recorder: ReturnType<typeof createFileTracker>,
 ): Promise<PluginPageRecord[]> {
   const files = await findDataLoaderFiles([fileTemplate.glob])
   recorder.addGlob({

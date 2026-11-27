@@ -726,18 +726,51 @@ declare function usePageData(): ComputedRef<PageData | undefined>
 
 KawaPress Core 提供构建时数据加载。站点中的 `.data.ts` 或 `.data.js` 模块默认导出 `DataLoader`，KawaPress 只在 Node.js 生成侧执行它的 `load()`，再把结果变成可由 Markdown 或 Vue 组件导入的隐式 `data` 具名导出；Loader 源码、Node.js API 与生成侧依赖不得进入 SSR 或浏览器 bundle。`load()` 可以异步执行和主动请求远程 API，但最终结果必须通过 KawaPress 的严格 JSON 可序列化检查。SSR 与 client 对同一个 Loader 修订共享一次执行结果，不能重复触发远程请求或其他生成侧副作用。
 
+推荐写法：读了谁就依赖谁，与 `api.pages()` 的生成函数一致。
+
+```ts
+// catalog.data.ts
+export default defineLoader({
+  async load({ glob, read }) {
+    const files = await glob('./catalog/*.json')
+    return Promise.all(files.map(async file => JSON.parse(await read(file))))
+  },
+})
+```
+
 ```ts
 type Awaitable<T> = T | Promise<T>
 
-interface DataLoader<T> {
-  watch?: string | string[]
-  load: (watchedFiles: string[]) => Awaitable<T>
+interface DataLoaderContext {
+  /** 读 UTF-8 文本文件，并把它记为这个 Loader 的依赖。 */
+  read: (path: string) => Promise<string>
+  /** 匹配文件，返回排序后的绝对路径，并把这个模式记为这个 Loader 的依赖。 */
+  glob: (pattern: string | readonly string[]) => Promise<string[]>
 }
+
+/** 推荐写法：不写 `watch`，`load()` 只收到上下文。 */
+interface TrackedDataLoader<T> {
+  watch?: undefined
+  load: (context: DataLoaderContext) => Awaitable<T>
+}
+
+/** 与 VitePress 兼容的写法：`load()` 先收到 `watch` 匹配到的文件，再收到上下文。 */
+interface WatchDataLoader<T> {
+  watch: string | string[]
+  load: (watchedFiles: string[], context: DataLoaderContext) => Awaitable<T>
+}
+
+type DataLoader<T> = TrackedDataLoader<T> | WatchDataLoader<T>
 
 declare function defineLoader<T>(loader: DataLoader<T>): DataLoader<T>
 ```
 
-`watch` 使用相对当前 Loader 文件的 glob，`load()` 得到按路径稳定排序的绝对文件路径。开发模式同时追踪 Loader 自身、它的本地传递依赖与 glob 匹配文件；变化时失效同一数据结果，并让 SSR module graph 与浏览器 HMR 使用重新生成后的同一份数据。Loader 执行期间通过类型化的 `globalThis.KAWAPRESS_CONFIG` 提供当前站点绝对根目录、绝对 `srcDir`、绝对 `publicDir` 与可序列化 `site` 数据，不暴露 `pluginRunner` 等内部对象。
+- `read()`、`glob()` 与 `watch` 的相对路径都相对当前 Loader 文件，也接受绝对路径；`glob()` 与 `watchedFiles` 都是按路径稳定排序的绝对路径。
+- 开发模式追踪 Loader 自身、它的本地传递依赖、`watch` 匹配的文件，以及本次执行中 `read()` 读过的文件与 `glob()` 用过的模式（命中模式的新增、删除也算）；任一变化都失效同一数据结果，并让 SSR module graph 与浏览器 HMR 使用重新生成后的同一份数据。每次执行重新记录依赖。
+- 不经过 `read()`、`glob()` 的数据（`fetch`、自己用 `node:fs` 读的文件）不被追踪，开发时重启开发服务器后更新。
+- 文件依赖记录与插件页面共用同一个实现。
+
+Loader 执行期间通过类型化的 `globalThis.KAWAPRESS_CONFIG` 提供当前站点绝对根目录、绝对 `srcDir`、绝对 `publicDir` 与可序列化 `site` 数据，不暴露 `pluginRunner` 等内部对象。
 
 Core 同时公开 `createContentLoader()`。它接收相对 `srcDir` 的一个或多个 Markdown glob，只处理 `.md` 文件，默认返回不含部署 `base` 的无后缀公开 `url` 与 `frontmatter`；`includeSrc`、`render`、`excerpt` 分别按需增加原始 Markdown、使用当前 KawaPress Markdown 管线生成的 HTML 与已渲染摘要，未启用或不存在的字段直接省略，不能以 `undefined` 穿过数据边界。它按文件修改信息缓存单页解析结果，并允许用同步或异步 `transform()` 对最终数组进行筛选、排序与缩减。Markdown 渲染执行已安装的 `markdown()` 扩展，但不执行 `pageData()` handler，也不因此新增页面或静态路由。
 

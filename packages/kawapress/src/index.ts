@@ -9,8 +9,11 @@ export type {
   ContentLoaderOptions,
   DataLoader,
   DataLoaderConfig,
+  DataLoaderContext,
   DataLoaderGlobOptions,
   DataLoaderOptions,
+  TrackedDataLoader,
+  WatchDataLoader,
 } from './api/data'
 export { createMarkdownRenderer } from './api/markdown-renderer'
 export type { MarkdownRendererOptions } from './api/markdown-renderer'

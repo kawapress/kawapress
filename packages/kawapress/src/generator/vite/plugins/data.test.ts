@@ -112,6 +112,141 @@ export default {
       await rm(root, { force: true, recursive: true })
     }
   })
+
+  describe('tracked reads', () => {
+    async function setup(loaderSource: string, files: Record<string, string> = {}) {
+      const root = await mkdtemp(join(process.cwd(), 'docs/.kawapress-data-tracked-'))
+      const loaderFile = join(root, 'content/example.data.ts')
+      await mkdir(join(root, 'content/catalog'), { recursive: true })
+      await Promise.all([
+        writeFile(join(root, 'package.json'), '{"type":"module"}\n'),
+        writeFile(loaderFile, loaderSource),
+        ...Object.entries(files).map(([name, text]) => writeFile(join(root, 'content', name), text)),
+      ])
+      const plugin = await createPlugin(root)
+      let timestamp = 0
+      return {
+        root,
+        loaderFile,
+        plugin,
+        load: async () => (await importGeneratedData<unknown>(await runLoad(plugin, loaderFile))).data,
+        update: (file: string, type: 'create' | 'update' | 'delete') =>
+          runHotUpdate(plugin, file, loaderFile, ++timestamp, type),
+        path: (name: string) => join(root, 'content', name),
+      }
+    }
+
+    it('gives the context form { read, glob } and resolves relative paths against the loader file', async () => {
+      const t = await setup(`
+export default {
+  async load(context) {
+    const files = await context.glob('./catalog/*.json')
+    return {
+      keys: Object.keys(context).sort(),
+      names: files.map(file => file.split('/').pop()),
+      absolute: files.every(file => file.startsWith('/')),
+      texts: await Promise.all(files.map(file => context.read(file))),
+      relative: await context.read('./catalog/a.json'),
+    }
+  },
+}
+`, { 'catalog/b.json': '"b"', 'catalog/a.json': '"a"' })
+      try {
+        await expect(t.load()).resolves.toEqual({
+          keys: ['glob', 'read'],
+          names: ['a.json', 'b.json'],
+          absolute: true,
+          texts: ['"a"', '"b"'],
+          relative: '"a"',
+        })
+      }
+      finally {
+        await rm(t.root, { force: true, recursive: true })
+      }
+    })
+
+    it('gives the watch form (files, context)', async () => {
+      const t = await setup(`
+export default {
+  watch: './catalog/*.json',
+  async load(files, context) {
+    return {
+      count: files.length,
+      keys: Object.keys(context).sort(),
+      text: await context.read('./catalog/a.json'),
+    }
+  },
+}
+`, { 'catalog/a.json': '"a"' })
+      try {
+        await expect(t.load()).resolves.toEqual({ count: 1, keys: ['glob', 'read'], text: '"a"' })
+      }
+      finally {
+        await rm(t.root, { force: true, recursive: true })
+      }
+    })
+
+    it('invalidates on a read file, on files added or removed under a glob, and ignores unrelated files', async () => {
+      const t = await setup(`
+export default {
+  async load({ read, glob }) {
+    const files = await glob('./catalog/*.json')
+    return { names: files.map(file => file.split('/').pop()), note: await read('./note.txt') }
+  },
+}
+`, { 'catalog/a.json': '1', 'note.txt': 'one' })
+      try {
+        await t.load()
+        const note = t.path('note.txt')
+        const unrelated = t.path('other.txt')
+        const added = t.path('catalog/b.json')
+
+        await writeFile(unrelated, 'x')
+        await expect(t.update(unrelated, 'create')).resolves.toBeUndefined()
+        await writeFile(t.path('catalog/a.json'), '2')
+        await expect(t.update(t.path('catalog/a.json'), 'update')).resolves.toBeUndefined()
+
+        await writeFile(note, 'two')
+        await expect(t.update(note, 'update')).resolves.toHaveLength(1)
+        await expect(t.load()).resolves.toEqual({ names: ['a.json'], note: 'two' })
+
+        await writeFile(added, '3')
+        await expect(t.update(added, 'create')).resolves.toHaveLength(1)
+        await expect(t.load()).resolves.toEqual({ names: ['a.json', 'b.json'], note: 'two' })
+
+        await rm(added)
+        await expect(t.update(added, 'delete')).resolves.toHaveLength(1)
+        await expect(t.load()).resolves.toEqual({ names: ['a.json'], note: 'two' })
+      }
+      finally {
+        await rm(t.root, { force: true, recursive: true })
+      }
+    })
+
+    it('records dependencies again on every execution', async () => {
+      const t = await setup(`
+export default {
+  async load({ read }) {
+    const first = await read('./first.txt')
+    return first === 'again' ? 'done' : await read('./second.txt')
+  },
+}
+`, { 'first.txt': 'again', 'second.txt': 'two' })
+      try {
+        await expect(t.load()).resolves.toBe('done')
+        // `second.txt` was not read, so it no longer matters.
+        await expect(t.update(t.path('second.txt'), 'update')).resolves.toBeUndefined()
+
+        await writeFile(t.path('first.txt'), 'changed')
+        await expect(t.update(t.path('first.txt'), 'update')).resolves.toHaveLength(1)
+        await expect(t.load()).resolves.toBe('two')
+        await expect(t.update(t.path('second.txt'), 'update')).resolves.toHaveLength(1)
+      }
+      finally {
+        await rm(t.root, { force: true, recursive: true })
+      }
+    })
+  })
 })
 
 async function createPlugin(root: string): Promise<Plugin> {
@@ -139,6 +274,7 @@ async function runHotUpdate(
   file: string,
   loaderId: string,
   timestamp: number,
+  type: 'create' | 'update' | 'delete' = 'update',
 ): Promise<EnvironmentModuleNode[] | void> {
   const hotUpdate = plugin.hotUpdate
   if (typeof hotUpdate !== 'function') {
@@ -160,7 +296,7 @@ async function runHotUpdate(
     read: () => '',
     server: {} as never,
     timestamp,
-    type: 'update',
+    type,
   })
 }
 

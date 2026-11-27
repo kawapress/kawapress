@@ -1,6 +1,5 @@
 /// <reference path="../types/picomatch.d.ts" />
 
-import type { PluginPagesContext } from '../api/plugin-pages'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import picomatch from 'picomatch'
@@ -10,7 +9,7 @@ import { findDataLoaderFiles } from './data/glob'
 /** Files that exist or appear while the site is served. */
 export type FileEvent = 'add' | 'change' | 'unlink'
 
-/** A glob a group of pages used, with the files it matched at that time. */
+/** A glob that was used, with the files it matched at that time. */
 export interface GlobDependency {
   /** Absolute patterns; a leading `!` excludes. */
   patterns: readonly string[]
@@ -19,24 +18,26 @@ export interface GlobDependency {
   watchDirectories: readonly string[]
 }
 
-/** What a group of pages read to produce its pages. */
-export interface PageDependencies {
+/** The files and globs a unit of generation (a page group, a data loader) read. */
+export interface TrackedFiles {
   files: ReadonlySet<string>
   globs: readonly GlobDependency[]
 }
 
-export interface DependencyRecorder {
-  read: PluginPagesContext['read']
-  glob: PluginPagesContext['glob']
-  /** Records a file a group read itself. */
+export interface FileTracker {
+  /** Reads a UTF-8 text file and records it. */
+  read: (path: string) => Promise<string>
+  /** Returns the sorted absolute paths matching the pattern and records the pattern. */
+  glob: (pattern: string | readonly string[]) => Promise<string[]>
+  /** Records a file that was read elsewhere. */
   addFile: (file: string) => void
-  /** Records a glob a group matched itself. */
+  /** Records a glob that was matched elsewhere. */
   addGlob: (dependency: GlobDependency) => void
-  snapshot: () => PageDependencies
+  snapshot: () => TrackedFiles
 }
 
-/** Records what a group reads and globs; relative paths start from `root`. */
-export function createDependencyRecorder(root: string): DependencyRecorder {
+/** Records what is read and globbed; relative paths start from `root`. */
+export function createFileTracker(root: string): FileTracker {
   const files = new Set<string>()
   const globs: GlobDependency[] = []
 
@@ -53,13 +54,7 @@ export function createDependencyRecorder(root: string): DependencyRecorder {
           ? `!${normalizePath(resolve(root, item.slice(1)))}`
           : normalizePath(resolve(root, item)))
       const matched = await findDataLoaderFiles(patterns)
-      globs.push({
-        patterns,
-        matched: new Set(matched),
-        watchDirectories: patterns
-          .filter(item => !item.startsWith('!'))
-          .map(item => picomatch.scan(item).base),
-      })
+      globs.push(createGlobDependency(patterns, matched))
       return matched
     },
     addFile: file => files.add(normalizePath(file)),
@@ -68,36 +63,47 @@ export function createDependencyRecorder(root: string): DependencyRecorder {
   }
 }
 
+/** The dependency for absolute `patterns` that matched `matched`. */
+export function createGlobDependency(patterns: readonly string[], matched: readonly string[]): GlobDependency {
+  return {
+    patterns,
+    matched: new Set(matched),
+    watchDirectories: patterns
+      .filter(pattern => !pattern.startsWith('!'))
+      .map(pattern => picomatch.scan(pattern).base),
+  }
+}
+
 /** Paths a dev server has to watch for these dependencies to be noticed. */
-export function listWatchTargets(dependencies: PageDependencies): string[] {
+export function listWatchTargets(tracked: TrackedFiles): string[] {
   return [
-    ...dependencies.files,
-    ...dependencies.globs.flatMap(glob => glob.watchDirectories),
+    ...tracked.files,
+    ...tracked.globs.flatMap(glob => glob.watchDirectories),
   ]
 }
 
 /**
- * Whether a file event changes what a group of pages read: a read file was
+ * Whether a file event changes what something read: a read file was
  * edited, removed or created, or a file that fits a recorded glob appeared or
  * went.
  */
 export function isAffectedBy(
-  dependencies: PageDependencies,
+  tracked: TrackedFiles,
   event: FileEvent,
   file: string,
 ): boolean {
   const path = normalizePath(file)
-  if (dependencies.files.has(path)) {
+  if (tracked.files.has(path)) {
     return true
   }
   if (event === 'unlink') {
-    return dependencies.globs.some(glob => glob.matched.has(path))
+    return tracked.globs.some(glob => glob.matched.has(path))
   }
-  return event === 'add' && dependencies.globs.some(glob => globMatches(glob, path))
+  return event === 'add' && tracked.globs.some(glob => globMatches(glob, path))
 }
 
-/** Everything either of two dependency sets covers. */
-export function mergeDependencies(first: PageDependencies, second: PageDependencies): PageDependencies {
+/** Everything either of two sets covers. */
+export function mergeTrackedFiles(first: TrackedFiles, second: TrackedFiles): TrackedFiles {
   return {
     files: new Set([...first.files, ...second.files]),
     globs: [...first.globs, ...second.globs],

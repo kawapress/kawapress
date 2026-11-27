@@ -5,6 +5,7 @@ import type {
 } from 'vite'
 import type { DataLoader } from '../../../api/data'
 import type { InternalDataLoaderContext } from '../../data/context'
+import type { FileEvent, TrackedFiles } from '../../tracked-files'
 import { dirname, relative, resolve } from 'node:path'
 import {
   normalizePath,
@@ -21,19 +22,32 @@ import {
   findDataLoaderFiles,
   normalizeDataLoaderGlob,
 } from '../../data/glob'
+import {
+  createFileTracker,
+  createGlobDependency,
+  isAffectedBy,
+  listWatchTargets,
+} from '../../tracked-files'
 
 const DATA_LOADER_RE = /\.data\.[cm]?[jt]s(?:$|\?)/
 
+const HOT_UPDATE_EVENTS: Record<'create' | 'update' | 'delete', FileEvent> = {
+  create: 'add',
+  update: 'change',
+  delete: 'unlink',
+}
+
 interface LoadedDataLoader {
+  /** The loader file and the local modules it imports. */
   dependencies: Set<string>
   loader: DataLoader
-  watch: string[]
-  watchedFiles: string[]
+  /** What the latest execution read, globbed and watched. */
+  tracked: TrackedFiles
 }
 
 interface CachedHotUpdate {
   key: string
-  affectedIds: Promise<string[]>
+  affectedIds: string[]
 }
 
 export function dataLoaderPlugin(
@@ -64,28 +78,53 @@ export function dataLoaderPlugin(
       },
     })
     const loader = resolveDataLoader(loaded.module.default, file)
-    const contentLoader = getContentLoaderSpecification(loader)
-    const watch = normalizeDataLoaderGlob(
-      loader.watch,
-      contentLoader ? context.srcDir : dirname(file),
-    )
-    const watchedFiles = await findDataLoaderFiles(
-      watch,
-      loader.options?.globOptions,
-    )
     const dependencies = new Set([
       normalizePath(file),
       ...loaded.dependencies.map(dependency => normalizePath(resolve(dependency))),
     ])
-    const result = { dependencies, loader, watch, watchedFiles }
+    const result: LoadedDataLoader = {
+      dependencies,
+      loader,
+      tracked: { files: new Set(), globs: [] },
+    }
     loaders.set(id, result)
-    server?.watcher.add([...dependencies, ...watchedFiles])
+    server?.watcher.add([...dependencies])
     return result
+  }
+
+  /** Runs `load()` and records what it reads, also when it fails. */
+  const executeLoader = async (
+    loaded: LoadedDataLoader,
+    file: string,
+  ): Promise<unknown> => {
+    const { loader } = loaded
+    const tracker = createFileTracker(dirname(file))
+    try {
+      if (loader.watch === undefined) {
+        return await loader.load({ read: tracker.read, glob: tracker.glob })
+      }
+      const contentLoader = getContentLoaderSpecification(loader)
+      const patterns = normalizeDataLoaderGlob(
+        loader.watch,
+        contentLoader ? context.srcDir : dirname(file),
+      )
+      const watchedFiles = await findDataLoaderFiles(
+        patterns,
+        loader.options?.globOptions,
+      )
+      tracker.addGlob(createGlobDependency(patterns, watchedFiles))
+      watchedFiles.forEach(tracker.addFile)
+      return await loader.load(watchedFiles, { read: tracker.read, glob: tracker.glob })
+    }
+    finally {
+      loaded.tracked = tracker.snapshot()
+      server?.watcher.add(listWatchTargets(loaded.tracked))
+    }
   }
 
   const generateDataModule = async (id: string): Promise<string> => {
     const loaded = await loadDataLoader(id)
-    const data = await loaded.loader.load(loaded.watchedFiles)
+    const data = await executeLoader(loaded, cleanDataLoaderId(id))
     const serialized = stringifyJsonForScript(data, {
       label: `data returned by loader ${JSON.stringify(displayLoaderPath(id, context.root))}`,
       path: 'data',
@@ -107,34 +146,18 @@ export function dataLoaderPlugin(
     return pending
   }
 
-  const findAffectedLoaders = async (file: string): Promise<string[]> => {
+  const findAffectedLoaders = (file: string, event: FileEvent): string[] => {
     const normalizedFile = normalizePath(file)
-    const checks = await Promise.all([...loaders].map(async ([id, loaded]) => {
-      const dependencyChanged = loaded.dependencies.has(normalizedFile)
-      let watchChanged = false
-
-      if (loaded.watch.length > 0) {
-        const nextFiles = await findDataLoaderFiles(
-          loaded.watch,
-          loaded.loader.options?.globOptions,
-        )
-        watchChanged = loaded.watchedFiles.includes(normalizedFile)
-          || nextFiles.includes(normalizedFile)
-        loaded.watchedFiles = nextFiles
-      }
-
-      return { dependencyChanged, id, watchChanged }
-    }))
-
     const affectedIds: string[] = []
-    for (const check of checks) {
-      if (!check.dependencyChanged && !check.watchChanged) {
+    for (const [id, loaded] of loaders) {
+      const dependencyChanged = loaded.dependencies.has(normalizedFile)
+      if (!dependencyChanged && !isAffectedBy(loaded.tracked, event, file)) {
         continue
       }
-      affectedIds.push(check.id)
-      output.delete(check.id)
-      if (check.dependencyChanged) {
-        loaders.delete(check.id)
+      affectedIds.push(id)
+      output.delete(id)
+      if (dependencyChanged) {
+        loaders.delete(id)
       }
     }
     return affectedIds
@@ -156,11 +179,11 @@ export function dataLoaderPlugin(
       if (cachedHotUpdate?.key !== key) {
         cachedHotUpdate = {
           key,
-          affectedIds: findAffectedLoaders(options.file),
+          affectedIds: findAffectedLoaders(options.file, HOT_UPDATE_EVENTS[options.type]),
         }
       }
 
-      const affectedIds = await cachedHotUpdate.affectedIds
+      const { affectedIds } = cachedHotUpdate
       if (affectedIds.length === 0) {
         return
       }
