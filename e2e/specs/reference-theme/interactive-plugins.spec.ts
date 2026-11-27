@@ -1,6 +1,5 @@
 import { stubAlgolia } from '../../support/algolia'
 import { expect, test } from '../../support/fixtures'
-import { stubGiscus } from '../../support/giscus'
 import { sitePath } from '../../support/site'
 
 interface MarkerWindow extends Window {
@@ -17,7 +16,6 @@ interface MarkerWindow extends Window {
  * under any theme that follows the contract.
  */
 test('Control+K searches the site and Enter opens the second page', async ({ page }) => {
-  await stubGiscus(page)
   await page.goto(sitePath('/'))
 
   await page.keyboard.press('Control+K')
@@ -38,7 +36,6 @@ test('Control+K searches the site and Enter opens the second page', async ({ pag
 })
 
 test('the LLMS copy button copies the Markdown of the page', async ({ page }) => {
-  await stubGiscus(page)
   await page.goto(sitePath('/'))
 
   await page.locator('.ref-doc .kawa-llms-actions__button--primary').click()
@@ -48,24 +45,22 @@ test('the LLMS copy button copies the Markdown of the page', async ({ page }) =>
   ).toContain('# Reference site')
 })
 
-test('the comment thread loads only once the reader scrolls', async ({ page }) => {
-  const requests = await stubGiscus(page)
+test('the comment thread loads only once the reader scrolls', async ({ page, giscusRequests }) => {
   await page.goto(sitePath('/'))
 
   const section = page.locator('.ref-doc .kawa-comments')
   await expect(section).toBeVisible()
-  expect(requests, 'the script must not load before the reader scrolls').toHaveLength(0)
+  expect(giscusRequests, 'the script must not load before the reader scrolls').toHaveLength(0)
 
   await section.scrollIntoViewIfNeeded()
 
   await expect(page.locator('.ref-doc iframe.giscus-frame')).toHaveCount(1)
-  expect(requests).toHaveLength(1)
+  expect(giscusRequests).toHaveLength(1)
   await expect(page.locator('.kawa-comments script'))
     .toHaveAttribute('data-repo', 'kawapress/kawapress')
 })
 
 test('the image zoom dialog opens on a click and Escape closes it', async ({ page }) => {
-  await stubGiscus(page)
   await page.goto(sitePath('/'))
 
   const image = page.locator('.ref-doc img[data-kawa-zoom]').first()
@@ -82,7 +77,6 @@ test('the image zoom dialog opens on a click and Escape closes it', async ({ pag
 })
 
 test('the code block copy button writes the code to the clipboard', async ({ page }) => {
-  await stubGiscus(page)
   await page.goto(sitePath('/'))
 
   const block = page.locator('.ref-doc .kawa-code-block').first()
@@ -103,7 +97,6 @@ test('the code block copy button writes the code to the clipboard', async ({ pag
 })
 
 test('arrow keys move between code group tabs', async ({ page }) => {
-  await stubGiscus(page)
   await page.goto(sitePath('/'))
 
   const tabs = page.locator('.ref-doc .kawa-code-group').first().getByRole('tab')
@@ -121,7 +114,6 @@ test('arrow keys move between code group tabs', async ({ page }) => {
 })
 
 test('a plain anchor link navigates without loading a new document', async ({ page }) => {
-  await stubGiscus(page)
   await page.goto(sitePath('/'))
   await expect(page.locator('.ref-doc h1')).toHaveText(/Reference site/)
 
@@ -140,7 +132,6 @@ test('a plain anchor link navigates without loading a new document', async ({ pa
 })
 
 test('Algolia DocSearch loads on the first click and Enter opens the hit inside the app', async ({ page }) => {
-  await stubGiscus(page)
   const queries = await stubAlgolia(page, [
     // The crawler records the deployed URL, base included.
     { title: 'Second page', url: `https://docs.example.com${sitePath('/second.html')}#second-page` },

@@ -1,15 +1,12 @@
 import { stubAlgolia } from '../support/algolia'
 import { expect, test } from '../support/fixtures'
-import { stubGiscus } from '../support/giscus'
 import { sitePath } from '../support/site'
 
 /**
  * The plugin fixture site turns the nagi local search off with `search: false`
- * and installs Algolia instead. The hit opens a page with comments, so giscus
- * is stubbed as well.
+ * and installs Algolia instead. The hit opens a page with comments.
  */
 test('Algolia replaces the nagi local search and Control+K opens it', async ({ page }) => {
-  await stubGiscus(page)
   await stubAlgolia(page, [
     { title: 'Second page', url: `https://docs.example.com${sitePath('/second.html')}` },
   ])

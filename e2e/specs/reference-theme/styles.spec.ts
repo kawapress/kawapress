@@ -1,7 +1,6 @@
 import type { Page } from '@playwright/test'
 import { stubAlgolia } from '../../support/algolia'
 import { expect, test } from '../../support/fixtures'
-import { stubGiscus } from '../../support/giscus'
 import { sitePath } from '../../support/site'
 
 /**
@@ -10,7 +9,6 @@ import { sitePath } from '../../support/site'
  * theme overrides has to reach the plugin elements on its own.
  */
 test.beforeEach(async ({ page }) => {
-  await stubGiscus(page)
   // Token values differ per color scheme; pin the light one for stable numbers.
   await page.emulateMedia({ colorScheme: 'light' })
   await page.goto(sitePath('/'))

@@ -1,5 +1,4 @@
 import { expect, test } from '../../support/fixtures'
-import { stubGiscus } from '../../support/giscus'
 import { sitePath } from '../../support/site'
 
 /**
@@ -8,7 +7,6 @@ import { sitePath } from '../../support/site'
  * a page of the reference theme.
  */
 test.beforeEach(async ({ page }) => {
-  await stubGiscus(page)
   await page.goto(sitePath('/'))
 })
 
