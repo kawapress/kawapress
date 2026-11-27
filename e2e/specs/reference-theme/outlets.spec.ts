@@ -1,5 +1,4 @@
 import { expect, test } from '../../support/fixtures'
-import { stubGiscus } from '../../support/giscus'
 import { sitePath } from '../../support/site'
 
 // Last updated prints an ISO timestamp in the `datetime` attribute.
@@ -9,14 +8,7 @@ const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
  * Each outlet of the public contract gets one test. The theme is written from
  * the documented contract alone, so a passing test means a plugin found its
  * socket without any theme-specific glue code.
- *
- * The fixture pages keep their comment section, which loads giscus as soon as
- * it approaches the viewport; the stub keeps the network out of the tests.
  */
-test.beforeEach(async ({ page }) => {
-  await stubGiscus(page)
-})
-
 test('layout.header.end: the search trigger renders in the theme header', async ({ page }) => {
   await page.goto(sitePath('/'))
 

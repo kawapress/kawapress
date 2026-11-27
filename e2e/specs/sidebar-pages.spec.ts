@@ -6,8 +6,8 @@ import { sitePath } from '../support/site'
  * sidebar from the pages on disk. Every title below comes from the frontmatter
  * of the page source, not from a hand-written list.
  *
- * The spec opens the page that turns the comment section off: the pages that
- * keep it would load giscus, which this suite never stubs outside its own spec.
+ * The spec opens the page that turns the comment section off, so the sidebar
+ * is all it has to look at.
  */
 test('the automatic sidebar lists the pages of the site', async ({ page }) => {
   await page.goto(sitePath('/opt-out'))
