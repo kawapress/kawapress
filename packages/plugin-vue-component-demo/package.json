@@ -1,7 +1,7 @@
 {
   "name": "@kawapress/plugin-vue-component-demo",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Live Vue component demos with highlighted source for KawaPress Markdown",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",

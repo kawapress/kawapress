@@ -6,9 +6,34 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-27
+
+本次发布：`kawapress` 0.9.0、`create-kawapress` 0.9.0、`@kawapress/preset-nagi` 0.9.0、`@kawapress/plugin-search` 0.9.0、`@kawapress/plugin-llms` 0.9.0、`@kawapress/plugin-last-updated` 0.9.0、`@kawapress/plugin-sitemap` 0.9.0、`@kawapress/plugin-feed` 0.2.0；`@kawapress/plugin-algolia-search`、`plugin-badge`、`plugin-code-block`、`plugin-code-group`、`plugin-comments`、`plugin-container`、`plugin-emoji`、`plugin-github-alerts`、`plugin-image-zoom`、`plugin-mathjax`、`plugin-mermaid`、`plugin-shiki`、`plugin-toc`、`plugin-unocss` 0.8.4；`@kawapress/plugin-analytics`、`plugin-file-tree`、`plugin-og-image`、`plugin-vue-component-demo`、`plugin-vue-component-meta`、`plugin-vue-repl` 0.1.1。
+
+### 破坏性变更
+
+- **页面不一定来自 Markdown 文件了。** `PageDataContext` 与 `PageBuildArtifact` 新增 `origin: 'file' | 'plugin'`，`file` 改为可选：插件添加的页面没有 `file`。*插件作者*：读 `file` 之前先判断它是否存在；要列出整站页面，用 `kawapress/generator` 的 `listSitePages()`，`listMarkdownPages()` 只列出磁盘上的文件。
+
+  ```diff
+   api.pageData(async (pageData, { file }) => {
+  -  pageData.updatedAt = await readCommitTime(file)
+  +  if (file) {
+  +    pageData.updatedAt = await readCommitTime(file)
+  +  }
+   })
+  ```
+
+### 新增
+
+- **插件可以向站点添加页面。** `api.pages(网址模板, 内容来源)` 先写网址，再写内容从哪来：`api.pages('/packages/[name]', '../packages/[name]/README.md')` 把每个包的 README 挂成一页；第二个参数也可以是函数，返回每页的参数和 Markdown。函数里用 `read()`、`glob()` 读过的文件会自动成为依赖，开发时改动只重新生成那一组页面。插件页面走与普通页面相同的编译管线。
+- **`kawapress/generator` 导出 `listSitePages()`、`onSitePagesChange()` 与 `pluginPageSourcePath()`**，供插件读取包括插件页面在内的整站页面。
+- **nagi**：插件页面出现在自动侧边栏中。
+- **plugin-search**、**plugin-llms**、**plugin-feed**、**plugin-sitemap**：插件页面进入搜索索引、`llms.txt` 与每页 `.md`、订阅源与 sitemap。
+- **plugin-last-updated**：Frontmatter 的 `lastUpdated` 可以写日期字符串，`editLink` 可以写源码的 URL；插件页面只使用这两个值，不查 git。
+
 ### 变更
 
-- **插件声明自己兼容的 `kawapress` 版本范围。** 插件对 `kawapress` 的 peer 依赖改为 `>=0.8.3 <0.10.0`，不再绑定核心当前的小版本；核心发新版本时，不再需要所有插件跟着发版。
+- **插件声明自己兼容的 `kawapress` 版本范围。** 插件对 `kawapress` 的 peer 依赖改为 `>=0.8.3 <0.10.0`，不再绑定核心当前的小版本（用到本次新 API 的 plugin-search、plugin-llms、plugin-feed 为 `>=0.9.0 <0.10.0`）；核心发新版本时，不再需要所有插件跟着发版。
 - **所有官方插件都带上 npm 关键词 `kawapress` 与 `kawapress-plugin`**，`@kawapress/preset-nagi` 带 `kawapress-preset`。社区插件使用同样的关键词，就能在 npm 上被搜到。
 
 ### 修复
@@ -329,7 +354,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.8.4...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/kawapress/kawapress/compare/v0.8.4...v0.9.0
 [0.8.4]: https://github.com/kawapress/kawapress/compare/v2026-11-20-plugins...v0.8.4
 [2026-11-20]: https://github.com/kawapress/kawapress/compare/v0.8.3...v2026-11-20-plugins
 [0.8.3]: https://github.com/kawapress/kawapress/compare/v0.8.2...v0.8.3

@@ -1,7 +1,7 @@
 {
   "name": "@kawapress/plugin-shiki",
   "type": "module",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "Shiki and Twoslash plugin for KawaPress",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",

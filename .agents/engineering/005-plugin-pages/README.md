@@ -1,6 +1,6 @@
 # 005 插件页面
 
-- 状态：实施中
+- 状态：已完成，待发布
 - 关联 issue：#101
 - 关联规约：`.agents/specs/core-plugin-pages/`；`core-product` 的「4.3 Generator Plugin API」
 - 相关规则：`.agents/rules/parallel-delivery.md`

@@ -1,7 +1,7 @@
 {
   "name": "@kawapress/plugin-image-zoom",
   "type": "module",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "Click-to-zoom images for KawaPress Markdown content",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",

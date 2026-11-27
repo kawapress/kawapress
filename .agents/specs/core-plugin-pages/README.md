@@ -1,6 +1,6 @@
 # 插件页面
 
-状态：已确认，待实施。核心 API 摘要见 `core-product` 的 Generator Plugin API 一节。
+状态：已实施，待发布。核心 API 摘要见 `core-product` 的 Generator Plugin API 一节。
 
 让 Generator Plugin 向站点添加不来自 `srcDir` 里 Markdown 文件的页面。第一个使用者是 `plugin-typedoc`（每个模块、每个符号一页），之后可服务 changelog 页、归档页、OpenAPI 等。
 

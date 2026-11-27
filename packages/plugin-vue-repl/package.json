@@ -1,7 +1,7 @@
 {
   "name": "@kawapress/plugin-vue-repl",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Editable, runnable Vue examples for KawaPress Markdown, powered by @vue/repl",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",

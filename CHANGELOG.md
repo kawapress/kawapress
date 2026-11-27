@@ -6,9 +6,34 @@ All notable changes to KawaPress are listed here. The format follows [Keep a Cha
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-27
+
+Published: `kawapress` 0.9.0, `create-kawapress` 0.9.0, `@kawapress/preset-nagi` 0.9.0, `@kawapress/plugin-search` 0.9.0, `@kawapress/plugin-llms` 0.9.0, `@kawapress/plugin-last-updated` 0.9.0, `@kawapress/plugin-sitemap` 0.9.0, `@kawapress/plugin-feed` 0.2.0; `@kawapress/plugin-algolia-search`, `plugin-badge`, `plugin-code-block`, `plugin-code-group`, `plugin-comments`, `plugin-container`, `plugin-emoji`, `plugin-github-alerts`, `plugin-image-zoom`, `plugin-mathjax`, `plugin-mermaid`, `plugin-shiki`, `plugin-toc`, `plugin-unocss` 0.8.4; `@kawapress/plugin-analytics`, `plugin-file-tree`, `plugin-og-image`, `plugin-vue-component-demo`, `plugin-vue-component-meta`, `plugin-vue-repl` 0.1.1.
+
+### Breaking changes
+
+- **A page no longer always comes from a Markdown file.** `PageDataContext` and `PageBuildArtifact` gain `origin: 'file' | 'plugin'`, and `file` is now optional: pages added by plugins have no `file`. *Plugin authors*: check that `file` exists before reading it; to list every page of the site, use `listSitePages()` from `kawapress/generator`, since `listMarkdownPages()` lists only the files on disk.
+
+  ```diff
+   api.pageData(async (pageData, { file }) => {
+  -  pageData.updatedAt = await readCommitTime(file)
+  +  if (file) {
+  +    pageData.updatedAt = await readCommitTime(file)
+  +  }
+   })
+  ```
+
+### Added
+
+- **Plugins can add pages to a site.** `api.pages(route, source)` names the URL first and the content second: `api.pages('/packages/[name]', '../packages/[name]/README.md')` turns the README of every package into a page; the second argument can also be a function that returns each page's params and Markdown. Files the function reads through `read()` and `glob()` become dependencies, so in dev an edit regenerates only that group of pages. Plugin pages go through the same compile pipeline as other pages.
+- **`kawapress/generator` exports `listSitePages()`, `onSitePagesChange()` and `pluginPageSourcePath()`** for plugins that read every page of the site, plugin pages included.
+- **nagi**: plugin pages appear in the auto sidebar.
+- **plugin-search**, **plugin-llms**, **plugin-feed**, **plugin-sitemap**: plugin pages are in the search index, `llms.txt` and the per-page `.md`, the feeds and the sitemap.
+- **plugin-last-updated**: frontmatter `lastUpdated` accepts a date string and `editLink` accepts the URL of the source; plugin pages use only these two values and skip git.
+
 ### Changed
 
-- **Plugins declare which `kawapress` versions they work with.** The peer dependency on `kawapress` is now `>=0.8.3 <0.10.0` instead of following the core's exact minor version, so a new core release no longer requires a new release of every plugin.
+- **Plugins declare which `kawapress` versions they work with.** The peer dependency on `kawapress` is now `>=0.8.3 <0.10.0` instead of following the core's exact minor version (`>=0.9.0 <0.10.0` for plugin-search, plugin-llms and plugin-feed, which use this release's new APIs), so a new core release no longer requires a new release of every plugin.
 - **Every official plugin carries the npm keywords `kawapress` and `kawapress-plugin`**, and `@kawapress/preset-nagi` carries `kawapress-preset`. Community plugins can use the same keywords to be found on npm.
 
 ### Fixed
@@ -329,7 +354,8 @@ What changes for each kind of user:
 - The CSS target is a browser that supports `light-dark()`, so theme override tokens no longer lose their colors in production builds.
 - A release no longer fails when a version is already on npm.
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.8.4...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/kawapress/kawapress/compare/v0.8.4...v0.9.0
 [0.8.4]: https://github.com/kawapress/kawapress/compare/v2026-11-20-plugins...v0.8.4
 [2026-11-20]: https://github.com/kawapress/kawapress/compare/v0.8.3...v2026-11-20-plugins
 [0.8.3]: https://github.com/kawapress/kawapress/compare/v0.8.2...v0.8.3

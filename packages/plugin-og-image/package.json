@@ -1,7 +1,7 @@
 {
   "name": "@kawapress/plugin-og-image",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Per-page social share images (og:image) for KawaPress",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",

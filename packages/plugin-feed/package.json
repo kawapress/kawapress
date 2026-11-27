@@ -1,7 +1,7 @@
 {
   "name": "@kawapress/plugin-feed",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "RSS, Atom and JSON Feed output for KawaPress",
   "license": "MIT",
   "homepage": "https://kawapress.dev/",
@@ -37,7 +37,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "peerDependencies": {
-    "kawapress": "workspace:>=0.8.3 <0.10.0"
+    "kawapress": "workspace:>=0.9.0 <0.10.0"
   },
   "dependencies": {
     "@types/picomatch": "catalog:dev",
