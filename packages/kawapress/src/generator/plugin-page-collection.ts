@@ -1,10 +1,10 @@
 import type { MaybePromise, PluginPagesContext } from '../api/plugin-pages'
-import type { FileEvent, TrackedFiles } from './tracked-files'
 import type { PageGroup } from './page-group'
 import type { PluginPageRecord } from './plugin-pages'
+import type { FileEvent, TrackedFiles } from './tracked-files'
 import { consola } from 'consola'
-import { isAffectedBy, listWatchTargets, mergeTrackedFiles } from './tracked-files'
 import { assertUniquePluginRoutes } from './plugin-pages'
+import { isAffectedBy, listWatchTargets, mergeTrackedFiles } from './tracked-files'
 
 /** The part of a file watcher the collection needs; the dev server's watcher fits. */
 export interface PageWatcher {

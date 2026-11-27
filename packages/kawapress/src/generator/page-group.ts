@@ -1,15 +1,15 @@
 import type { PluginPageContent, PluginPagesContext, PluginPagesGenerator, PluginPagesSource } from '../api/plugin-pages'
-import type { TrackedFiles } from './tracked-files'
 import type { FileTemplate, RouteTemplate } from './page-template'
 import type { PluginPageRecord } from './plugin-pages'
+import type { TrackedFiles } from './tracked-files'
 import { readFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { markdownPagePathToRoutePath } from '../core/markdown-route'
 import { findDataLoaderFiles } from './data/glob'
-import { createFileTracker } from './tracked-files'
 import { mergeFrontmatter } from './page-frontmatter'
 import { fillRouteTemplate, parseFileTemplate, parseRouteTemplate } from './page-template'
 import { describePageGroup, generatePluginSourcePath, routeToPagePath } from './plugin-pages'
+import { createFileTracker } from './tracked-files'
 
 /** One `api.pages(route, source)` call of a plugin. */
 export interface PageRegistration {

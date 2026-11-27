@@ -54,18 +54,23 @@ export function createFileTracker(root: string): FileTracker {
           ? `!${normalizePath(resolve(root, item.slice(1)))}`
           : normalizePath(resolve(root, item)))
       const matched = await findDataLoaderFiles(patterns)
-      globs.push({
-        patterns,
-        matched: new Set(matched),
-        watchDirectories: patterns
-          .filter(item => !item.startsWith('!'))
-          .map(item => picomatch.scan(item).base),
-      })
+      globs.push(createGlobDependency(patterns, matched))
       return matched
     },
     addFile: file => files.add(normalizePath(file)),
     addGlob: dependency => globs.push(dependency),
     snapshot: () => ({ files: new Set(files), globs: [...globs] }),
+  }
+}
+
+/** The dependency for absolute `patterns` that matched `matched`. */
+export function createGlobDependency(patterns: readonly string[], matched: readonly string[]): GlobDependency {
+  return {
+    patterns,
+    matched: new Set(matched),
+    watchDirectories: patterns
+      .filter(pattern => !pattern.startsWith('!'))
+      .map(pattern => picomatch.scan(pattern).base),
   }
 }
 

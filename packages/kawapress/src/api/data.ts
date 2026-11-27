@@ -14,11 +14,36 @@ export interface DataLoaderOptions {
   globOptions?: DataLoaderGlobOptions
 }
 
-export interface DataLoader<T = unknown> {
-  watch?: string | string[]
-  load: (watchedFiles: string[]) => MaybePromise<T>
+/** What `load()` can use to read local files; whatever it reads is tracked. */
+export interface DataLoaderContext {
+  /**
+   * Reads a UTF-8 text file and records it as a dependency of this loader. A
+   * relative path starts from the loader file.
+   */
+  read: (path: string) => Promise<string>
+  /**
+   * Finds files and returns their absolute paths, sorted. The pattern is
+   * recorded as a dependency of this loader, so files that appear or go also
+   * refresh it. A relative pattern starts from the loader file.
+   */
+  glob: (pattern: string | readonly string[]) => Promise<string[]>
+}
+
+/** Recommended form: no `watch`, `load()` receives the context. */
+export interface TrackedDataLoader<T = unknown> {
+  watch?: undefined
+  load: (context: DataLoaderContext) => MaybePromise<T>
   options?: DataLoaderOptions
 }
+
+/** VitePress-compatible form: `load()` receives the files `watch` matches, then the context. */
+export interface WatchDataLoader<T = unknown> {
+  watch: string | string[]
+  load: (watchedFiles: string[], context: DataLoaderContext) => MaybePromise<T>
+  options?: DataLoaderOptions
+}
+
+export type DataLoader<T = unknown> = TrackedDataLoader<T> | WatchDataLoader<T>
 
 export interface DataLoaderConfig {
   /** Absolute site root. */
@@ -58,7 +83,7 @@ export interface ContentLoaderOptions<T = ContentData[]> {
   globOptions?: DataLoaderGlobOptions
 }
 
-export interface ContentLoader<T = ContentData[]> extends DataLoader<T> {
+export interface ContentLoader<T = ContentData[]> extends WatchDataLoader<T> {
   load: (watchedFiles?: string[]) => Promise<T>
 }
 
@@ -72,6 +97,9 @@ export type ContentLoaderExecutor = (
   watchedFiles?: string[],
 ) => Promise<unknown>
 
+/** Declares a data loader; both forms are overloads so `load()` gets the parameters its form has. */
+export function defineLoader<T>(loader: TrackedDataLoader<T>): TrackedDataLoader<T>
+export function defineLoader<T>(loader: WatchDataLoader<T>): WatchDataLoader<T>
 export function defineLoader<T>(loader: DataLoader<T>): DataLoader<T> {
   return loader
 }
