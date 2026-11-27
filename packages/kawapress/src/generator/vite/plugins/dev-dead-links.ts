@@ -1,13 +1,13 @@
 import type { Plugin, ViteDevServer } from 'vite'
 import type { MarkdownPageLoader } from '../../../compiler/page-loader'
 import type { DeadLink, ResolvedDeadLinkConfig } from '../../../core/dead-links'
-import type { PageRouteIndex } from './pages'
-import { markdownFileToRoutePath } from '../../../compiler/page-path'
+import type { SitePageRegistry } from '../../site-pages'
 import { findPageDeadLinks, formatDeadLink } from '../../../core/dead-links'
+import { pluginPageSourcePath } from '../../plugin-pages'
 
 export interface DevDeadLinksOptions {
   pageLoader: MarkdownPageLoader
-  pageRoutes: PageRouteIndex
+  registry: SitePageRegistry
   deadLinks: ResolvedDeadLinkConfig | false
 }
 
@@ -34,11 +34,14 @@ export function devDeadLinksPlugin(options: DevDeadLinksOptions): Plugin {
         return
       }
 
-      const route = markdownFileToRoutePath(
-        file,
-        options.pageLoader.sourceRoot,
-        options.pageLoader.rewrites,
-      )
+      const pages = await options.registry.list()
+      const sourcePath = pluginPageSourcePath(file)
+      const route = sourcePath === undefined
+        ? options.pageLoader.resolveFilePage(file).routePath
+        : pages.find(page => page.origin === 'plugin' && page.sourcePath === sourcePath)?.routePath
+      if (route === undefined) {
+        return
+      }
       const page = options.pageLoader.registry.get(route)
       if (!page) {
         return
@@ -47,7 +50,7 @@ export function devDeadLinksPlugin(options: DevDeadLinksOptions): Plugin {
       const deadLinks = findPageDeadLinks(
         page,
         {
-          routes: await options.pageRoutes.routes(),
+          routes: pages.map(page => page.routePath),
           headings: new Map([[route, page.headings]]),
           publicFiles: [],
         },

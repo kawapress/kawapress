@@ -51,9 +51,9 @@ KawaPress 期望成为一个更好的 VitePress，是由 Vue 社区成员自主�
 - 公开 API 为 `useRoute()`、`useRouter()`、`RouterLink`、`RouterView` 与类型 `Route`、`Router`，Runtime Plugin 通过 `router(handler)` 拿到同一个 `Router`。名字与用法和 Vue Router 相同的部分保持相同，`beforeEach()` 返回 `false` 取消跳转。
 - 不提供嵌套路由、命名路由、动态参数、`addRoute()`、`getRoutes()`、别名、重定向、`scrollBehavior`、`isReady()` 与 `resolve()`。需要时再按真实需求增加。
 
-0.1 不提供插件虚拟页面 API，也不提供 `addPage()`。
+页面有两个来源：`srcDir` 里的 Markdown 文件，以及 Generator Plugin 通过 `api.pages()` 返回的插件页面（见 `.agents/specs/core-plugin-pages/`）。插件页面同样是 Markdown 源码，走同一条编译管线；插件用网址模板（如 `/packages/[name]`）声明一组页面，模板在生成侧展开成全部具体路径，路由仍只做精确匹配。
 
-非 Markdown 内容源、动态路由、RSS、归档页等能力留到后续内容层与路由方案中统一设计。sitemap 由独立插件提供，见 `.agents/specs/plugin-sitemap/`。
+非 Markdown 内容源与参数路由留到后续内容层与路由方案中统一设计。sitemap 由独立插件提供，见 `.agents/specs/plugin-sitemap/`。
 
 ## 三、生成侧与运行侧
 
@@ -177,14 +177,15 @@ export default definePlugin({
 })
 ```
 
-公开七个生成侧注册方法：
+公开八个生成侧注册方法：
 
 | 方法 | 调用时机 | 得到的对象 |
 |---|---|---|
 | `config(handler)` | 站点配置归一化之前 | 用户写的原始、可修改的 KawaPress Config，默认值尚未补上 |
 | `configResolved(handler)` | 全部 `config()` 之后、配置归一化完成时，早于 `markdown()` 与 `vite()` | 冻结的只读 `ResolvedSiteConfig`：`root`（绝对路径）、`title`、`description`、`base`（以 `/` 开头结尾）、`srcDir`、`srcExclude`、`rewrites`、`publicDir`、`head`、`themeConfig`、`locales`（未配置时为英文 `root`） |
 | `markdown(handler)` | Markdown 编译器创建时 | 真实 `MarkdownExit` 实例 |
-| `pageData(handler)` | 每个页面的 pageData 生成后 | 当前页面的可修改 pageData，以及只读的来源 `{ file, sourcePath }` |
+| `pages(route, source)` | 收集站点页面时（开发期在这组页面的依赖变化后单独重新执行） | `route` 是网址模板；`source` 是文件模板，或接收 `{ command, read, glob }` 的生成函数，返回每页的参数、`markdown` 与可选 `frontmatter` |
+| `pageData(handler)` | 每个页面的 pageData 生成后 | 当前页面的可修改 pageData，以及只读的来源 `{ origin, file?, sourcePath }`；插件页面没有 `file` |
 | `pageArtifact(handler)` | 当前页面完成 Markdown 编译与全部 `pageData()` handler 后 | 当前源修订的只读页面构建材料 |
 | `vite(handler)` | Vite 配置完成基础组装后 | 完整、可修改的 Vite `UserConfig` |
 | `buildArtifacts(handler)` | 全部 Vite build environment 完成后、HTML 预渲染前 | 全部页面材料与受控文件发射器 |
@@ -196,7 +197,8 @@ export default definePlugin({
 ```ts
 interface PageBuildArtifact {
   source: string
-  file: string
+  origin: 'file' | 'plugin'
+  file?: string
   sourcePath: string
   pagePath: string
   routePath: string
@@ -212,7 +214,7 @@ interface BuildArtifactsContext {
 
 规则：
 
-- 七个方法都是按需使用的注册器。Plugin 只调用自己需要的方法，不需要为未使用的能力写空 handler。
+- 八个方法都是按需使用的注册器。Plugin 只调用自己需要的方法，不需要为未使用的能力写空 handler。
 - handler 可以同步或异步；同类 handler 按插件顺序串行执行。
 - `config()`、`markdown()`、`pageData()` 与 `vite()` 直接修改真实对象，不使用“返回局部对象再合并”的双重语义。
 - 只读取配置的插件使用 `configResolved()`，不得在插件内重复 KawaPress 的默认值与归一化规则（默认 locale、`base` 规范化、`srcDir` 默认值、站点根目录等）。需要页面范围时用 `kawapress/generator` 的 `resolveMarkdownPageScope(site)`，它与 Core 列页面使用同一规则。
@@ -220,7 +222,8 @@ interface BuildArtifactsContext {
 - `pageArtifact()` 只观察结果，不回写 source、pageData 或路由；同一源文件修订只产生一次材料，开发期文件变化以新材料替换旧材料。
 - `buildArtifacts()` 只在 `kawapress build` 执行。`pages` 按 `sourcePath` 稳定排序，`emitFile()` 与 `importModule()` 只接受构建输出目录内的相对路径；绝对路径、`..` 越界和与 public 或其他插件产物冲突都直接报错。`importModule()` 由 Core 在正常 Node 构建上下文执行，插件不得用 `eval`、`new Function` 或私有 Vite runner 绕过模块边界。
 - `vite()` 允许修改完整 Vite 配置；KawaPress 只保留维持渲染闭环所需的最小不变量并在最终创建 Vite 前校验。
-- `pageArtifact()` 与 `buildArtifacts()` 是生成静态产物的只读边界，不增加页面、路由或 Runtime render hook；0.1 仍不提供 `addPage()`。
+- `pageArtifact()` 与 `buildArtifacts()` 是生成静态产物的只读边界，不增加页面、路由或 Runtime render hook；增加页面只能通过 `pages()`。
+- `pages()` 只接受 Markdown 源码，不接受 Vue 组件作为页面；通过 `read()`、`glob()` 读取的文件自动成为依赖，不提供手动通知页面变化的 API；与 Markdown 文件页面路由冲突时报错并指出两边来源。插件页面的 `PageBuildArtifact.file` 为空，读 `file` 的插件必须先判断 `origin`。
 - `GeneratorPluginAPI` 不提供全局组件、CSS、Vue plugin 或 client/SSR 分支能力。唯一的组件衔接是 `addPageComponent()`，它只把导入合并进正在渲染那一页的 SFC，不建立全局组件。
 
 页面组件声明使用 `addPageComponent(env, { name, from })`：`env` 是 markdown-it 规则、围栏渲染器或 Shiki 高亮回调收到的 Markdown env，`name` 是模板标签名与导入绑定名，`from` 是默认导出该组件的包名或绝对路径。写 Markdown 的用户不做任何声明；同名组件只能来自一个模块，冲突时报错指出页面与两个模块。导入合并进页面 SFC：作者已有 `<script setup>` 时追加到该块并保留 `lang`，只有普通 `<script>` 或没有脚本时补一个 `lang` 相同的 `<script setup>`。开发、构建、SSR 与 SSG-MD 共用同一份页面 SFC，导入集合每次编译重新计算，因此 HMR 与 LLMS 输出不需要额外分支。

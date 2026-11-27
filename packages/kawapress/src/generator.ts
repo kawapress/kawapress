@@ -15,4 +15,7 @@ export { isMarkdownPage, listMarkdownPages, resolveMarkdownPageScope } from './g
 export type { MarkdownPage, MarkdownPageScope } from './generator/pages'
 export { setupGeneratorPlugins } from './generator/plugin-host'
 export type { GeneratorPluginHost } from './generator/plugin-host'
+export { pluginPageSourcePath } from './generator/plugin-pages'
 export { useRuntimeDependencies } from './generator/runtime-dependencies'
+export { listSitePages, onSitePagesChange } from './generator/site-pages'
+export type { SitePage } from './generator/site-pages'

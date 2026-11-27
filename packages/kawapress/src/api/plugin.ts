@@ -5,16 +5,24 @@ import type { PageData } from '../core/extension-points'
 import type { OutletItemInput, OutletName } from '../core/outlet'
 import type { Router } from '../core/router'
 import type { ResolvedSiteConfig, SiteConfig } from '../core/site'
+import type { MaybePromise, RegisterPluginPages } from './plugin-pages'
 
-export type MaybePromise<T> = T | Promise<T>
+export type { MaybePromise } from './plugin-pages'
 
 export type GeneratorPluginHandler<T> = (value: T) => MaybePromise<void>
 
 export interface PageBuildArtifact {
   /** Markdown source of the page, with `<!--@include-->` and `<<<` written out. */
   source: string
-  file: string
-  /** Path of the file relative to srcDir, for example `/packages/a/src/intro.md`. */
+  /** `file` for a Markdown file in srcDir, `plugin` for a page added by `pages()`. */
+  origin: PageOrigin
+  /** Absolute path of the Markdown file. Missing for a plugin page. */
+  file?: string
+  /**
+   * Path of the file relative to srcDir, for example `/packages/a/src/intro.md`.
+   * A plugin page uses the `sourcePath` the core generates, `<plugin name><page
+   * path>`, for example `@typedoc/core/define-plugin.md`.
+   */
   sourcePath: string
   /**
    * Source path after `rewrites`, for example `/a/intro.md`. Relative links of
@@ -34,11 +42,18 @@ export interface BuildArtifactsContext {
   importModule: <T = unknown>(path: string) => Promise<T>
 }
 
+/** Where a page comes from: a Markdown file in srcDir, or a plugin's `pages()`. */
+export type PageOrigin = 'file' | 'plugin'
+
 /** Where the page being processed comes from. Generator-only; never sent to the browser. */
 export interface PageDataContext {
-  /** Absolute path of the Markdown source file. */
-  file: string
-  /** Source path relative to srcDir, for example `/guide/intro.md`. */
+  origin: PageOrigin
+  /** Absolute path of the Markdown source file. Missing for a plugin page. */
+  file?: string
+  /**
+   * Source path relative to srcDir, for example `/guide/intro.md`. A plugin
+   * page has the `<plugin name><page path>` the core generates.
+   */
   sourcePath: string
 }
 
@@ -56,6 +71,14 @@ export interface GeneratorPluginAPI {
    */
   configResolved: (handler: GeneratorPluginHandler<ResolvedSiteConfig>) => void
   markdown: (handler: GeneratorPluginHandler<MarkdownExit>) => void
+  /**
+   * Adds a group of pages that do not come from a Markdown file: the route
+   * template first, then where the content comes from, a file template or a
+   * generator function. Groups are collected after every `configResolved()`,
+   * when the page list is first needed. A plugin can call it more than once;
+   * each call is its own group.
+   */
+  pages: RegisterPluginPages
   pageData: (handler: PageDataHandler) => void
   pageArtifact: (
     handler: GeneratorPluginHandler<Readonly<PageBuildArtifact>>,

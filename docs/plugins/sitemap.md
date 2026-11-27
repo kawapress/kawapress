@@ -75,6 +75,8 @@ lastUpdated: '2023-05-06'
 
 frontmatter 中的 `lastUpdated` 只在站点设置 `lastUpdated: true` 时生效。
 
+其他插件添加的页面没有 git 记录，只有在 frontmatter 里写了 `lastUpdated` 日期时才会有 `<lastmod>`。
+
 ## 修改条目 {#transform-items}
 
 `transformItems` 在写入文件前接收全部条目，可以增加、删除或修改它们。返回 `undefined` 时保留原有条目：

@@ -1,4 +1,4 @@
-import type { KawaPressPlugin } from 'kawapress'
+import type { KawaPressPlugin, PageData } from 'kawapress'
 import type { LastUpdatedPluginOptions } from './types'
 import { resolve } from 'node:path'
 import process from 'node:process'
@@ -51,6 +51,10 @@ export function lastUpdatedPlugin(
       })
 
       api.pageData(async (pageData, { file }) => {
+        if (file === undefined) {
+          applyPluginPageFrontmatter(pageData)
+          return
+        }
         const sourceFile = resolve(file)
         const dates = await loadTimestamps()
         const lastUpdated = dates.get(sourceFile)
@@ -76,6 +80,25 @@ export function lastUpdatedPlugin(
       })
     },
   })
+}
+
+/**
+ * A plugin page has no source file in git, so it has no date and no edit link
+ * unless its frontmatter gives them: `lastUpdated` as a date string and
+ * `editLink` as the absolute URL of its source.
+ */
+function applyPluginPageFrontmatter(pageData: PageData): void {
+  const { lastUpdated, editLink } = pageData.frontmatter
+  if (typeof lastUpdated === 'string') {
+    const time = Date.parse(lastUpdated)
+    if (Number.isNaN(time)) {
+      throw new TypeError(`${WARNING_LABEL}: the frontmatter lastUpdated of ${pageData.path} is not a valid date: ${JSON.stringify(lastUpdated)}.`)
+    }
+    pageData.lastUpdated = time
+  }
+  if (typeof editLink === 'string' && editLink.length > 0) {
+    pageData.editLink = editLink
+  }
 }
 
 export default lastUpdatedPlugin

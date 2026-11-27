@@ -74,7 +74,7 @@ function resolveLastmod(
     }
     return time
   }
-  return options.gitLastUpdated?.get(page.file)
+  return page.file === undefined ? undefined : options.gitLastUpdated?.get(page.file)
 }
 
 /**

@@ -13,6 +13,7 @@ function page(
   const sourcePath = `${routePath === '/' ? '/index' : routePath}.md`
   return {
     source,
+    origin: 'file',
     file: `/site${sourcePath}`,
     sourcePath,
     pagePath: sourcePath,

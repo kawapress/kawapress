@@ -1,6 +1,6 @@
 # Hydration 诊断方案
 
-状态：实现中，尚未纳入版本计划。
+状态：done（`--debug-hydration` 见 #91，解析条件检查见 `generator/vite/plugins/resolution-check.ts`）。
 
 目标：让构建在客户端与服务端可能渲染出不同结果时主动说明原因，而不是只在浏览器里留下一句不带细节的 `Hydration completed but contains mismatches.`。
 

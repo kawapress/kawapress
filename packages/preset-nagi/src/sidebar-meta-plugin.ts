@@ -1,5 +1,5 @@
 import type { LocaleConfig } from 'kawapress'
-import type { MarkdownPageScope } from 'kawapress/generator'
+import type { MarkdownPageScope, SitePage } from 'kawapress/generator'
 import type { Dirent } from 'node:fs'
 import type { HmrContext, ModuleNode, Plugin, ViteDevServer } from 'vite'
 import type { SidebarMeta, SidebarMetaEntry, SidebarMetaItem, SidebarPages } from './sidebar'
@@ -16,8 +16,12 @@ const META_FILE_NAME = '_meta.json'
 const IGNORED_DIRECTORIES = new Set(['dist', 'node_modules'])
 
 export interface NagiSidebarMetaPluginOptions {
-  /** The site's pages, from `resolveMarkdownPageScope()`. */
+  /** The site's Markdown files, from `resolveMarkdownPageScope()`. */
   scope: MarkdownPageScope
+  /** Every page of the site, Markdown files and plugin pages, from `listSitePages()`. */
+  listPages: () => Promise<SitePage[]>
+  /** Calls the listener when the set or the source of the site's pages changed, from `onSitePagesChange()`. */
+  onPagesChange: (listener: () => void) => () => void
   /** `themeConfig` of the site config; only `sidebar` is read. */
   themeConfig?: object | undefined
   /** `locales` of the site config, which can each declare their own sidebar. */
@@ -35,7 +39,7 @@ export function nagiSidebarMetaPlugin(options: NagiSidebarMetaPluginOptions): Pl
    * only refreshes the browser when the sidebar would show something else.
    */
   let pages: SidebarPages | undefined
-  const pageReader: SidebarPageReader = createSidebarPageReader(() => scope)
+  const pageReader: SidebarPageReader = createSidebarPageReader(() => scope, options.listPages)
   const isPage = (file: string) => isMarkdownPage(file, scope)
   /**
    * The module and the fresh copy that replaces it. Returning them lets Vite
@@ -47,6 +51,22 @@ export function nagiSidebarMetaPlugin(options: NagiSidebarMetaPluginOptions): Pl
   ): ModuleNode[] | undefined => {
     const virtualModule = invalidateModule(server)
     return virtualModule && [...context.modules, virtualModule]
+  }
+
+  /**
+   * Reads the pages again and replaces the module when the sidebar would show
+   * something else. A plugin page whose body changed keeps its HMR update.
+   */
+  const refreshPages = async (server: ViteDevServer): Promise<void> => {
+    const previous = pages
+    const next = await pageReader.readAll()
+    if (previous !== undefined && JSON.stringify(previous) === JSON.stringify(next)) {
+      return
+    }
+    pages = undefined
+    if (invalidateModule(server)) {
+      server.hot.send({ type: 'full-reload' })
+    }
   }
 
   return {
@@ -65,20 +85,15 @@ export function nagiSidebarMetaPlugin(options: NagiSidebarMetaPluginOptions): Pl
       return renderSidebarMetaModule(meta, pages)
     },
     configureServer(server) {
-      // A page that is added or removed is in no module the browser knows
-      // about, so the watcher has to report it and the browser has to ask the
-      // server for the whole page again.
-      for (const event of ['add', 'unlink'] as const) {
-        server.watcher.on(event, (file: string) => {
-          if (!isPage(file)) {
-            return
-          }
-          pages = undefined
-          if (invalidateModule(server)) {
-            server.hot.send({ type: 'full-reload' })
-          }
+      // A page that is added, removed or comes from a plugin is in no module
+      // the browser knows about, so the page list has to report it and the
+      // browser has to ask the server for the whole page again.
+      const stop = options.onPagesChange(() => {
+        refreshPages(server).catch((error: unknown) => {
+          server.config.logger.error(`KawaPress nagi: reading the sidebar pages failed: ${String(error)}`)
         })
-      }
+      })
+      server.httpServer?.once('close', stop)
     },
     async handleHotUpdate(context) {
       if (isMetaFile(context.file, scope.sourceRoot)) {

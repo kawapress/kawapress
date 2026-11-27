@@ -61,10 +61,11 @@ describe('createGeneratorPluginRunner', () => {
       title: 'Guide',
       frontmatter: {},
       headers: [],
-    }, { file: '/site/guide/index.md', sourcePath: '/guide/index.md' })
+    }, { origin: 'file', file: '/site/guide/index.md', sourcePath: '/guide/index.md' })
 
     expect(seen).toEqual([{
       path: '/guide/',
+      origin: 'file',
       file: '/site/guide/index.md',
       sourcePath: '/guide/index.md',
     }])
@@ -88,7 +89,7 @@ describe('createGeneratorPluginRunner', () => {
       title: 'Guide',
       frontmatter: {},
       headers: [],
-    }, { file: '/site/guide.md', sourcePath: '/guide.md' })
+    }, { origin: 'file', file: '/site/guide.md', sourcePath: '/guide.md' })
 
     await expect(run).rejects.toThrow(
       '[invalid-page-data / generator / pageData] Plugin execution failed.',
@@ -126,6 +127,7 @@ describe('createGeneratorPluginRunner', () => {
 
     await runner.runPageArtifact({
       source: 'B1',
+      origin: 'file',
       file: '/site/b.md',
       sourcePath: '/b.md',
       pagePath: '/b.md',
@@ -134,6 +136,7 @@ describe('createGeneratorPluginRunner', () => {
     })
     await runner.runPageArtifact({
       source: 'A',
+      origin: 'file',
       file: '/site/a.md',
       sourcePath: '/a.md',
       pagePath: '/a.md',
@@ -142,6 +145,7 @@ describe('createGeneratorPluginRunner', () => {
     })
     await runner.runPageArtifact({
       source: 'B2',
+      origin: 'file',
       file: '/site/b.md',
       sourcePath: '/b.md',
       pagePath: '/b.md',

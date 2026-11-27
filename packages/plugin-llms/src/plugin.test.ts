@@ -206,6 +206,78 @@ export default nagi({ title: 'Dev Docs' })
       await server.close()
     }
   })
+
+  it('writes plugin pages into the Markdown files and indexes of a build', async () => {
+    const root = await createTemporaryDirectory()
+    await mkdir(join(root, 'en'))
+    await Promise.all([
+      writeFile(join(root, 'kawapress.config.ts'), `
+import { definePlugin } from 'kawapress'
+import { nagi } from 'kawapress/nagi'
+
+const typedocLike = definePlugin({
+  name: 'typedoc-like',
+  setup(api) {
+    api.pages('/api/core', () => '---\\ndescription: Core API.\\n---\\n# Core API\\n\\nPlugin page text: {{ 1 + 1 }}.\\n')
+    api.pages('/en/api/core', () => '# English Core API\\n\\nEnglish plugin text.\\n')
+  },
+})
+
+export default nagi({
+  title: 'Dev Docs',
+  locales: { root: { label: 'Root', lang: 'en' }, en: { label: 'English', lang: 'en' } },
+  plugins: [typedocLike],
+})
+`),
+      writeFile(join(root, 'index.md'), '# Home\n'),
+      writeFile(join(root, 'en/index.md'), '# English Home\n'),
+    ])
+
+    await buildSite(root)
+
+    expect(await readFile(join(root, 'dist/api/core.md'), 'utf8')).toContain('Plugin page text: 2.')
+    expect(await readFile(join(root, 'dist/en/api/core.md'), 'utf8')).toContain('English plugin text.')
+    expect(await readFile(join(root, 'dist/llms.txt'), 'utf8')).toContain('[Core API](/api/core.md): Core API.')
+    expect(await readFile(join(root, 'dist/en/llms.txt'), 'utf8')).toContain('[English Core API](/en/api/core.md)')
+    expect(await readFile(join(root, 'dist/llms-full.txt'), 'utf8')).toContain('<!-- Source: /api/core.md -->')
+  }, 120_000)
+
+  it('serves the Markdown of plugin pages in dev', async () => {
+    const root = await createTemporaryDirectory()
+    await mkdir(join(root, 'en'))
+    await Promise.all([
+      writeFile(join(root, 'kawapress.config.ts'), `
+import { definePlugin } from 'kawapress'
+import { nagi } from 'kawapress/nagi'
+
+const typedocLike = definePlugin({
+  name: 'typedoc-like',
+  setup(api) {
+    api.pages('/api/core', () => '---\\ndescription: Core API.\\n---\\n# Core API\\n\\nPlugin page text: {{ 1 + 1 }}.\\n')
+    api.pages('/en/api/core', () => '# English Core API\\n\\nEnglish plugin text.\\n')
+  },
+})
+
+export default nagi({
+  title: 'Dev Docs',
+  locales: { root: { label: 'Root', lang: 'en' }, en: { label: 'English', lang: 'en' } },
+  plugins: [typedocLike],
+})
+`),
+      writeFile(join(root, 'index.md'), '# Home\n'),
+      writeFile(join(root, 'en/index.md'), '# English Home\n'),
+    ])
+    const server = await createDevServer(root, { hmr: false, port: 0 })
+
+    try {
+      const markdown = await request(server.port, '/api/core.md')
+      expect(markdown.status, markdown.body).toBe(200)
+      expect(markdown.body).toContain('Plugin page text: 2.')
+    }
+    finally {
+      await server.close()
+    }
+  }, 120_000)
 })
 
 interface TestResponse {

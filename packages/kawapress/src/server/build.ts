@@ -52,7 +52,7 @@ export async function buildSite(root: string, options: BuildSiteOptions = {}) {
   warnAboutReplacedNodeEnv(ensureProductionNodeEnv(process.env))
   const siteConfig = await loadSiteConfig(root)
   const pageLoader = createSitePageLoader(root, siteConfig)
-  const pageInputs = await createPageInputs(pageLoader, siteConfig.publicDir)
+  const pageInputs = await createPageInputs(siteConfig.pageRegistry)
   const viteConfig: InlineConfig = {
     ...createBaseViteConfig(root, siteConfig, { pageLoader }),
     mode: BUILD_MODE,

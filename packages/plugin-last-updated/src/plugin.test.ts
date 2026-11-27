@@ -84,6 +84,34 @@ describe('last updated plugin', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('the edit link is skipped'))
   })
 
+  it('leaves a plugin page without date and edit link, even inside a repository', async () => {
+    const root = await createRepositorySite()
+    await commit(root, 'api.md', '# Api\n')
+
+    const pageData = await readPluginPage(root, '/api', {}, { editLink: { pattern: 'https://example.test/edit/:path' } })
+
+    expect(pageData.lastUpdated).toBeUndefined()
+    expect(pageData.editLink).toBeUndefined()
+  })
+
+  it('takes the date and edit link of a plugin page from its frontmatter', async () => {
+    const root = await createPlainDirectory()
+
+    const pageData = await readPluginPage(root, '/api', {
+      lastUpdated: '2026-03-04T05:06:07Z',
+      editLink: 'https://example.test/edit/api.md',
+    })
+
+    expect(pageData.lastUpdated).toBe(Date.parse('2026-03-04T05:06:07Z'))
+    expect(pageData.editLink).toBe('https://example.test/edit/api.md')
+  })
+
+  it('rejects a plugin page date that is not a date', async () => {
+    const root = await createPlainDirectory()
+
+    await expect(readPluginPage(root, '/api', { lastUpdated: 'soon' })).rejects.toThrow(/not a valid date/)
+  })
+
   it('rejects an edit link pattern without the placeholder', () => {
     expect(() => lastUpdatedPlugin({ editLink: { pattern: 'https://github.com/o/r' } }))
       .toThrow(/editLink\.pattern.*:path/s)
@@ -115,9 +143,22 @@ async function readPage(
     headers: [],
   }
   await host.runPageData(pageData, {
+    origin: 'file',
     file: join(root, sourceFile),
     sourcePath: `/${sourceFile}`,
   })
+  return pageData
+}
+
+async function readPluginPage(
+  root: string,
+  path: string,
+  frontmatter: PageData['frontmatter'],
+  options: LastUpdatedPluginOptions = {},
+): Promise<PageData> {
+  const host = await setupGeneratorPlugins({ plugins: [lastUpdatedPlugin(options)] }, { root })
+  const pageData: PageData = { path, title: 'Api', frontmatter, headers: [] }
+  await host.runPageData(pageData, { origin: 'plugin', sourcePath: `@test${path}.md` })
   return pageData
 }
 

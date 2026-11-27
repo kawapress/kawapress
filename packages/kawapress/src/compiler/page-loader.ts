@@ -1,7 +1,9 @@
+import type { PageOrigin } from '../api/plugin'
 import type { PageRewrites } from '../core/site'
 import type { GeneratorPluginRunner } from '../plugin/generator-runner'
 import type { LinkRegistry } from './link-registry'
 import type { ParsedMarkdown } from './markdown'
+import type { ExpandedMarkdownSource } from './markdown-source'
 import { resolve } from 'node:path'
 import { markdownPagePathToRoutePath } from '../core/markdown-route'
 import { assertPageDataSerializable } from '../core/site'
@@ -20,6 +22,16 @@ export interface LoadedMarkdownPage extends ParsedMarkdown {
   dependencies: string[]
 }
 
+/** Which page a source is compiled as; the loader derives nothing from the source itself. */
+export interface PageLoadTarget {
+  origin: PageOrigin
+  /** Absolute path of the Markdown file. Missing for a plugin page. */
+  file?: string
+  sourcePath: string
+  pagePath: string
+  routePath: string
+}
+
 export interface MarkdownPageLoader {
   sourceRoot: string
   /** Glob patterns, relative to `sourceRoot`, of Markdown files that are not pages. */
@@ -28,8 +40,13 @@ export interface MarkdownPageLoader {
   rewrites: PageRewrites | undefined
   /** Links and heading IDs of every page loaded so far. */
   registry: LinkRegistry
-  /** Compiles the page whose file holds `source`, as written on disk. */
-  load: (source: string, file: string) => Promise<LoadedMarkdownPage>
+  /** The page a Markdown file is: its source path and route follow from its location and `rewrites`. */
+  resolveFilePage: (file: string) => PageLoadTarget
+  /**
+   * Compiles `source`, the page's text as written. A file page expands
+   * `<!--@include-->` and `<<<`; a plugin page is compiled as it is.
+   */
+  load: (source: string, page: PageLoadTarget) => Promise<LoadedMarkdownPage>
 }
 
 export interface MarkdownPageLoaderOptions {
@@ -58,26 +75,37 @@ export function createMarkdownPageLoader(
     srcExclude: options.srcExclude ?? [],
     rewrites: options.rewrites,
     registry,
-    load(rawSource, file) {
+    resolveFilePage(file) {
+      const sourcePath = markdownFileToSourcePath(file, sourceRoot)
+      const pagePath = rewrite(sourcePath)
+      return {
+        origin: 'file',
+        file,
+        sourcePath,
+        pagePath,
+        routePath: markdownPagePathToRoutePath(pagePath),
+      }
+    },
+    load(rawSource, page) {
       // Expanding first makes an edit to an included file a new page source,
       // so the cache can never return a page built from an older include.
-      let expanded: ReturnType<typeof expandMarkdownSource>
+      let expanded: Omit<ExpandedMarkdownSource, 'lineOrigins'> & { lineOrigins?: number[] }
       try {
-        expanded = expandMarkdownSource(rawSource, { file, sourceRoot })
+        expanded = page.file === undefined
+          ? { source: rawSource, dependencies: [] }
+          : expandMarkdownSource(rawSource, { file: page.file, sourceRoot })
       }
       catch (error) {
         return Promise.reject(error)
       }
       const { source, dependencies, lineOrigins } = expanded
-      const cached = cache.get(file)
+      const cached = cache.get(page.sourcePath)
       if (cached?.source === source) {
         return cached.parsed
       }
 
       const parsed = mdPromise.then(async (md) => {
-        const sourcePath = markdownFileToSourcePath(file, sourceRoot)
-        const pagePath = rewrite(sourcePath)
-        const routePath = markdownPagePathToRoutePath(pagePath)
+        const { file, sourcePath, pagePath, routePath, origin } = page
         // Relative links start from where the page is served, so a page moved
         // by rewrites links as if its file were at the new path.
         const result = await parseMarkdown(
@@ -94,11 +122,16 @@ export function createMarkdownPageLoader(
           links: result.env.links ?? [],
         })
         assertPageDataSerializable(result.pageData)
-        await options.pluginRunner.runPageData(result.pageData, { file, sourcePath })
+        await options.pluginRunner.runPageData(result.pageData, {
+          origin,
+          ...(file === undefined ? {} : { file }),
+          sourcePath,
+        })
         assertPageDataSerializable(result.pageData)
         await options.pluginRunner.runPageArtifact({
           source,
-          file,
+          origin,
+          ...(file === undefined ? {} : { file }),
           sourcePath,
           pagePath,
           routePath,
@@ -106,7 +139,7 @@ export function createMarkdownPageLoader(
         })
         return { ...result, dependencies }
       })
-      cache.set(file, { source, parsed })
+      cache.set(page.sourcePath, { source, parsed })
       return parsed
     },
   }

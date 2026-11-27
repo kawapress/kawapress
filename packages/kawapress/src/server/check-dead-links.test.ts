@@ -149,7 +149,7 @@ describe('included content', () => {
     vi.spyOn(consola, 'warn').mockImplementation(() => {})
     const pageLoader = createSitePageLoader(root, siteConfig)
     for (const page of ['index.md', 'with-part.md']) {
-      await pageLoader.load(await readFile(join(root, page), 'utf8'), join(root, page))
+      await pageLoader.load(await readFile(join(root, page), 'utf8'), pageLoader.resolveFilePage(join(root, page)))
     }
 
     const deadLinks = await checkDeadLinks({ root, siteConfig, pageLoader })
@@ -225,7 +225,7 @@ async function loadFixturePages(
       continue
     }
     const file = join(entry.parentPath, entry.name)
-    await pageLoader.load(await readFile(file, 'utf8'), file)
+    await pageLoader.load(await readFile(file, 'utf8'), pageLoader.resolveFilePage(file))
   }
 
   return pageLoader

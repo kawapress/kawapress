@@ -1,22 +1,20 @@
-import type { MarkdownPageLoader } from '../../compiler/page-loader'
+import type { SitePageRegistry } from '../site-pages'
 import { pageInputName } from '../../core/page-chunk'
-import { listMarkdownPages } from '../pages'
-import { pageScope } from './plugins/pages'
 
 /**
- * One client build input per Markdown page, keyed by the entry name and holding
- * the absolute module path.
+ * One client build input per page of the site, keyed by the entry name and
+ * holding the module to build: the absolute path of a Markdown file, or the
+ * module id of a plugin page.
  *
  * Pages are inputs of their own instead of being reached through a dynamic
  * import, so each page becomes a chunk with a content hash without Vite writing
  * a preload dependency table for every loader.
  */
 export async function createPageInputs(
-  pageLoader: MarkdownPageLoader,
-  publicDir: string,
+  registry: SitePageRegistry,
 ): Promise<Record<string, string>> {
-  const pages = await listMarkdownPages(pageScope(pageLoader, publicDir))
+  const pages = await registry.list()
   return Object.fromEntries(
-    pages.map(page => [pageInputName(page.routePath), page.file]),
+    pages.map(page => [pageInputName(page.routePath), page.file ?? page.moduleId]),
   )
 }

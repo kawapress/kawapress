@@ -80,7 +80,7 @@ export async function createReloadableDevEnvironment(
   }
 
   const createEnvironment = async (): Promise<ActiveEnvironment> => {
-    const loaded = await loadSiteConfigWithDependencies(root)
+    const loaded = await loadSiteConfigWithDependencies(root, { command: 'dev' })
     const environment = await createViteServer(root, loaded.config, {
       hmr: options.hmr,
       httpServer,

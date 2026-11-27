@@ -1,16 +1,15 @@
 import type { LocaleConfig } from 'kawapress'
-import type { MarkdownPageScope } from 'kawapress/generator'
+import type { MarkdownPageScope, SitePage } from 'kawapress/generator'
 import type { NagiSidebarConfig, SidebarPage, SidebarPages } from './sidebar'
 import { resolveLocaleIndex } from 'kawapress'
 import {
   createPageSummaryReader,
-  listMarkdownPages,
   markdownFileToRoutePath,
   readMarkdownSource,
 } from 'kawapress/generator'
 import { isDocumentPage, resolveConfiguredSidebar } from './sidebar'
 
-/** Where the pages of the site are and which of them a hand-written sidebar shows. */
+/** Where the Markdown files of the site are and which pages a hand-written sidebar shows. */
 export interface SidebarPageScope extends MarkdownPageScope {
   /** Site `themeConfig`, as the site config declares it; only `sidebar` is read. */
   themeConfig?: object | undefined
@@ -21,7 +20,7 @@ export interface SidebarPageScope extends MarkdownPageScope {
 export interface SidebarPageReader {
   /** Every page the automatic sidebar shows, keyed by route path. */
   readAll: () => Promise<SidebarPages>
-  /** The entry `readAll` gives for one Markdown file, read from disk. */
+  /** The entry `readAll` gives for one Markdown file, read from disk. Plugin pages have no file. */
   readChanged: (file: string) => Promise<SidebarPage | undefined>
 }
 
@@ -32,20 +31,21 @@ export interface SidebarPageReader {
  */
 export function createSidebarPageReader(
   getScope: () => SidebarPageScope,
+  listPages: () => Promise<SitePage[]>,
 ): SidebarPageReader {
   const summaryReader = createPageSummaryReader()
 
   function readPage(
     scope: SidebarPageScope,
     routePath: string,
-    file: string,
+    cacheKey: string,
     source: string,
   ): SidebarPage | undefined {
     if (isCoveredByConfiguredSidebar(scope, routePath)) {
       return
     }
 
-    const { title, layout } = summaryReader.read(source, file)
+    const { title, layout } = summaryReader.read(source, cacheKey)
     if (!isDocumentPage({ title, layout })) {
       return
     }
@@ -56,24 +56,19 @@ export function createSidebarPageReader(
   return {
     async readAll() {
       const scope = getScope()
-      const pages = await listMarkdownPages(scope)
-      const entries = pages.map((page) => {
-        const entry = readPage(scope, page.routePath, page.file, readSource(scope, page.file))
+      const pages = await listPages()
+      const entries = await Promise.all(pages.map(async (page) => {
+        const entry = readPage(scope, page.routePath, page.file ?? page.sourcePath, await page.readSource())
         return entry === undefined ? [] : [[page.routePath, entry] as [string, SidebarPage]]
-      })
+      }))
       return Object.fromEntries(entries.flat())
     },
     async readChanged(file) {
       const scope = getScope()
       const routePath = markdownFileToRoutePath(file, scope.sourceRoot, scope.rewrites)
-      return readPage(scope, routePath, file, readSource(scope, file))
+      return readPage(scope, routePath, file, readMarkdownSource({ file, sourceRoot: scope.sourceRoot }).source)
     },
   }
-}
-
-/** The page source as the compiler reads it, with includes written out. */
-function readSource(scope: SidebarPageScope, file: string): string {
-  return readMarkdownSource({ file, sourceRoot: scope.sourceRoot }).source
 }
 
 /**

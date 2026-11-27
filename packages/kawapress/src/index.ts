@@ -25,11 +25,19 @@ export type {
   PageBuildArtifact,
   PageDataContext,
   PageDataHandler,
+  PageOrigin,
   RuntimePlugin,
   RuntimePluginAPI,
   RuntimePluginHandler,
   RuntimePluginSetup,
 } from './api/plugin'
+export type {
+  PluginPageContent,
+  PluginPagesContext,
+  PluginPagesGenerator,
+  PluginPagesSource,
+  RouteParams,
+} from './api/plugin-pages'
 export { useMarkdownItPlugin } from './compiler/markdown-it-compat'
 export type { MarkdownItPluginHost } from './compiler/markdown-it-compat'
 export { addPageComponent } from './compiler/page-components'
@@ -77,3 +85,4 @@ export type {
 } from './core/site'
 export { KAWA_DEFAULT_TOKENS, KAWA_LAYER_ORDER, KAWA_TOKEN_NAMES } from './core/tokens'
 export type { KawaTokenName } from './core/tokens'
+export type { SitePage } from './generator/site-pages'

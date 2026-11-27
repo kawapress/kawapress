@@ -1,5 +1,5 @@
 import type { KawapressConfig } from '../api/config'
-import type { GeneratorSiteConfig } from './config'
+import type { GeneratorSiteConfig, ResolveSiteConfigOptions } from './config'
 import { existsSync } from 'node:fs'
 import { realpath } from 'node:fs/promises'
 import { isAbsolute, join, relative, sep } from 'node:path'
@@ -13,20 +13,25 @@ export interface LoadedSiteConfig {
   dependencies: string[]
 }
 
+/** Options of the site config resolution that do not depend on the config file. */
+export type LoadSiteConfigOptions = Omit<ResolveSiteConfigOptions, 'root'>
+
 export async function loadSiteConfig(
   root: string,
+  options: LoadSiteConfigOptions = {},
 ): Promise<GeneratorSiteConfig> {
-  return (await loadSiteConfigWithDependencies(root)).config
+  return (await loadSiteConfigWithDependencies(root, options)).config
 }
 
 export async function loadSiteConfigWithDependencies(
   root: string,
+  options: LoadSiteConfigOptions = {},
 ): Promise<LoadedSiteConfig> {
   const resolvedRoot = await realpath(root)
   const configPath = join(resolvedRoot, CONFIG_FILE_NAME)
   const loaded = await loadUserConfig(resolvedRoot, configPath)
   return {
-    config: await resolveSiteConfig(loaded.config, { root: resolvedRoot }),
+    config: await resolveSiteConfig(loaded.config, { ...options, root: resolvedRoot }),
     dependencies: loaded.dependencies,
   }
 }

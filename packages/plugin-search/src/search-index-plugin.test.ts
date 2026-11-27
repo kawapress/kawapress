@@ -1,6 +1,8 @@
+import type { SitePage } from 'kawapress/generator'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { listMarkdownPages } from 'kawapress/generator'
 import { afterEach, describe, expect, it } from 'vitest'
 import { loadSearchIndex, tokenizeSearchText } from './search'
 import { createSearchDocuments, loadSearchIndexes } from './search-index-plugin'
@@ -205,7 +207,8 @@ Create beautiful documentation in minutes.
 `)
 
     const serialized = await loadSearchIndexes(
-      { sourceRoot },
+      await filePages({ sourceRoot }),
+      sourceRoot,
       ['root', 'en'],
       {
         localeLanguages: { root: 'zh-CN', en: 'en' },
@@ -237,13 +240,38 @@ Create beautiful documentation in minutes.
     await writeFile(join(sourceRoot, 'snippets', 'shared.md'), '# Shared\n\nHidden part.\n')
 
     const serialized = await loadSearchIndexes(
-      { sourceRoot, exclude: ['snippets/**'] },
+      await filePages({ sourceRoot, exclude: ['snippets/**'] }),
+      sourceRoot,
       ['root'],
     )
 
     expect(loadSearchIndex(serialized.root).search('Hidden')).toEqual([])
     expect(loadSearchIndex(serialized.root).search('Visible').map(result => result.id))
       .toEqual(['/'])
+  })
+
+  it('indexes plugin pages next to Markdown files, by route', async () => {
+    const sourceRoot = await createTemporaryDirectory()
+    await writeFile(join(sourceRoot, 'index.md'), '# Home\n\nVisible page.\n')
+    await mkdir(join(sourceRoot, 'en'), { recursive: true })
+    await writeFile(join(sourceRoot, 'en', 'index.md'), '# English home\n')
+
+    const serialized = await loadSearchIndexes(
+      [
+        ...await filePages({ sourceRoot }),
+        pluginPage('/api/core', '# Core API\n\n## defineConfig\n\nReturns the site config.\n'),
+        pluginPage('/en/api/core', '# Core API\n\nReturns the English config.\n'),
+        pluginPage('/api/hidden', '---\nsearch: false\n---\n\n# Hidden\n\nSecret.\n'),
+      ],
+      sourceRoot,
+      ['root', 'en'],
+    )
+
+    expect(loadSearchIndex(serialized.root).search('site config').map(result => result.id))
+      .toEqual(['/api/core#defineconfig'])
+    expect(loadSearchIndex(serialized.root).search('Secret')).toEqual([])
+    expect(loadSearchIndex(serialized.en).search('English config').map(result => result.id))
+      .toEqual(['/en/api/core'])
   })
 
   it('tokenizes CJK characters and Latin words consistently', () => {
@@ -256,4 +284,26 @@ async function createTemporaryDirectory(): Promise<string> {
   const directory = await mkdtemp(join(tmpdir(), 'kawapress-search-'))
   temporaryDirectories.push(directory)
   return directory
+}
+
+async function filePages(scope: { sourceRoot: string, exclude?: string[] }): Promise<SitePage[]> {
+  const pages = await listMarkdownPages(scope)
+  return pages.map(page => ({
+    origin: 'file',
+    file: page.file,
+    sourcePath: page.sourcePath,
+    pagePath: page.pagePath,
+    routePath: page.routePath,
+    readSource: async () => '',
+  }))
+}
+
+function pluginPage(routePath: string, markdown: string): SitePage {
+  return {
+    origin: 'plugin',
+    sourcePath: `@test${routePath}.md`,
+    pagePath: `${routePath}.md`,
+    routePath,
+    readSource: async () => markdown,
+  }
 }

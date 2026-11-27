@@ -1,10 +1,10 @@
 import type { ModuleNode, Plugin, ViteDevServer } from 'vite'
-import type { MarkdownPageLoader } from '../../../compiler/page-loader'
 import type { MarkdownPageScope } from '../../pages'
-import { resolve } from 'node:path'
+import type { PagesChange, SitePageRegistry } from '../../site-pages'
 import { fileURLToPath } from 'node:url'
 import { stringifyJson } from '../../../core/json'
-import { isMarkdownPage, listMarkdownPages } from '../../pages'
+import { isMarkdownPage } from '../../pages'
+import { pluginPageModuleId, resolvePluginPageId } from '../../plugin-pages'
 
 /** Virtual module holding the page table. */
 export const PAGES_MODULE_ID = 'virtual:kawapress-pages'
@@ -19,61 +19,22 @@ const PAGE_TABLE_MODULE_PATH = fileURLToPath(
 )
 
 export interface VirtualPagesOptions {
-  srcDir: string
-  publicDir: string
-  pageLoader: MarkdownPageLoader
-  pageRoutes: PageRouteIndex
-}
-
-/** Public routes of the Markdown files on disk, cached until the site changes. */
-export interface PageRouteIndex {
-  routes: () => Promise<string[]>
-  invalidate: () => void
-}
-
-export function createPageRouteIndex(
-  pageLoader: MarkdownPageLoader,
-  publicDir: string,
-): PageRouteIndex {
-  let cached: Promise<string[]> | undefined
-  return {
-    routes() {
-      cached ??= listPageRoutes(pageLoader, publicDir)
-      return cached
-    },
-    invalidate() {
-      cached = undefined
-    },
-  }
-}
-
-export async function listPageRoutes(
-  pageLoader: MarkdownPageLoader,
-  publicDir: string,
-): Promise<string[]> {
-  const pages = await listMarkdownPages(pageScope(pageLoader, publicDir))
-  return pages.map(page => page.routePath)
-}
-
-/** Where the pages of the site are, from the site config the loader was built with. */
-export function pageScope(
-  pageLoader: MarkdownPageLoader,
-  publicDir: string,
-): MarkdownPageScope {
-  return {
-    sourceRoot: pageLoader.sourceRoot,
-    publicDir: resolve(pageLoader.sourceRoot, publicDir),
-    exclude: pageLoader.srcExclude,
-    rewrites: pageLoader.rewrites,
-  }
+  /** Where the Markdown files of the site are, to tell a page from another file. */
+  scope: MarkdownPageScope
+  registry: SitePageRegistry
 }
 
 export function virtualPagesPlugin(options: VirtualPagesOptions): Plugin {
-  const scope = pageScope(options.pageLoader, options.publicDir)
+  const { scope, registry } = options
   const isPage = (file: string) => isMarkdownPage(file, scope)
+  let unsubscribe: (() => void) | undefined
+  let root = ''
 
   return {
     name: 'kawapress:virtual-pages',
+    configResolved(config) {
+      root = config.root
+    },
     resolveId(id) {
       if (id === PAGES_MODULE_ID) {
         return RESOLVED_ID
@@ -88,7 +49,7 @@ export function virtualPagesPlugin(options: VirtualPagesOptions): Plugin {
       // build and the Markdown-only build import the page modules directly.
       return isBrowserBuild(this)
         ? renderBuiltPagesModule()
-        : renderImportPagesModule(await readManifestPages(scope, options))
+        : renderImportPagesModule(await readManifestPages(registry))
     },
     configureServer(server) {
       // A page that is added or removed changes the page table, and the table is
@@ -96,27 +57,53 @@ export function virtualPagesPlugin(options: VirtualPagesOptions): Plugin {
       // module, so a running browser has to be sent back to the server.
       for (const event of ['add', 'unlink'] as const) {
         server.watcher.on(event, (file: string) => {
-          if (!isPage(file)) {
-            return
-          }
-          options.pageRoutes.invalidate()
-          if (invalidatePagesModule(server)) {
-            server.hot.send({ type: 'full-reload' })
+          if (isPage(file)) {
+            registry.filesChanged()
           }
         })
       }
+      registry.watchPluginPages({
+        add: paths => server.watcher.add(paths),
+        on: (event, listener) => server.watcher.on(event, listener),
+      })
+      unsubscribe = registry.subscribe(change => applyPagesChange(server, root, change))
+    },
+    closeBundle() {
+      unsubscribe?.()
     },
     handleHotUpdate(context) {
       if (!isPage(context.file)) {
         return
       }
-      options.pageRoutes.invalidate()
-
       const virtualModule = invalidatePagesModule(context.server)
       if (virtualModule) {
         return [...context.modules, virtualModule]
       }
     },
+  }
+}
+
+/**
+ * Sends the browser the news of a changed page set: a new page table needs a
+ * full reload, while an edited plugin page is replaced in place.
+ */
+function applyPagesChange(server: ViteDevServer, root: string, change: PagesChange): void {
+  for (const sourcePath of change.changedSources) {
+    const id = resolvePluginPageId(pluginPageModuleId(sourcePath), root)!
+    for (const environment of Object.values(server.environments)) {
+      const module = environment.moduleGraph.getModuleById(id)
+      if (!module) {
+        continue
+      }
+      environment.moduleGraph.invalidateModule(module)
+      // A reload fetches every module again, so only an unchanged set needs the update.
+      if (environment.name === 'client' && !change.setChanged) {
+        void environment.reloadModule(module)
+      }
+    }
+  }
+  if (change.setChanged && invalidatePagesModule(server)) {
+    server.hot.send({ type: 'full-reload' })
   }
 }
 
@@ -184,23 +171,8 @@ function jsonLiteral(value: string): string {
   })
 }
 
-/** Every page on disk with the module id to import it by. */
-async function readManifestPages(
-  scope: MarkdownPageScope,
-  options: VirtualPagesOptions,
-): Promise<ManifestPage[]> {
-  const pages = await listMarkdownPages(scope)
-  return pages.map(page => ({
-    path: page.routePath,
-    id: pageModuleId(page.sourcePath, options.srcDir),
-  }))
-}
-
-/**
- * Root-relative module id of a page, for example `/src/guide/intro.md`. Dev and
- * build both resolve such an id against the site root, which is why the
- * generator can write one import per page instead of a glob at runtime.
- */
-function pageModuleId(sourcePath: string, srcDir: string): string {
-  return `${srcDir === '.' ? '' : `/${srcDir}`}${sourcePath}`
+/** Every page of the site with the module id to import it by. */
+async function readManifestPages(registry: SitePageRegistry): Promise<ManifestPage[]> {
+  const pages = await registry.list()
+  return pages.map(page => ({ path: page.routePath, id: page.moduleId }))
 }

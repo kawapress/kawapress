@@ -4,11 +4,13 @@ import type { KawaPressPlugin } from '../api/plugin'
 import type { DeadLinkIgnore, ResolvedDeadLinkConfig } from '../core/dead-links'
 import type { LocaleConfig, PageRewrites, ResolvedSiteConfig, SiteConfig } from '../core/site'
 import type { GeneratorPluginRunner } from '../plugin/generator-runner'
+import type { SitePageRegistry } from './site-pages'
 import { isAbsolute, resolve } from 'node:path'
 import process from 'node:process'
 import { normalizeBase } from '../core/base'
 import { isPlainObject, resolveHeadConfig } from '../core/head'
 import { createGeneratorPluginRunner } from '../plugin/generator-runner'
+import { createSitePageRegistry, registerSitePages } from './site-pages'
 
 /** The resolved site config plus what only the generator itself uses. */
 export interface GeneratorSiteConfig extends ResolvedSiteConfig {
@@ -16,6 +18,10 @@ export interface GeneratorSiteConfig extends ResolvedSiteConfig {
   vite: UserConfig | undefined
   runtimePlugin: string | undefined
   pluginRunner: GeneratorPluginRunner
+  /** The pages of the site: its Markdown files and the pages plugins add. */
+  pageRegistry: SitePageRegistry
+  /** The frozen object `configResolved()` handlers received. */
+  resolvedSite: ResolvedSiteConfig
   /** Internal link checking, or `false` when the site disabled it. */
   deadLinks: ResolvedDeadLinkConfig | false
 }
@@ -30,6 +36,8 @@ const DEFAULT_LOCALES: Record<string, LocaleConfig> = {
 export interface ResolveSiteConfigOptions {
   /** Absolute path of the site root. */
   root?: string
+  /** `dev` when the dev server runs. Default `build`. */
+  command?: 'dev' | 'build'
 }
 
 export async function resolveSiteConfig(
@@ -81,7 +89,14 @@ export async function resolveSiteConfig(
     themeConfig: site.themeConfig ?? {},
     locales,
   })
+  const pageRegistry = createSitePageRegistry({
+    site: resolved,
+    pluginRunner,
+    command: options.command ?? 'build',
+  })
+  registerSitePages(resolved, pageRegistry)
   await pluginRunner.runConfigResolved(resolved)
+  pageRegistry.markReady()
 
   return {
     ...resolved,
@@ -89,6 +104,8 @@ export async function resolveSiteConfig(
     vite: userConfig.vite,
     runtimePlugin: userConfig.runtimePlugin,
     pluginRunner,
+    pageRegistry,
+    resolvedSite: resolved,
     deadLinks,
   }
 }

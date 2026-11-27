@@ -6,6 +6,7 @@ function page(routePath: string, frontmatter: Record<string, unknown> = {}, file
   const sourcePath = `${routePath === '/' ? '/index' : routePath}.md`
   return {
     source: '',
+    origin: 'file',
     file,
     sourcePath,
     pagePath: sourcePath,
@@ -76,5 +77,21 @@ describe('createSitemapItems', () => {
       pages: [page('/bad', { lastUpdated: 'not-a-date' })],
       lastUpdated: true,
     })).toThrow('frontmatter lastUpdated 不是有效日期')
+  })
+
+  it('dates a plugin page only by its frontmatter, never by git', () => {
+    const pluginPage = (routePath: string, frontmatter: Record<string, unknown>): PageBuildArtifact => ({
+      ...page(routePath, frontmatter),
+      origin: 'plugin',
+      file: undefined,
+      sourcePath: `@test${routePath}.md`,
+    })
+    const items = createSitemapItems({
+      pages: [pluginPage('/api/dated', { lastUpdated: '2024-01-02' }), pluginPage('/api/undated', {})],
+      lastUpdated: true,
+      gitLastUpdated: new Map([['/site/api/undated.md', 1]]),
+    })
+
+    expect(items.map(item => item.lastmod)).toEqual([Date.parse('2024-01-02T00:00:00.000Z'), undefined])
   })
 })
