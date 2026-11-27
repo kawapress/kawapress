@@ -1,9 +1,9 @@
 import type { MaybePromise, PluginPagesContext } from '../api/plugin-pages'
-import type { FileEvent, PageDependencies } from './page-dependencies'
+import type { FileEvent, TrackedFiles } from './tracked-files'
 import type { PageGroup } from './page-group'
 import type { PluginPageRecord } from './plugin-pages'
 import { consola } from 'consola'
-import { isAffectedBy, listWatchTargets, mergeDependencies } from './page-dependencies'
+import { isAffectedBy, listWatchTargets, mergeTrackedFiles } from './tracked-files'
 import { assertUniquePluginRoutes } from './plugin-pages'
 
 /** The part of a file watcher the collection needs; the dev server's watcher fits. */
@@ -31,7 +31,7 @@ export interface PluginPageCollection {
 interface GroupState {
   group: PageGroup
   records: PluginPageRecord[]
-  dependencies: PageDependencies
+  dependencies: TrackedFiles
 }
 
 export function createPluginPageCollection(options: PluginPageCollectionOptions): PluginPageCollection {
@@ -77,7 +77,7 @@ export function createPluginPageCollection(options: PluginPageCollectionOptions)
       }
       consola.error(`KawaPress: ${state.group.label} failed; its previous pages stay.`, run.error)
       // The failed run may have read a file that is missing now; keep watching it.
-      next.set(state, { ...state, dependencies: mergeDependencies(state.dependencies, run.dependencies) })
+      next.set(state, { ...state, dependencies: mergeTrackedFiles(state.dependencies, run.dependencies) })
     }
 
     let candidate = current.map(state => next.get(state) ?? state)
