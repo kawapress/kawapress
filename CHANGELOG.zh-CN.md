@@ -6,6 +6,14 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-28
+
+本次发布：`kawapress` 0.9.1、`create-kawapress` 0.9.1、`@kawapress/preset-nagi` 0.9.1。其余包没有发布新版本。
+
+### 新增
+
+- **Data Loader 读了谁就依赖谁。** 不写 `watch` 时，`load()` 收到 `{ read, glob }`：`read()` 读文本文件，`glob()` 返回按路径排序的绝对路径，路径都相对 Loader 文件。开发时，读过的文件改动、符合 `glob()` 模式的文件新增或删除，都会让数据自动更新，路径只需写一次。VitePress 的 `watch` 写法仍然可用，`{ read, glob }` 作为 `load()` 的第二个参数传入。
+
 ## [0.9.0] - 2026-11-27
 
 本次发布：`kawapress` 0.9.0、`create-kawapress` 0.9.0、`@kawapress/preset-nagi` 0.9.0、`@kawapress/plugin-search` 0.9.0、`@kawapress/plugin-llms` 0.9.0、`@kawapress/plugin-last-updated` 0.9.0、`@kawapress/plugin-sitemap` 0.9.0、`@kawapress/plugin-feed` 0.2.0；`@kawapress/plugin-algolia-search`、`plugin-badge`、`plugin-code-block`、`plugin-code-group`、`plugin-comments`、`plugin-container`、`plugin-emoji`、`plugin-github-alerts`、`plugin-image-zoom`、`plugin-mathjax`、`plugin-mermaid`、`plugin-shiki`、`plugin-toc`、`plugin-unocss` 0.8.4；`@kawapress/plugin-analytics`、`plugin-file-tree`、`plugin-og-image`、`plugin-vue-component-demo`、`plugin-vue-component-meta`、`plugin-vue-repl` 0.1.1。
@@ -354,7 +362,8 @@ KawaPress 的所有重要变更都记录在这里。格式参考 [Keep a Changel
 - CSS 目标浏览器改为原生支持 `light-dark()` 的版本，主题覆盖 Token 不再在生产构建中丢失颜色。
 - 发布时某个版本已经在 npm 上，不再让整次发布失败。
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/kawapress/kawapress/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/kawapress/kawapress/compare/v0.8.4...v0.9.0
 [0.8.4]: https://github.com/kawapress/kawapress/compare/v2026-11-20-plugins...v0.8.4
 [2026-11-20]: https://github.com/kawapress/kawapress/compare/v0.8.3...v2026-11-20-plugins

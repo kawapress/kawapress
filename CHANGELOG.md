@@ -6,6 +6,14 @@ All notable changes to KawaPress are listed here. The format follows [Keep a Cha
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-28
+
+Published: `kawapress` 0.9.1, `create-kawapress` 0.9.1, `@kawapress/preset-nagi` 0.9.1. No other package has a new version.
+
+### Added
+
+- **Data loaders track what they read.** Without `watch`, `load()` receives `{ read, glob }`: `read()` reads a text file and `glob()` returns sorted absolute paths, both relative to the loader file. In dev, an edit to a file it read, or a file added or removed that matches a `glob()` pattern, refreshes the data, so each path is written once. The VitePress `watch` form still works and gets `{ read, glob }` as the second argument of `load()`.
+
 ## [0.9.0] - 2026-11-27
 
 Published: `kawapress` 0.9.0, `create-kawapress` 0.9.0, `@kawapress/preset-nagi` 0.9.0, `@kawapress/plugin-search` 0.9.0, `@kawapress/plugin-llms` 0.9.0, `@kawapress/plugin-last-updated` 0.9.0, `@kawapress/plugin-sitemap` 0.9.0, `@kawapress/plugin-feed` 0.2.0; `@kawapress/plugin-algolia-search`, `plugin-badge`, `plugin-code-block`, `plugin-code-group`, `plugin-comments`, `plugin-container`, `plugin-emoji`, `plugin-github-alerts`, `plugin-image-zoom`, `plugin-mathjax`, `plugin-mermaid`, `plugin-shiki`, `plugin-toc`, `plugin-unocss` 0.8.4; `@kawapress/plugin-analytics`, `plugin-file-tree`, `plugin-og-image`, `plugin-vue-component-demo`, `plugin-vue-component-meta`, `plugin-vue-repl` 0.1.1.
@@ -354,7 +362,8 @@ What changes for each kind of user:
 - The CSS target is a browser that supports `light-dark()`, so theme override tokens no longer lose their colors in production builds.
 - A release no longer fails when a version is already on npm.
 
-[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/kawapress/kawapress/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/kawapress/kawapress/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/kawapress/kawapress/compare/v0.8.4...v0.9.0
 [0.8.4]: https://github.com/kawapress/kawapress/compare/v2026-11-20-plugins...v0.8.4
 [2026-11-20]: https://github.com/kawapress/kawapress/compare/v0.8.3...v2026-11-20-plugins
