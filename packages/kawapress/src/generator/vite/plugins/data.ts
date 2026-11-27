@@ -78,7 +78,6 @@ export function dataLoaderPlugin(
       },
     })
     const loader = resolveDataLoader(loaded.module.default, file)
-    const contentLoader = getContentLoaderSpecification(loader)
     const dependencies = new Set([
       normalizePath(file),
       ...loaded.dependencies.map(dependency => normalizePath(resolve(dependency))),
@@ -91,16 +90,6 @@ export function dataLoaderPlugin(
     loaders.set(id, result)
     server?.watcher.add([...dependencies])
     return result
-  }
-
-  const generateDataModule = async (id: string): Promise<string> => {
-    const loaded = await loadDataLoader(id)
-    const data = await executeLoader(loaded, cleanDataLoaderId(id))
-    const serialized = stringifyJsonForScript(data, {
-      label: `data returned by loader ${JSON.stringify(displayLoaderPath(id, context.root))}`,
-      path: 'data',
-    })
-    return `export const data = ${serialized}\n`
   }
 
   /** Runs `load()` and records what it reads, also when it fails. */
@@ -131,6 +120,16 @@ export function dataLoaderPlugin(
       loaded.tracked = tracker.snapshot()
       server?.watcher.add(listWatchTargets(loaded.tracked))
     }
+  }
+
+  const generateDataModule = async (id: string): Promise<string> => {
+    const loaded = await loadDataLoader(id)
+    const data = await executeLoader(loaded, cleanDataLoaderId(id))
+    const serialized = stringifyJsonForScript(data, {
+      label: `data returned by loader ${JSON.stringify(displayLoaderPath(id, context.root))}`,
+      path: 'data',
+    })
+    return `export const data = ${serialized}\n`
   }
 
   const loadDataModule = (id: string): Promise<string> => {

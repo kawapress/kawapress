@@ -1,6 +1,6 @@
 import type { PluginCategory } from './plugin-catalog'
-import { readFile } from 'node:fs/promises'
 import { basename, dirname } from 'node:path'
+import { defineLoader } from 'kawapress'
 import { pluginCatalog } from './plugin-catalog'
 
 export interface MarketPlugin {
@@ -31,15 +31,15 @@ const NAGI_DIRECTORY = 'preset-nagi'
  * from `plugin-catalog.ts`. A public plugin missing from the catalog, or a
  * catalog entry without a package, fails the build.
  */
-export default {
-  watch: [
-    '../../packages/plugin-*/package.json',
-    `../../packages/${NAGI_DIRECTORY}/package.json`,
-  ],
-  async load(files: string[]): Promise<MarketPlugin[]> {
+export default defineLoader({
+  async load({ glob, read }): Promise<MarketPlugin[]> {
+    const files = await glob([
+      '../../packages/plugin-*/package.json',
+      `../../packages/${NAGI_DIRECTORY}/package.json`,
+    ])
     const manifests = await Promise.all(files.map(async file => ({
       directory: basename(dirname(file)),
-      manifest: JSON.parse(await readFile(file, 'utf8')) as PackageManifest,
+      manifest: JSON.parse(await read(file)) as PackageManifest,
     })))
 
     const nagi = manifests.find(entry => entry.directory === NAGI_DIRECTORY)?.manifest
@@ -72,4 +72,4 @@ export default {
       }))
       .sort((a, b) => a.name.localeCompare(b.name))
   },
-}
+})
